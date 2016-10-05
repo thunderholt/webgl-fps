@@ -1,1 +1,78 @@
-Watch this space!
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+	<meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+   
+    <style>
+        body {
+            margin: 0px;
+            color: #fff;
+            font-family: Verdana;
+        }
+
+        .stats {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+        }
+
+        canvas {
+            width: 1920px;
+            height: 1080px;
+        }
+
+    </style>
+
+</head>
+<body>
+
+    <div class="stats">
+        Average Rendering Time: <span id="average-rendering-time" class="badge"></span><br />
+        Average FPS: <span id="average-fps" class="badge"></span>
+    </div>
+
+    <!--<canvas id="canvas" width="640" height="480" style="display: block;"></canvas>-->
+     <!--<canvas id="canvas" width="960" height="540" style="display: block;"></canvas>-->
+    <canvas id="canvas" width="1920" height="1080" style="display: block;"></canvas>
+
+
+    <!-- Libraries -->
+    <script src="js/lib/jquery.min.js"></script>
+    <script src="js/lib/gl-matrix-min.js"></script>
+    
+    <!-- Engine -->
+    <script src="js/engine/unit-tests.js"></script>
+    <script src="js/engine/constants.js"></script>
+    <script src="js/engine/engine.js"></script>
+    <script src="js/engine/gl-manager.js"></script>
+    <script src="js/engine/texture-manager.js"></script>
+    <script src="js/engine/effect-manager.js"></script>
+    <script src="js/engine/shadow-map-manager.js"></script>
+    <script src="js/engine/line-drawer.js"></script>
+    <script src="js/engine/static-mesh-manager.js"></script>
+    <script src="js/engine/skinned-mesh-manager.js"></script>
+    <script src="js/engine/skinned-mesh-animation-manager.js"></script>
+    <script src="js/engine/material-manager.js"></script>
+    <script src="js/engine/visibility-manager.js"></script>
+    <script src="js/engine/resource-loader.js"></script>
+    <script src="js/engine/renderer.js"></script>
+    <script src="js/engine/render-state-manager.js"></script>
+    <script src="js/engine/camera.js"></script>
+    <script src="js/engine/free-look-camera-controller.js"></script>
+    <script src="js/engine/frame-timer.js"></script>
+    <script src="js/engine/keyboard.js"></script>
+    <script src="js/engine/mouse.js"></script>
+    <script src="js/engine/player-controller.js"></script>
+    <script src="js/engine/editor-helper.js"></script>
+    <script src="js/engine/util.js"></script>
+    <script src="js/engine/math/math-3d.js"></script>
+    <script src="js/engine/math/math-types.js"></script>
+
+    <!-- Game -->
+    <script src="js/game/main.js"></script>
+
+</body>
+</html>
