@@ -59,8 +59,8 @@
     }
 
     this.getResourceUrl = function (resourceType, resourceId, dataType) {
-
-        return '/resources/' + this.getFolderNameForResourceType(resourceType) + '/' + resourceId + '.' + dataType + '?noCache=' + Math.random();
+        
+        return 'resources/' + this.getFolderNameForResourceType(resourceType) + '/' + resourceId + '.' + dataType + '?noCache=' + Math.random();
     }
 
     this.getFolderNameForResourceType = function (resourceType) {
