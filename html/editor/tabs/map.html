@@ -1,0 +1,32 @@
+﻿<div ng-controller="MapController">
+    <div ng-if="map != null">
+        <div class="form-group">
+            <label>World Static Mesh</label>
+            <div class="input-group">
+                <input type="text" disabled="disabled" class="form-control" value="{{map.worldStaticMeshId}}" />
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" ng-click="chooseWorldStaticMesh()">Choose</button>
+                </span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>World Sector Set</label>
+            <div class="input-group">
+                <input type="text" disabled="disabled" class="form-control" value="{{map.worldSectorSetId}}" />
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" ng-click="chooseWorldSectorSet()">Choose</button>
+                </span>
+            </div>
+        </div>
+        <div>
+            <label>Global Illumination Colours</label>
+            <div class="form-group" ng-repeat="colour in map.globalIlluminationColours">
+                <vec3-editor vec="colour"></vec3-editor>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-warning" role="alert" ng-if="map == null">
+        No map loaded
+    </div>
+</div>

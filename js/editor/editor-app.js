@@ -1,0 +1,1 @@
+﻿var editorApp = angular.module('editorApp', []);

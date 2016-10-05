@@ -1,0 +1,33 @@
+﻿<div ng-controller="ResourcesController">
+    <div class="form-group">
+        <label>Resource Type</label>
+        <select class="form-control" ng-model="resourceType">
+            <option value="map">Maps</option>
+            <option value="static-mesh">Static Meshes</option>
+            <option value="skinned-mesh">Skinned Meshes</option>
+            <option value="skinned-mesh-animation">Skinned Mesh Animations</option>
+            <option value="material">Materials</option>
+            <option value="texture">Textures</option>
+        </select>
+    </div>
+
+    <div class="scrollable">
+        <table class="table table-striped">
+            <tr ng-repeat="resourceId in resourceIds">
+                <td><a href="" ng-click="editResource(resourceId)">{{resourceId}}</a></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="form-group">
+        <div class="input-group" ng-if="resourceType == 'material'">
+            <span class="input-group-addon">New Material</span>
+            <input type="text" class="form-control" ng-model="newMaterial.materialId" />
+            <span class="input-group-btn">
+                <button class="btn btn-primary" ng-click="createMaterial()"><span class="glyphicon glyphicon-plus-sign"></span> Create</button>
+            </span>
+        </div>
+    </div>
+
+    <material-editor></material-editor>
+</div>

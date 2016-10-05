@@ -1,0 +1,61 @@
+{
+  "worldStaticMeshId": "test-map-1",
+  "worldSectorSetId": "test-map1",
+  "player": {
+    "position": [ -2.296239102967292, 1, 3.353637018163507 ],
+    "rotation": [ 0.064, -1.0080000000000007, 0 ]
+  },
+  "globalIlluminationColours": [
+    [ 0.13, 0.13, 0.18 ],
+    [ 0.02, 0.02, 0.06 ],
+    [ 0.11, 0.11, 0.14 ],
+    [ 0.04, 0.04, 0.1 ],
+    [ 0.15, 0.15, 0.15 ],
+    [ 0.06, 0.06, 0.06 ],
+    [ 0.01, 0.01, 0.01 ],
+    [ 0.02, 0.02, 0.02 ]
+  ],
+  "lightsById": {
+    "light-1": {
+      "id": "light-1",
+      "type": "point",
+      "position": [ 3, 5, -1 ],
+      "radius": 8,
+      "colour": [ 1, 1, 1 ],
+      "enabled": true
+    },
+    "light-2": {
+      "id": "light-2",
+      "type": "point",
+      "position": [ -1, 2, -2 ],
+      "radius": 4,
+      "colour": [ 0, 1, 0 ],
+      "enabled": true
+    }
+  },
+  "actorsById": 
+  {
+    "actor-1": {
+      "id": "actor-1",
+      "position": [ 2, 3, -1 ],
+      "rotation": [ 0, 0, 0 ],
+      "controllerId": "TestActorController",
+      "staticMeshId": "fancy-cube",
+      "data": {
+        "direction": 1,
+        "speed": 0.01
+      },
+      "frameIndex": 0
+    },
+    "actor-2": {
+      "id": "actor-2",
+      "position": [ 0, 1, 0 ],
+      "rotation": [ 0, 0, 0 ],
+      "staticMeshId": "",
+      "controllerId": null,
+      "data": { },
+      "skinnedMeshId": "robot",
+      "skinnedMeshAnimationId": "robot-walk",
+      "frameIndex": 0
+    }
+  }}

@@ -1,0 +1,14 @@
+﻿<div ng-if="map != null">
+    <div class="form-group">
+        <label>Position</label>
+        <vec3-editor vec="map.player.position"></vec3-editor>
+    </div>
+    <div class="form-group">
+        <label>Rotation</label>
+        <vec3-editor vec="map.player.rotation"></vec3-editor>
+    </div>
+</div>
+
+<div class="alert alert-warning" role="alert" ng-if="map == null">
+    No map loaded
+</div>

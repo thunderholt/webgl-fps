@@ -1,0 +1,33 @@
+﻿
+
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Vega Engine</a>
+        <form class="navbar-form navbar-right">
+            <button type="button" class="btn btn-default" ng-click="startMap()" ng-if="map != null"><span class="glyphicon glyphicon-play"></span></button>
+            <button type="button" class="btn btn-default" ng-click="saveMap()" ng-if="map != null">Save Map</button>
+            <button type="button" class="btn btn-default" ng-click="loadMap()">Load Map</button>
+            <button type="button" class="btn btn-default">Create Map</button>
+        </form>
+    </div>
+</nav>
+
+
+<!-- Nav tabs -->
+<ul class="nav nav-tabs" role="tablist">
+    <li class="active"><a href="#tab-resources" data-toggle="tab">Resources</a></li>
+    <li><a href="#tab-map" data-toggle="tab">Map</a></li>
+    <li><a href="#tab-lights" data-toggle="tab">Lights</a></li>
+    <li><a href="#tab-player" data-toggle="tab">Player</a></li>
+</ul>
+
+<!-- Tab panes -->
+<div class="tab-content">
+    <div id="tab-resources" role="tabpanel" class="tab-pane active" ng-include="'/html/editor/tabs/resources.html'"></div>
+    <div id="tab-map" role="tabpanel" class="tab-pane" ng-include="'/html/editor/tabs/map.html'"></div>
+    <div id="tab-lights" role="tabpanel" class="tab-pane" ng-include="'/html/editor/tabs/lights.html'"></div>
+    <div id="tab-player" role="tabpanel" class="tab-pane" ng-include="'/html/editor/tabs/player.html'"></div>
+</div>
+
+<choose-resource-modal></choose-resource-modal>
+<import-static-mesh-modal></import-static-mesh-modal>

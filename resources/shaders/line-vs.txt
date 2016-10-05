@@ -1,0 +1,12 @@
+﻿attribute vec3 vertexPosition;
+
+uniform mat4 viewProjMatrix;
+uniform vec3 position;
+uniform vec3 size;
+
+void main(void) 
+{
+	vec3 temp = vertexPosition * size + position;
+
+    gl_Position = viewProjMatrix * vec4(temp, 1.0);
+}

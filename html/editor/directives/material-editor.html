@@ -1,0 +1,45 @@
+﻿<div class="panel panel-primary" ng-if="material != null">
+    <div class="panel-heading">Material Editor</div>
+    <div class="panel-body">
+    
+        <div class="form-group">
+            <label>Material ID</label>
+            <input type="text" class="form-control" ng-model="materialMetaData.newMaterialId" />
+        </div>
+
+        <div class="form-group">
+            <label>Diffuse Texture</label>
+            <div class="input-group">
+                <input type="text" class="form-control" ng-model="material.diffuseTextureId" />
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" ng-click="chooseDiffuseTexture()">Choose</button>
+                </span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Normal Texture</label>
+            <div class="input-group">
+                <input type="text" class="form-control" ng-model="material.normalTextureId" />
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" ng-click="chooseNormalTexture()">Choose</button>
+                </span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Self-Illumination Texture</label>
+            <div class="input-group">
+                <input type="text" class="form-control" ng-model="material.selfIlluminationTextureId" />
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" ng-click="chooseSelfIlluminationTexture()">Choose</button>
+                    <button class="btn btn-default btn-warning" type="button" ng-click="clearSelfIlluminationTexture()"><span class="glyphicon glyphicon-remove-circle"></span></button>
+                </span>
+            </div>
+        </div>
+
+        <p><button class="btn btn-primary" ng-click="save()">Save</button></p>
+
+    </div>
+
+</div>

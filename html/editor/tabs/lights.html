@@ -1,0 +1,23 @@
+﻿<div ng-controller="LightsController">
+    <div ng-if="map != null">
+        <div class="scrollable">
+            <table class="table table-striped">
+                <tr ng-repeat="(id, light) in map.lightsById">
+                    <td><a href="" ng-click="editLight(light.id)">{{light.id}}</a></td>
+                    <td class="text-right"><button class="btn btn-danger btn-xs" ng-click="removeLight(light.id)"><span class="glyphicon glyphicon-remove"></span></button></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="form-group text-right">
+            <button class="btn btn-primary" ng-click="createLight()"><span class="glyphicon glyphicon-plus-sign"></span> Create Light</button> 
+        </div>
+
+        <light-editor></light-editor>
+
+    </div>
+
+    <div class="alert alert-warning" role="alert" ng-if="map == null">
+        No map loaded
+    </div>
+</div>

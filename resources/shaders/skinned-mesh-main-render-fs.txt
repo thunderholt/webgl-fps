@@ -1,0 +1,12 @@
+﻿precision highp float;
+
+uniform sampler2D diffuseSampler;
+
+varying vec2 texCoord;
+
+void main(void) 
+{
+	vec4 diffuseColour = texture2D(diffuseSampler, texCoord);
+
+	gl_FragColor = diffuseColour;
+}

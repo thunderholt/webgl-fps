@@ -1,0 +1,41 @@
+﻿<div class="panel panel-primary" ng-if="actor != null">
+    <div class="panel-heading">{{actor.id}}</div>
+    <div class="panel-body">
+    
+        <div class="form-group">
+            <label>Position</label>
+            <vec3-editor vec="actor.position"></vec3-editor>
+        </div>
+
+        <div class="form-group">
+            <label>Rotation</label>
+            <vec3-editor vec="actor.rotation"></vec3-editor>
+        </div>
+
+        <div class="form-group">
+            <label>Static Mesh ID</label>
+            <input type="text" class="form-control" ng-model="actor.staticMeshId" />
+        </div>
+
+        <div class="form-group">
+            <label>Skinned Mesh ID</label>
+            <input type="text" class="form-control" ng-model="actor.skinnedMeshId" />
+        </div>
+
+        <div class="form-group">
+            <label>Skinned Mesh Animation ID</label>
+            <input type="text" class="form-control" ng-model="actor.skinnedMeshAnimationId" />
+        </div>
+
+        <div class="form-group">
+            <label>Animation Frame Index</label>
+            <input type="number" class="form-control" ng-model="actor.frameIndex" />
+        </div>
+
+        <div class="form-group">
+            <label>Controller ID</label>
+            <input type="text" class="form-control" ng-model="actor.controllerId" />
+        </div>
+    </div>
+
+</div>

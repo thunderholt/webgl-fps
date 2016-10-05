@@ -1,0 +1,120 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+	<meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="css/bootstrap-darkly.min.css" rel="stylesheet" />
+    <style type="text/css">
+        body {
+            margin-top: 15px;
+        }
+
+        .tab-pane {
+            padding-top: 15px;
+        }
+
+        .scrollable {
+            max-height: 300px;
+            overflow-y: scroll;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body ng-app="editorApp" ng-controller="EditorController">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-6" ng-include="'/html/editor/main.html'">
+            </div>
+            <div class="col-md-6" ng-controller="RenderingController">
+                <div class="well">
+                     <!--<canvas id="canvas" style="display: block; width: 100%; height: 600px;"></canvas>-->
+                    <canvas id="canvas" width="600" height="400"></canvas>
+                   <!-- <canvas id="canvas" style="display: block; width: 100px; height: 100px;"></canvas>-->
+                    <div>
+                        Average Rendering Time: <span id="average-rendering-time" class="badge"></span><br />
+                        Average FPS: <span id="average-fps" class="badge"></span><br />
+                        Number Of Visible World Static Mesh Chunks: <span id="number-of-visible-world-static-mesh-chunks" class="badge"></span><br />
+                        Number Of Visible Actors: <span id="number-of-visible-actors" class="badge"></span><br />
+                        Number Of Visible Lights: <span id="number-of-visible-lights" class="badge"></span><br />
+                        Number Of Shadow Maps Built This Frame: <span id="number-of-shadow-maps-built-this-frame" class="badge"></span><br />
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" ng-model="renderingParameters.renderLightVolumes" /> Render Light Volumes
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" ng-model="renderingParameters.renderWorldMeshChunkAABBs" /> Render World-Mesh Chunk AABBs
+                        </label> 
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" ng-model="renderingParameters.renderActorIdentifiers" /> Render Actor Identifiers
+                        </label>
+                    </div>
+
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" ng-model="renderingParameters.renderActorBoundingSpheres" /> Render Actor Bounding Spheres
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="/js/lib/bootstrap.min.js"></script>
+    <script src="/js/lib/angular.min.js"></script>
+    <script src="/js/lib/gl-matrix-min.js"></script>
+    
+    <script src="/js/engine/unit-tests.js"></script>
+    <script src="/js/engine/constants.js"></script>
+    <script src="/js/engine/engine.js"></script>
+    <script src="/js/engine/gl-manager.js"></script>
+    <script src="/js/engine/texture-manager.js"></script>
+    <script src="/js/engine/effect-manager.js"></script>
+    <script src="/js/engine/shadow-map-manager.js"></script>
+    <script src="/js/engine/line-drawer.js"></script>
+    <script src="/js/engine/static-mesh-manager.js"></script>
+    <script src="/js/engine/skinned-mesh-manager.js"></script>
+    <script src="/js/engine/skinned-mesh-animation-manager.js"></script>
+    <script src="/js/engine/material-manager.js"></script>
+    <script src="/js/engine/visibility-manager.js"></script>
+    <script src="/js/engine/resource-loader.js"></script>
+    <script src="/js/engine/renderer.js"></script>
+    <script src="/js/engine/render-state-manager.js"></script>
+    <script src="/js/engine/camera.js"></script>
+    <script src="/js/engine/free-look-camera-controller.js"></script>
+    <script src="/js/engine/frame-timer.js"></script>
+    <script src="/js/engine/keyboard.js"></script>
+    <script src="/js/engine/mouse.js"></script>
+    <script src="/js/engine/player-controller.js"></script>
+    <script src="/js/engine/editor-helper.js"></script>
+    <script src="/js/engine/util.js"></script>
+    <script src="/js/engine/math/math-3d.js"></script>
+    <script src="/js/engine/math/math-types.js"></script>
+
+    <script>var isEditor = true;</script>
+    <script src="/js/game/main.js"></script>
+
+    <script src="/js/editor/editor-app.js"></script>
+    <script src="/js/editor/controllers/editor-controller.js"></script>
+    <script src="/js/editor/controllers/rendering-controller.js"></script>
+    <script src="/js/editor/controllers/resources-controller.js"></script>
+    <script src="/js/editor/controllers/map-controller.js"></script>
+    <script src="/js/editor/controllers/lights-controller.js"></script>
+    <script src="/js/editor/controllers/actors-controller.js"></script>
+    <script src="/js/editor/directives/vec3-editor.js"></script>
+    <script src="/js/editor/directives/material-editor.js"></script>
+    <script src="/js/editor/directives/light-editor.js"></script>
+    <script src="/js/editor/directives/actor-editor.js"></script>
+    <script src="/js/editor/directives/choose-resource-modal.js"></script>
+    <script src="/js/editor/services/util.js"></script>
+    <script src="/js/editor/services/ws.js"></script>
+
+</body>
+</html>

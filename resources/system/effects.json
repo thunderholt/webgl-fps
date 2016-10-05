@@ -1,0 +1,108 @@
+﻿{
+  "static-mesh-main-render": {
+    "id": "static-mesh-main-render",
+
+    "attributes": {
+      "vertexPosition": null,
+      "vertexNormal": null,
+      "vertexTangent": null,
+      "vertexBitangent": null,
+      "vertexTexCoord": null
+    },
+
+    "uniforms": {
+      "rotationMatrix": null,
+      "worldMatrix": null,
+      "viewProjMatrix": null,
+
+      "diffuseSampler": null,
+      "normalSampler": null,
+      "selfIlluminationSampler": null,
+      "pointLightShadowMapSamplers": null,
+
+      "lightEnableds": null,
+      "lightWorldSpacePositions": null,
+      "lightRadiusSqrs": null,
+      "lightColours": null,
+      "lightStaticObjectShadowMapMasks": null,
+      "lightDynamicObjectShadowMapMasks": null,
+      "cameraWorldSpacePosition": null,
+      "globalIlluminationNormals": null,
+      "globalIlluminationColours": null,
+      "hasSelfIllumination": null
+    }
+  },
+
+  "skinned-mesh-main-render": {
+    "id": "skinned-mesh-main-render",
+
+    "attributes": {
+      "vertexPosition": null,
+      "vertexNormal": null,
+      "vertexTexCoord": null,
+      "firstBoneIndex": null,
+      "secondBoneIndex": null,
+      "thirdBoneIndex": null,
+      "fourthBoneIndex": null,
+      "firstWeight": null,
+      "secondWeight": null,
+      "thirdWeight": null,
+      "fourthWeight": null
+    },
+
+    "uniforms": {
+      "rotationMatrix": null,
+      "worldMatrix": null,
+      "viewProjMatrix": null,
+      "boneMatrices":  null,
+
+      "diffuseSampler": null
+    }
+  },
+
+  "static-mesh-shadow-map-build-back-pass": {
+    "id": "static-mesh-shadow-map-build-back-pass",
+
+    "attributes": {
+      "vertexPosition": null
+    },
+
+    "uniforms": {
+      "worldMatrix": null,
+      "viewProjMatrix": null,
+      "lightWorldPosition": null,
+      "shadowMapMask": null
+    }
+  },
+
+  "static-mesh-shadow-map-build-front-pass": {
+		"id": "static-mesh-shadow-map-build-front-pass",
+
+		"attributes": {
+			"vertexPosition": null
+		},
+
+		"uniforms": {
+      "worldMatrix": null,
+			"viewProjMatrix": null,
+			"lightWorldPosition": null,
+      "shadowMapMask": null,
+      "shadowMapSize":  null
+		}
+	},
+
+  "line": {
+		"id": "line",
+
+		"attributes": {
+			"vertexPosition": null
+		},
+
+		"uniforms": {
+			"viewProjMatrix": null,
+			"position": null,
+			"size": null,
+			"colour": null
+		}
+	}
+}

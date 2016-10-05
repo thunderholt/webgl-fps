@@ -1,0 +1,34 @@
+precision mediump float;
+
+uniform vec3 lightWorldPosition;
+uniform vec4 shadowMapMask;
+uniform float shadowMapSize;
+
+uniform sampler2D backPassSampler;
+
+varying vec3 worldVertexPosition;
+
+void main(void)
+{
+    vec3 lightToVertex = worldVertexPosition - lightWorldPosition;
+
+    float frontPassDistanceSquared = dot(lightToVertex, lightToVertex);
+
+    vec2 texCoord = gl_FragCoord.xy / vec2(shadowMapSize, shadowMapSize);
+
+    vec4 backPassSample = texture2D(backPassSampler, texCoord);
+
+    float backPassDistanceSquared = dot(backPassSample, shadowMapMask);
+
+    if (backPassDistanceSquared >= 1000.0) {
+
+    	gl_FragColor = shadowMapMask * (frontPassDistanceSquared + 10.0);
+
+    } else {
+
+	    float middleDistanceSquared = frontPassDistanceSquared + (backPassDistanceSquared - frontPassDistanceSquared) * 0.6;
+
+	    gl_FragColor = shadowMapMask * middleDistanceSquared;
+    }
+
+}

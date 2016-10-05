@@ -1,0 +1,76 @@
+﻿attribute vec3 vertexPosition;
+attribute vec3 vertexNormal;
+attribute vec2 vertexTexCoord;
+attribute float firstBoneIndex;
+attribute float secondBoneIndex;
+attribute float thirdBoneIndex;
+attribute float fourthBoneIndex;
+attribute float firstWeight;
+attribute float secondWeight;
+attribute float thirdWeight;
+attribute float fourthWeight;
+
+uniform mat4 rotationMatrix;
+uniform mat4 worldMatrix;
+uniform mat4 viewProjMatrix;
+uniform mat4 boneMatrices[30];
+
+/*varying vec3 fragmentWorldSpacePosition;
+varying vec3 fragmentNormal;
+varying vec3 fragmentTangent;
+varying vec3 fragmentBitangent;*/
+varying vec2 texCoord;
+
+vec4 transformPositionByBone(int boneIndex);
+mat4 getBoneMatrix(int boneIndex);
+
+void main(void) 
+{
+	vec4 positionTransformedByFirstBone = transformPositionByBone(int(firstBoneIndex));
+	vec4 positionTransformedBySecondBone = transformPositionByBone(int(secondBoneIndex));
+	vec4 positionTransformedByThirdBone = transformPositionByBone(int(thirdBoneIndex));
+	vec4 positionTransformedByFourthBone = transformPositionByBone(int(fourthBoneIndex));
+
+	vec4 positionTransformedByBones = 
+		(positionTransformedByFirstBone * firstWeight) +
+		(positionTransformedBySecondBone * secondWeight) +
+		(positionTransformedByThirdBone * thirdWeight) +
+		(positionTransformedByFourthBone * fourthWeight);
+	
+	vec4 tempWorldSpacePosition = worldMatrix * positionTransformedByBones;
+
+	texCoord = vertexTexCoord;
+
+    gl_Position = viewProjMatrix * tempWorldSpacePosition;
+}
+
+vec4 transformPositionByBone(int boneIndex) 
+{
+	if (boneIndex != -1) 
+	{
+		vec4 positionTransformedByBone = vec4(vertexPosition, 1.0);
+
+		mat4 boneMatrix = getBoneMatrix(boneIndex);
+
+		positionTransformedByBone = boneMatrix * positionTransformedByBone;
+
+		return positionTransformedByBone;
+	}
+	else 
+	{
+		return vec4(0, 0, 0, 0);
+	}
+}
+
+mat4 getBoneMatrix(int boneIndex) 
+{
+	for (int i = 0; i < 30; i++) 
+	{
+        if (i == boneIndex) 
+		{
+			return boneMatrices[i];
+		}
+    }
+
+	return boneMatrices[0]; // This just shuts the compiler up. This should never happen.
+}

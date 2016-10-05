@@ -1,0 +1,35 @@
+﻿<div class="panel panel-primary" ng-if="light != null">
+    <div class="panel-heading">{{light.id}}</div>
+    <div class="panel-body">
+    
+        <div class="form-group">
+            <label>Type</label>
+            <select class="form-control" ng-model="light.type">
+                <option value="point">Point</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Position</label>
+            <vec3-editor vec="light.position"></vec3-editor>
+        </div>
+
+        <div class="form-group">
+            <label>Radius</label>
+            <input type="number" class="form-control" ng-model="light.radius" />
+        </div>
+
+        <div class="form-group">
+            <label>Colour</label>
+            <vec3-editor vec="light.colour"></vec3-editor>
+        </div>
+
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" ng-model="light.enabled" /> Enabled
+            </label>
+        </div>
+
+    </div>
+
+</div>

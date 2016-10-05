@@ -1,0 +1,281 @@
+﻿precision highp  float;
+
+uniform sampler2D diffuseSampler;
+uniform sampler2D normalSampler;
+uniform sampler2D selfIlluminationSampler;
+//uniform samplerCube globalIlluminationSampler;
+uniform samplerCube pointLightShadowMapSamplers[5];
+
+uniform int lightEnableds[5];
+uniform vec3 lightWorldSpacePositions[5];
+uniform float lightRadiusSqrs[5];
+uniform vec3 lightColours[5];
+uniform vec4 lightStaticObjectShadowMapMasks[5];
+uniform vec4 lightDynamicObjectShadowMapMasks[5];
+uniform vec3 cameraWorldSpacePosition;
+uniform vec3 globalIlluminationNormals[8];
+uniform vec3 globalIlluminationColours[8];
+uniform int hasSelfIllumination;
+
+varying vec3 fragmentWorldSpacePosition;
+varying vec3 fragmentNormal;
+varying vec3 fragmentTangent;
+varying vec3 fragmentBitangent;
+varying vec2 texCoord;
+
+float noise = 0.0;
+
+struct LightColour
+{
+    vec4 baseColour;
+    vec4 specularColour;
+};
+
+vec4 calculateGlobalIlluminationColour(vec3 fragmentWorldSpaceNormal);
+
+LightColour calculateLightColour(
+    vec3 fragmentWorldSpacePosition, vec3 faceWorldSpaceNormal, vec3 fragmentWorldSpaceNormal, 
+    vec3 lightWorldSpacePosition, float lightRadiusSqr, vec3 lightColour,
+	vec4 staticObjectShadowMapMask, vec4 dynamicObjectShadowMapMask, samplerCube pointLightShadowMapSampler);
+
+float samplePointLightShadowMap(vec3 directionFromLight, vec4 staticObjectShadowMapMask, vec4 dynamicObjectShadowMapMask, float distanceToLightSquared, samplerCube shadowMapSampler);
+
+vec4 applySelfIllumination(vec4 baseColour);
+
+void main(void) 
+{
+	noise = fract(sin(dot(texCoord.xy, vec2(12.9898,78.233))) * 43758.5453);
+
+	vec4 diffuseColour = texture2D(diffuseSampler, texCoord);
+
+	vec3 fragmentTangentSpaceNormal = texture2D(normalSampler, texCoord).rgb * 2.0 - 1.0;
+
+	vec3 normalisedFragmentNormal = normalize(fragmentNormal);
+	vec3 normalisedFragmentTangent = normalize(fragmentTangent);
+	vec3 normalisedFragmentBitangent = normalize(fragmentBitangent);
+
+	mat3 tangentSpaceToWorldSpaceMatrix = mat3(
+    	vec3(normalisedFragmentTangent.x, normalisedFragmentTangent.y, normalisedFragmentNormal.x),
+	    vec3(normalisedFragmentBitangent.x, normalisedFragmentBitangent.y, normalisedFragmentNormal.y),
+	    vec3(normalisedFragmentTangent.z, normalisedFragmentBitangent.z, normalisedFragmentNormal.z));
+
+	vec3 fragmentWorldSpaceNormal = fragmentTangentSpaceNormal.xyz * tangentSpaceToWorldSpaceMatrix;
+
+	vec4 totalLightBaseColour = vec4(0.0, 0.0, 0.0, 1.0);
+    vec4 totalLightSpecularColour = vec4(0.0, 0.0, 0.0, 1.0);
+
+	totalLightBaseColour += calculateGlobalIlluminationColour(fragmentWorldSpaceNormal);
+
+	if (lightEnableds[0] > 0) 
+    {
+        LightColour lightColour = calculateLightColour(
+            fragmentWorldSpacePosition, normalisedFragmentNormal, fragmentWorldSpaceNormal, 
+            lightWorldSpacePositions[0], lightRadiusSqrs[0], lightColours[0], 
+			lightStaticObjectShadowMapMasks[0], lightDynamicObjectShadowMapMasks[0],
+			pointLightShadowMapSamplers[0]);
+
+        totalLightBaseColour += lightColour.baseColour;
+        totalLightSpecularColour += lightColour.specularColour;
+    }
+
+	if (lightEnableds[1] > 0) 
+    {
+        LightColour lightColour = calculateLightColour(
+            fragmentWorldSpacePosition, normalisedFragmentNormal, fragmentWorldSpaceNormal, 
+            lightWorldSpacePositions[1], lightRadiusSqrs[1], lightColours[1], 
+			lightStaticObjectShadowMapMasks[1], lightDynamicObjectShadowMapMasks[1],
+			pointLightShadowMapSamplers[1]);
+
+        totalLightBaseColour += lightColour.baseColour;
+        totalLightSpecularColour += lightColour.specularColour;
+    }
+
+	if (lightEnableds[2] > 0) 
+    {
+        LightColour lightColour = calculateLightColour(
+            fragmentWorldSpacePosition, normalisedFragmentNormal, fragmentWorldSpaceNormal, 
+            lightWorldSpacePositions[2], lightRadiusSqrs[2], lightColours[2], 
+			lightStaticObjectShadowMapMasks[2], lightDynamicObjectShadowMapMasks[2], 
+			pointLightShadowMapSamplers[2]);
+
+        totalLightBaseColour += lightColour.baseColour;
+        totalLightSpecularColour += lightColour.specularColour;
+    }
+
+	if (lightEnableds[3] > 0) 
+    {
+        LightColour lightColour = calculateLightColour(
+            fragmentWorldSpacePosition, normalisedFragmentNormal, fragmentWorldSpaceNormal, 
+            lightWorldSpacePositions[3], lightRadiusSqrs[3], lightColours[3], 
+			lightStaticObjectShadowMapMasks[3], lightDynamicObjectShadowMapMasks[3],
+			pointLightShadowMapSamplers[3]);
+
+        totalLightBaseColour += lightColour.baseColour;
+        totalLightSpecularColour += lightColour.specularColour;
+    }
+
+	if (lightEnableds[4] > 0) 
+    {
+        LightColour lightColour = calculateLightColour(
+            fragmentWorldSpacePosition, normalisedFragmentNormal, fragmentWorldSpaceNormal, 
+            lightWorldSpacePositions[4], lightRadiusSqrs[4], lightColours[4], 
+			lightStaticObjectShadowMapMasks[4], lightDynamicObjectShadowMapMasks[4], 
+			pointLightShadowMapSamplers[4]);
+
+        totalLightBaseColour += lightColour.baseColour;
+        totalLightSpecularColour += lightColour.specularColour;
+    }
+
+	vec4 finalColour = diffuseColour * totalLightBaseColour + totalLightSpecularColour;
+
+	if (hasSelfIllumination > 0)
+	{
+		finalColour = applySelfIllumination(finalColour);
+	}
+
+	gl_FragColor = finalColour;
+
+	//vec3 fragmentToLightNormal = normalize(vec3(-1.0, 1.0, -1.0));
+
+	//float lambertTerm = clamp(dot(worldSpaceNormal, fragmentToLightNormal), 0.0, 1.0);
+
+
+	//gl_FragColor = vec4(diffuseColour.xyz * lambertTerm, 1.0);
+}
+
+vec4 calculateGlobalIlluminationColour(vec3 fragmentWorldSpaceNormal)
+{
+	vec4 totalGiColour = vec4(0.0, 0.0, 0.0, 1.0);
+
+	for (int i = 0; i < 8; i++) 
+	{
+		vec3 giNormal = globalIlluminationNormals[i];
+		vec3 giColour = globalIlluminationColours[i];
+
+		float amount = clamp(dot(fragmentWorldSpaceNormal, giNormal), 0.0, 1.0);
+
+		totalGiColour += vec4(giColour * amount, 0.0);
+	}
+
+	return totalGiColour;
+
+    //return vec4(textureCube(globalIlluminationSampler, fragmentWorldSpaceNormal).xyz * globalIlluminationColour, 1.0);
+}
+
+LightColour calculateLightColour(
+    vec3 fragmentWorldSpacePosition, vec3 faceWorldSpaceNormal, vec3 fragmentWorldSpaceNormal, 
+    vec3 lightWorldSpacePosition, float lightRadiusSqr, vec3 lightColour, 
+	vec4 staticObjectShadowMapMask, vec4 dynamicObjectShadowMapMask, samplerCube pointLightShadowMapSampler)
+{
+    LightColour result = LightColour(vec4(0.0, 0.0, 0.0, 0.0), vec4(0.0, 0.0, 0.0, 0.0));
+
+    // Calculate attentuation.
+    vec3 fragmentToLightDirection = lightWorldSpacePosition - fragmentWorldSpacePosition;
+
+    float distanceToLightSqr = dot(fragmentToLightDirection, fragmentToLightDirection);
+    float clampedDistanceToLightSqr = min(distanceToLightSqr, lightRadiusSqr);
+    float attenutation = 1.0 - (clampedDistanceToLightSqr / lightRadiusSqr);
+
+    if (attenutation == 0.0) 
+    {
+        return result;
+    }
+
+    // Check the world face-normal.
+    vec3 fragmentToLightNormal = normalize(fragmentToLightDirection);
+    float faceLambertTerm = clamp(dot(faceWorldSpaceNormal, fragmentToLightNormal), 0.0, 1.0);
+
+    if (faceLambertTerm == 0.0) 
+    {
+        return result;
+    }
+
+    // Calculate lambertian term.
+    float fragmentLambertTerm = clamp(dot(fragmentWorldSpaceNormal, fragmentToLightNormal), 0.0, 1.0);
+
+    if (fragmentLambertTerm == 0.0) 
+    {
+        return result;
+    }
+
+	// Check shadow map.
+	vec3 directionFromLight = fragmentToLightDirection * -1.0;
+    float distanceToLightSquared = dot(fragmentToLightDirection, fragmentToLightDirection);
+	//float shadowMapSample = samplePointLightShadowMap(
+	//	directionFromLight, staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+
+	float p = 0.03 + (noise * 0.05);
+    float p2 = 0.06 + (noise * 0.05);
+    float shadowMapSample1 = samplePointLightShadowMap(directionFromLight + vec3(p, 0.0, p), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+    float shadowMapSample2 = samplePointLightShadowMap(directionFromLight + vec3(p, p, 0.0), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+    float shadowMapSample3 = samplePointLightShadowMap(directionFromLight + vec3(0.0, p, p), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+    float shadowMapSample4 = samplePointLightShadowMap(directionFromLight + vec3(-p, 0.0, -p), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+    float shadowMapSample5 = samplePointLightShadowMap(directionFromLight + vec3(-p, -p, 0.0), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+    float shadowMapSample6 = samplePointLightShadowMap(directionFromLight + vec3(0.0, -p, -p), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+    float shadowMapSample7 = samplePointLightShadowMap(directionFromLight + vec3(0.0, p2, -p2), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+    float shadowMapSample8 = samplePointLightShadowMap(directionFromLight + vec3(p2, p, -p2), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+    float shadowMapSample9 = samplePointLightShadowMap(directionFromLight + vec3(p2, -p2, -p2), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+    float shadowMapSample10 = samplePointLightShadowMap(directionFromLight + vec3(-p2, -p, p), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+    
+    float shadowMapSample = clamp((shadowMapSample1 + shadowMapSample2 + shadowMapSample3 + shadowMapSample4 + shadowMapSample5 + shadowMapSample6 + shadowMapSample7 + shadowMapSample8 + shadowMapSample9 + shadowMapSample10) / 6.0, 0.0, 1.0);
+    
+	if (shadowMapSample == 0.0)
+    {
+        return result;
+    }
+
+	/*///////////////////
+
+	vec4 test = textureCube(pointLightShadowMapSampler, directionFromLight);
+    float test2 = dot(test, lightShadowMapMask);
+	if (distanceToLightSquared >= test2)
+    {
+	return result;
+    }
+	//////////////////*/
+
+    // Calculate the light base colour.
+    result.baseColour = vec4(lightColour * attenutation * fragmentLambertTerm, 1.0) * shadowMapSample;
+
+    // Calculate the specular colour.
+    vec3 fragmentToCameraDirection = cameraWorldSpacePosition - fragmentWorldSpacePosition;
+    vec3 halfVector = normalize(fragmentToCameraDirection + fragmentToLightDirection);
+
+    float specularAmount = clamp(dot(fragmentWorldSpaceNormal, halfVector), 0.0, 1.0);
+
+    specularAmount *= specularAmount;
+    specularAmount *= specularAmount;
+    specularAmount *= specularAmount;
+    specularAmount *= specularAmount;
+
+	float shininess = 1.0;
+
+    result.specularColour = vec4((lightColour * specularAmount * attenutation).xyz, 0.0) * shininess;
+
+    return result;
+}
+
+float samplePointLightShadowMap(
+	vec3 directionFromLight, 
+	vec4 staticObjectShadowMapMask, vec4 dynamicObjectShadowMapMask, 
+	float distanceToLightSquared, samplerCube shadowMapSampler) {
+
+    vec4 shadowMapSample = textureCube(shadowMapSampler, directionFromLight);
+    float shadowMapDistanceSquaredForStaticObjects = dot(shadowMapSample, staticObjectShadowMapMask);
+    float shadowMapDistanceSquaredForDynamicObjects = dot(shadowMapSample, dynamicObjectShadowMapMask);
+	float shadowMapDistanceSquared = min(shadowMapDistanceSquaredForStaticObjects, shadowMapDistanceSquaredForDynamicObjects);
+
+    if (distanceToLightSquared >= shadowMapDistanceSquared && shadowMapDistanceSquared != 0.0)
+    {
+        return 0.0;
+    }
+
+    return 1.0;
+}
+
+vec4 applySelfIllumination(vec4 baseColour)
+{
+    vec4 selfIlluminationColour = texture2D(selfIlluminationSampler, texCoord);
+
+	return vec4(mix(baseColour.xyz, selfIlluminationColour.xyz, selfIlluminationColour.w), 1.0);
+}

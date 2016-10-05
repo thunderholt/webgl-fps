@@ -1,0 +1,23 @@
+﻿<div ng-controller="ActorsController">
+    <div ng-if="map != null">
+        <div class="scrollable">
+            <table class="table table-striped">
+                <tr ng-repeat="(id, actor) in map.actorsById">
+                    <td><a href="" ng-click="editActor(actor.id)">{{actor.id}}</a></td>
+                    <td class="text-right"><button class="btn btn-danger btn-xs" ng-click="removeActor(actor.id)"><span class="glyphicon glyphicon-remove"></span></button></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="form-group text-right">
+            <button class="btn btn-primary" ng-click="createActor()"><span class="glyphicon glyphicon-plus-sign"></span> Create Actor</button> 
+        </div>
+
+        <actor-editor></actor-editor>
+
+    </div>
+
+    <div class="alert alert-warning" role="alert" ng-if="map == null">
+        No map loaded
+    </div>
+</div>

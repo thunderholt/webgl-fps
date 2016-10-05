@@ -1,0 +1,16 @@
+attribute vec3 vertexPosition;
+
+uniform mat4 viewProjMatrix;
+
+uniform mat4 worldMatrix;
+
+varying vec3 worldVertexPosition;
+
+void main(void) 
+{
+	vec4 tempWorldSpacePosition = worldMatrix * vec4(vertexPosition, 1.0);
+
+    worldVertexPosition = tempWorldSpacePosition.xyz;
+
+    gl_Position = viewProjMatrix * tempWorldSpacePosition;
+}

@@ -1,0 +1,29 @@
+﻿attribute vec3 vertexPosition;
+attribute vec3 vertexNormal;
+attribute vec3 vertexTangent;
+attribute vec3 vertexBitangent;
+attribute vec2 vertexTexCoord;
+
+uniform mat4 rotationMatrix;
+uniform mat4 worldMatrix;
+uniform mat4 viewProjMatrix;
+
+varying vec3 fragmentWorldSpacePosition;
+varying vec3 fragmentNormal;
+varying vec3 fragmentTangent;
+varying vec3 fragmentBitangent;
+varying vec2 texCoord;
+
+void main(void) 
+{
+	vec4 tempWorldSpacePosition = worldMatrix * vec4(vertexPosition, 1.0);
+
+	fragmentWorldSpacePosition = tempWorldSpacePosition.xyz;
+	fragmentNormal = (rotationMatrix * vec4(vertexNormal, 1.0)).xyz;
+	fragmentTangent = (rotationMatrix * vec4(vertexTangent, 1.0)).xyz;
+	fragmentBitangent = (rotationMatrix * vec4(vertexBitangent, 1.0)).xyz;
+
+	texCoord = vertexTexCoord;
+
+    gl_Position = viewProjMatrix * tempWorldSpacePosition;
+}
