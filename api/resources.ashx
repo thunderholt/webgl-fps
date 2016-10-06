@@ -76,7 +76,7 @@ public class ResourceApiHandler : IHttpHandler {
             throw new Exception("Not so fast, sonny Jim.");
         }
 
-        string folderPath = HttpContext.Current.Server.MapPath("~/resources/" + folder + "/");
+        string folderPath = HttpContext.Current.Server.MapPath("../resources/" + folder + "/");
 
         return folderPath;
     }

@@ -1,6 +1,6 @@
 ﻿editorApp.directive('chooseResourceModal', ['ws', function (ws) {
     return {
-        templateUrl: '/html/editor/directives/choose-resource-modal.html',
+        templateUrl: 'html/editor/directives/choose-resource-modal.html',
         scope: {
 
         },

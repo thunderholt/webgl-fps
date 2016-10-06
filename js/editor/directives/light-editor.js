@@ -1,6 +1,6 @@
 ﻿editorApp.directive('lightEditor', [function () {
     return {
-        templateUrl: '/html/editor/directives/light-editor.html',
+        templateUrl: 'html/editor/directives/light-editor.html',
         scope: {
 
         },

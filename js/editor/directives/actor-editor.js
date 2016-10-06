@@ -1,6 +1,6 @@
 ﻿editorApp.directive('actorEditor', [function () {
     return {
-        templateUrl: '/html/editor/directives/actor-editor.html',
+        templateUrl: 'html/editor/directives/actor-editor.html',
         scope: {
 
         },

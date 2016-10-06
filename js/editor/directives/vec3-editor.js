@@ -1,6 +1,6 @@
 ﻿editorApp.directive('vec3Editor', function () {
     return {
-        templateUrl: '/html/editor/directives/vec3-editor.html',
+        templateUrl: 'html/editor/directives/vec3-editor.html',
         scope: {
             vec: '=vec'
         },

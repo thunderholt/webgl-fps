@@ -1,6 +1,6 @@
 ﻿editorApp.directive('materialEditor', ['$rootScope', '$timeout', 'ws', function ($rootScope, $timeout, ws) {
     return {
-        templateUrl: '/html/editor/directives/material-editor.html',
+        templateUrl: 'html/editor/directives/material-editor.html',
         scope: {
 
         },
