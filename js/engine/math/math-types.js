@@ -26,3 +26,12 @@ function Ray(origin, normal) {
     this.origin = origin;
     this.normal = normal;
 }
+
+function CollisionFace(points, facePlane, edgePlanes, freeNormalisedEdges, edgeLengths) {
+
+    this.points = points;
+    this.facePlane = facePlane;
+    this.edgePlanes = edgePlanes;
+    this.freeNormalisedEdges = freeNormalisedEdges;
+    this.edgeLengths = edgeLengths;
+}

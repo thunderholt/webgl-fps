@@ -22,6 +22,7 @@
         canvas {
             width: 1920px;
             height: 1080px;
+            image-rendering: pixelated;
         }
 
     </style>
@@ -34,9 +35,10 @@
         Average FPS: <span id="average-fps" class="badge"></span>
     </div>
 
-    <!--<canvas id="canvas" width="640" height="480" style="display: block;"></canvas>-->
-     <!--<canvas id="canvas" width="960" height="540" style="display: block;"></canvas>-->
-    <canvas id="canvas" width="1920" height="1080" style="display: block;"></canvas>
+    <!--<canvas id="canvas" width="240" height="135" style="display: block;"></canvas>-->
+    <!--<canvas id="canvas" width="480" height="270" style="display: block;"></canvas>-->
+    <!--<canvas id="canvas" width="960" height="540" style="display: block;"></canvas>-->
+   <canvas id="canvas" width="1920" height="1080" style="display: block;"></canvas>
 
 
     <!-- Libraries -->
@@ -74,6 +76,7 @@
     <script src="js/engine/math/math-ray.js"></script>
     <script src="js/engine/math/math-sphere.js"></script>
     <script src="js/engine/math/math-aabb.js"></script>
+    <script src="js/engine/math/math-collision-face.js"></script>
     <script src="js/engine/math/math-types.js"></script>
 
     <!-- Game -->

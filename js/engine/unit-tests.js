@@ -393,6 +393,129 @@
             assert(result == null);
         },
 
+        'Math3D.calculateSphereCollisionWithCollisionFace.hitTest1': function () {
+
+            // * Sphere is infront of face-plane.
+            // * Heading towards face-plane.
+            // * Face-plane intersection point is within face.
+
+            var face = math3D.buildCollisionFaceFromPoints([
+				[2, 4, 0], [2, 1, 0], [4, 1, 0]
+            ]);
+
+            var sphere = new Sphere([3, 2, 10], 1);
+
+            var result = math3D.calculateSphereCollisionWithCollisionFace(sphere, face, [0, 0, -1]);
+
+            assert(result.intersection[0] == 3);
+            assert(result.intersection[1] == 2);
+            assert(result.intersection[2] == 0);
+            assert(result.distance == 9);
+        },
+
+        'Math3D.calculateSphereCollisionWithCollisionFace.hitTest2': function () {
+
+            // * Sphere is infront of face-plane.
+            // * Heading towards face-plane.
+            // * Face-plane intersection point is outside of face.
+            // * Sphere/face intersection point is on face edge.
+
+            var face = math3D.buildCollisionFaceFromPoints([
+				[2, 4, 0], [2, 1, 0], [4, 1, 0]
+            ]);
+
+            var sphere = new Sphere([1.5, 2, 10], 1);
+
+            var result = math3D.calculateSphereCollisionWithCollisionFace(sphere, face, [0, 0, -1]);
+
+            assert(result.intersection[0] == 2);
+            assert(result.intersection[1] == 2);
+            assert(result.intersection[2] == 0);
+            assert(result.distance > 9 && result.distance < 10);
+        },
+
+        'Math3D.calculateSphereCollisionWithCollisionFace.hitTest3': function () {
+
+            // * Sphere intersects face-plane.
+            // * Heading towards face-plane.
+            // * Sphere/face intersection point is on face edge.
+
+            var face = math3D.buildCollisionFaceFromPoints([
+				[2, 4, 0], [2, 1, 0], [4, 1, 0]
+            ]);
+
+            var sphere = new Sphere([1.5, 2, 0.9], 1);
+
+            var result = math3D.calculateSphereCollisionWithCollisionFace(sphere, face, [0, 0, -1]);
+
+            assert(result.intersection[0] == 2);
+            assert(result.intersection[1] == 2);
+            assert(result.intersection[2] == 0);
+            assert(result.distance > 0 && result.distance < 1);
+        },
+
+        "Math3D.calculateRayIntersectionWithSphere": function () {
+
+            // Check 1.
+            var sphere = new Sphere([2, 3, -10], 1);
+
+            var ray = new Ray([4, 3, -10], [-1, 0, 0]);
+
+            var result = math3D.calculateRayIntersectionWithSphere(ray, sphere);
+
+            assert(result[0] == 3);
+            assert(result[1] == 3);
+            assert(result[2] == -10);
+
+            // Check 2.
+            ray.origin = [2, 5, -10];
+            ray.normal = [0, -1, 0];
+
+            result = math3D.calculateRayIntersectionWithSphere(ray, sphere);
+
+            assert(result[0] == 2);
+            assert(result[1] == 4);
+            assert(result[2] == -10);
+
+            // Check 3.
+            ray.origin = [2, 3, -8];
+            ray.normal = [0, 0, -1];
+
+            result = math3D.calculateRayIntersectionWithSphere(ray, sphere);
+
+            assert(result[0] == 2);
+            assert(result[1] == 3);
+            assert(result[2] == -9);
+
+            // Check 4.
+            ray.origin = [3, 2, -10];
+            ray.normal = [1, 0, 0];
+
+            result = math3D.calculateRayIntersectionWithSphere(ray, sphere);
+
+            assert(result == null);
+
+            // Check 5.
+            ray.origin = [2, 3, -10];
+            ray.normal = [0, 1, 0];
+
+            result = math3D.calculateRayIntersectionWithSphere(ray, sphere);
+
+            assert(result[0] == 2);
+            assert(result[1] == 4);
+            assert(result[2] == -10);
+
+            // Check 6.
+            ray.origin = [2, 4, -10];
+            ray.normal = [0, 1, 0];
+
+            result = math3D.calculateRayIntersectionWithSphere(ray, sphere);
+
+            assert(result[0] == 2);
+            assert(result[1] == 4);
+            assert(result[2] == -10);
+        },
+
         'Math3D.calculateRayIntersectionWithPlane': function () {
 
             // Check 1.
@@ -415,5 +538,232 @@
 
             assert(result == null);
         },
+
+        "Math3D.calculateNearestPointOnRayToOtherPoint": function () {
+
+            // Check 1.
+            var ray = new Ray([5, 0, 0], [0, 1, 0]);
+            var point = [2, 3, 0];
+
+            var result = math3D.calculateNearestPointOnRayToOtherPoint(ray, point, 10);
+
+            assert(result[0] == 5);
+            assert(result[1] == 3);
+            assert(result[2] == 0);
+
+            // Check 2.
+            ray = new Ray([5, 0, 0], [0, 1, 0]);
+            point = [4, 10, 0];
+
+            result = math3D.calculateNearestPointOnRayToOtherPoint(ray, point, 10);
+
+            assert(result[0] == 5);
+            assert(result[1] == 10);
+            assert(result[2] == 0);
+
+            // Check 3.
+            ray = new Ray([5, 1, 0], [0, 1, 0]);
+            point = [4, 0, 0];
+
+            result = math3D.calculateNearestPointOnRayToOtherPoint(ray, point, 10);
+
+            assert(result[0] == 5);
+            assert(result[1] == 1);
+            assert(result[2] == 0);
+
+            // Check 4.
+            ray = new Ray([5, 0, 0], [0, 1, 0]);
+            point = [4, 11, 0];
+
+            result = math3D.calculateNearestPointOnRayToOtherPoint(ray, point, 10);
+
+            assert(result[0] == 5);
+            assert(result[1] == 10);
+            assert(result[2] == 0);
+
+            // Check 4.
+            ray = new Ray([5, 0, 0], [0, 1, 0]);
+            point = [6, 5, 0];
+
+            result = math3D.calculateNearestPointOnRayToOtherPoint(ray, point, 10);
+
+            assert(result[0] == 5);
+            assert(result[1] == 5);
+            assert(result[2] == 0);
+        },
+
+        'Math3D.buildCollisionFaceFromPoints.facePlaneCheck.lookingUpX': function () {
+
+            var points = [
+				[1, 1, 0],
+				[1, 0, 1],
+				[1, 0, 0],
+            ];
+
+            var face = math3D.buildCollisionFaceFromPoints(points);
+
+            var result = math3D.calculatePointDistanceFromPlane(face.facePlane, [2, 0, 0]);
+
+            assert(result == 1);
+
+            result = math3D.calculatePointDistanceFromPlane(face.facePlane, [3, 0, 0]);
+
+            assert(result == 2);
+
+            result = math3D.calculatePointDistanceFromPlane(face.facePlane, [0, 0, 0]);
+
+            assert(result == -1);
+
+            result = math3D.calculatePointDistanceFromPlane(face.facePlane, [-1, 0, 0]);
+
+            assert(result == -2);
+        },
+
+        'Math3D.buildCollisionFaceFromPoints.facePlaneCheck.lookingUpY': function () {
+
+            var points = [
+				[-1, 1, 0],
+				[-1, 1, 1],
+				[1, 1, 0]
+            ];
+
+            var face = math3D.buildCollisionFaceFromPoints(points);
+
+            var result = math3D.calculatePointDistanceFromPlane(face.facePlane, [0, 2, 0]);
+
+            assert(result == 1);
+
+            result = math3D.calculatePointDistanceFromPlane(face.facePlane, [0, 3, 0]);
+
+            assert(result == 2);
+
+            result = math3D.calculatePointDistanceFromPlane(face.facePlane, [0, 0, 0]);
+
+            assert(result == -1);
+
+            result = math3D.calculatePointDistanceFromPlane(face.facePlane, [0, -1, 0]);
+
+            assert(result == -2);
+        },
+
+        'Math3D.buildCollisionFaceFromPoints.facePlaneCheck.lookingUpZ': function () {
+
+            var points = [
+				[0, 1, 1],
+				[0, 0, 1],
+				[1, 0, 1]
+            ];
+
+            var face = math3D.buildCollisionFaceFromPoints(points);
+
+            var result = math3D.calculatePointDistanceFromPlane(face.facePlane, [0, 0, 2]);
+
+            assert(result == 1);
+
+            result = math3D.calculatePointDistanceFromPlane(face.facePlane, [0, 0, 3]);
+
+            assert(result == 2);
+
+            result = math3D.calculatePointDistanceFromPlane(face.facePlane, [0, 0, 0]);
+
+            assert(result == -1);
+
+            result = math3D.calculatePointDistanceFromPlane(face.facePlane, [0, 0, -1]);
+
+            assert(result == -2);
+        },
+
+        'Math3D.buildCollisionFaceFromPoints.edgePlaneCheck.lookingUpZ': function () {
+
+            var points = [
+				[0, 1, 1],
+				[0, 0, 1],
+				[1, 0, 1]
+            ];
+
+            var face = math3D.buildCollisionFaceFromPoints(points);
+
+            var result = math3D.calculatePointDistanceFromPlane(face.edgePlanes[0], [-1, 0, 0]);
+
+            assert(result == 1);
+
+            result = math3D.calculatePointDistanceFromPlane(face.edgePlanes[0], [1, 0, 0]);
+
+            assert(result == -1);
+
+            result = math3D.calculatePointDistanceFromPlane(face.edgePlanes[1], [0, -1, 0]);
+
+            assert(result == 1);
+
+            result = math3D.calculatePointDistanceFromPlane(face.edgePlanes[1], [0, 1, 0]);
+
+            assert(result == -1);
+
+            result = math3D.calculatePointDistanceFromPlane(face.edgePlanes[2], [1, 1, 0]);
+
+            assert(result > 0);
+
+            result = math3D.calculatePointDistanceFromPlane(face.edgePlanes[2], [0, 0, 0]);
+
+            assert(result < 0);
+        },
+
+        'Math3D.findNearestPointOnCollisionFacePerimeterToPoint': function () {
+
+            var points = [
+				[0, 10, 3],
+				[0, 0, 3],
+				[5, 0, 3]
+            ];
+
+            var face = math3D.buildCollisionFaceFromPoints(points);
+
+            // Check 1.
+            var result = math3D.findNearestPointOnCollisionFacePerimeterToPoint(face, [-1, 5, 0]);
+
+            assert(areNearlyEqual(result[0], 0));
+            assert(areNearlyEqual(result[1], 5));
+            assert(areNearlyEqual(result[2], 3));
+
+            // Check 2.
+            result = math3D.findNearestPointOnCollisionFacePerimeterToPoint(face, [-100, 20, 30]);
+
+            assert(areNearlyEqual(result[0], 0));
+            assert(areNearlyEqual(result[1], 10));
+            assert(areNearlyEqual(result[2], 3));
+
+            // Check 3.
+            result = math3D.findNearestPointOnCollisionFacePerimeterToPoint(face, [3, -20, 10]);
+
+            assert(areNearlyEqual(result[0], 3));
+            assert(areNearlyEqual(result[1], 0));
+            assert(areNearlyEqual(result[2], 3));
+        },
+
+        'Math3D.determineIfPointOnFacePlaneIsWithinCollisionFace': function () {
+
+            var points = [
+				[0, 10, 3],
+				[0, 0, 3],
+				[5, 0, 3]
+            ];
+
+            var face = math3D.buildCollisionFaceFromPoints(points);
+
+            // Check 1.
+            var result = math3D.determineIfPointOnFacePlaneIsWithinCollisionFace(face, [2, 5, 3]);
+
+            assert(result == true);
+
+            // Check 2.
+            result = math3D.determineIfPointOnFacePlaneIsWithinCollisionFace(face, [-1, 5, 3]);
+
+            assert(result == false);
+
+            // Check 3.
+            result = math3D.determineIfPointOnFacePlaneIsWithinCollisionFace(face, [2, -1, 3]);
+
+            assert(result == false);
+        }
     }
 }
