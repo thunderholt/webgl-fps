@@ -15,9 +15,8 @@
         for (var chunkIndex = 0; chunkIndex < staticMesh.chunks.length; chunkIndex++) {
 
             var chunk = staticMesh.chunks[chunkIndex];
-            var chunkAABB = staticMesh.chunkAABBs[chunkIndex];
 
-            var chunkIsVisible = math3D.checkFrustumIntersectsAABB(frustum, chunkAABB);
+            var chunkIsVisible = math3D.checkFrustumIntersectsAABB(frustum, chunk.aabb);
 
             if (chunkIsVisible) {
                 visibleChunkIndexes.push(chunkIndex);

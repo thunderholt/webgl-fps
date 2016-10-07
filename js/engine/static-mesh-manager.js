@@ -79,6 +79,10 @@
             this.buildStaticMeshChunkAABBs(staticMesh);
         }
 
+        if (options.buildChunkCollisionFaces) {
+            this.buildStaticMeshChunkCollisionFaces(staticMesh);
+        }
+
         staticMesh.buffers = {
             vertexBuffer: gl.createBuffer(),
             normalsBuffer: gl.createBuffer(),
@@ -134,8 +138,6 @@
 
     this.buildStaticMeshChunkAABBs = function (staticMesh) {
 
-        var aabbs = [];
-
         var indecies = staticMesh.indecies;
         var verts = staticMesh.verts;
 
@@ -160,12 +162,38 @@
                 util.arrayPushMany(chunkPoints, facePoints);
             }
 
-            var aabb = math3D.buildAABBFromPoints(chunkPoints);
-
-            aabbs.push(aabb);
+            chunk.aabb = math3D.buildAABBFromPoints(chunkPoints);
         }
+    }
 
-        staticMesh.chunkAABBs = aabbs;
+    this.buildStaticMeshChunkCollisionFaces = function (staticMesh) {
+
+        var indecies = staticMesh.indecies;
+        var verts = staticMesh.verts;
+
+        for (var chunkIndex = 0; chunkIndex < staticMesh.chunks.length; chunkIndex++) {
+
+            var chunk = staticMesh.chunks[chunkIndex];
+
+            chunk.collisionFaces = [];
+
+            for (var i = chunk.startIndex; i < chunk.startIndex + chunk.numFaces * 3; i += 3) {
+
+                var vertIndex0 = indecies[i] * 3;
+                var vertIndex1 = indecies[i + 1] * 3;
+                var vertIndex2 = indecies[i + 2] * 3;
+
+                var facePoints = [
+					[verts[vertIndex0], verts[vertIndex0 + 1], verts[vertIndex0 + 2]],
+					[verts[vertIndex1], verts[vertIndex1 + 1], verts[vertIndex1 + 2]],
+					[verts[vertIndex2], verts[vertIndex2 + 1], verts[vertIndex2 + 2]]
+                ];
+
+                var collisionFace = math3D.buildCollisionFaceFromPoints(facePoints);
+
+                chunk.collisionFaces.push(collisionFace);
+            }
+        }
     }
 
     this.cleanUp = function () {

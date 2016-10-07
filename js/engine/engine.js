@@ -127,7 +127,12 @@
 
             self.map = map;
 
-            self.staticMeshManager.loadStaticMesh(self.map.worldStaticMeshId, { buildChunkAABBs: true }, function () {
+            var worldStaticMeshLoadOptions = {
+                buildChunkAABBs: true,
+                buildChunkCollisionFaces: true
+            }
+
+            self.staticMeshManager.loadStaticMesh(self.map.worldStaticMeshId, worldStaticMeshLoadOptions, function () {
 
                 self.mapIsReady = true;
 

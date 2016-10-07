@@ -1017,9 +1017,9 @@
 
         for (var i = 0; i < staticMesh.chunks.length; i++) {
 
-            var aabb = staticMesh.chunkAABBs[i];
+            var chunk = staticMesh.chunks[i];
 
-            engine.lineDrawer.drawCube(this.renderingParameters, aabb.from, math3D.calculateAABBSize(aabb), [1, 1, 1], false);
+            engine.lineDrawer.drawCube(this.renderingParameters, chunk.aabb.from, math3D.calculateAABBSize(chunk.aabb), [1, 1, 1], false);
         }
     }
 

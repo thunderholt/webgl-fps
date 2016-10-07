@@ -168,12 +168,9 @@
             return;
         }
 
-        if (staticMesh.chunkAABBs == null) {
-            throw "Chunk AABBs were not loaded for the world static mesh.";
-        }
-
         for (var chunkIndex = 0; chunkIndex < staticMesh.chunks.length; chunkIndex++) {
 
+            var chunk = staticMesh.chunks[chunkIndex];
             var chunkRenderState = this.coalesceWorldStaticMeshChunkRenderState(chunkIndex);
 
             // TODO - don't loop through every single light - use sectors to find relevant ones.
@@ -192,9 +189,8 @@
                 if (light.enabled) {
 
                     var lightSphere = new Sphere(light.position, light.radius);
-                    var chunkAABB = staticMesh.chunkAABBs[chunkIndex];
 
-                    chunkIsEffectedByLight = math3D.checkSphereIntersectsAABB(lightSphere, chunkAABB);
+                    chunkIsEffectedByLight = math3D.checkSphereIntersectsAABB(lightSphere, chunk.aabb);
                 }
 
                 var existingEffectiveLightIdIndex = util.arrayIndexOf(chunkRenderState.effectiveLightIds, light.id);
@@ -214,100 +210,7 @@
             }
         }    
     }
-
-   /* this.findInvalidLightIds = function () {
-
-        var invalidLightIds = [];
-
-        for (var lightId in engine.map.lightsById) {
-
-            var light = engine.map.lightsById[lightId];
-
-            var lightRenderState = this.coalesceLightRenderState(light.id);
-
-            var lightRenderStateIsValid = this.checkLightRenderStateIsValidForLight(lightRenderState, light);
-
-            if (!lightRenderStateIsValid) {
-                console.log('Rebuilding light render state for light ' + light.id);
-                invalidLightIds.push(light.id);
-            }
-        }
-
-        return invalidLightIds;
-    }*/
-
-    /*this.checkLightRenderStateIsValidForLight = function (lightRenderState, light) {
-
-        if (lightRenderState.validFor == null) {
-            return false;
-        }
-
-        if (lightRenderState.validFor.position == null || !vec3.equals(lightRenderState.validFor.position, light.position)) {
-            return false;
-        }
-
-        if (lightRenderState.validFor.radius != light.radius) {
-            return false;
-        }
-
-        if (lightRenderState.validFor.enabled != light.enabled) {
-            return false;
-        }
-
-        return true;
-    }*/
-
-    /*this.updateWorldStaticMeshChunkRenderStates = function (invalidLightIds) {
-
-        var staticMesh = engine.staticMeshManager.getStaticMesh(engine.map.worldStaticMeshId);
-
-        if (staticMesh == null) {
-            return;
-        }
-
-        if (staticMesh.chunkAABBs == null) {
-            throw "Chunk AABBs were not loaded for the world static mesh.";
-        }
-
-        for (var i = 0; i < invalidLightIds.length; i++) {
-
-            var lightId = invalidLightIds[i];
-
-            var light = engine.map.lightsById[lightId];
-
-            // TODO - don't loop through all the world mesh chunks, use the sectors to find relevant ones.
-            for (var chunkIndex = 0; chunkIndex < staticMesh.chunks.length; chunkIndex++) {
-
-                var chunkRenderState = this.coalesceWorldStaticMeshChunkRenderState(chunkIndex);
-
-                var chunkIsEffectedByLight = false;
-
-                if (light.enabled) {
-
-                    var lightSphere = new Sphere(light.position, light.radius);
-                    var chunkAABB = staticMesh.chunkAABBs[chunkIndex];
-
-                    chunkIsEffectedByLight = math3D.checkSphereIntersectsAABB(lightSphere, chunkAABB);
-                }
-
-                var existingEffectiveLightIdIndex = util.arrayIndexOf(chunkRenderState.effectiveLightIds, light.id);
-
-                if (chunkIsEffectedByLight) {
-
-                    if (existingEffectiveLightIdIndex == -1) {
-                        chunkRenderState.effectiveLightIds.push(light.id);
-                    }
-
-                } else {
-
-                    if (existingEffectiveLightIdIndex != -1) {
-                        chunkRenderState.effectiveLightIds.splice(existingEffectiveLightIdIndex, 1);
-                    }
-                }
-            }
-        }
-    }*/
-
+    
     this.buildStaticMeshRenderState = function (staticMesh, position) {
 
         var staticMeshRenderState = {
@@ -336,24 +239,6 @@
 
         return staticMeshRenderState;
     }
-
-    /*this.updateLightRenderStates = function (invalidLightIds) {
-
-        for (var i = 0; i < invalidLightIds.length; i++) {
-
-            var lightId = invalidLightIds[i];
-
-            var light = engine.map.lightsById[lightId];
-
-            var lightRenderState = this.coalesceLightRenderState(light.id);
-
-            lightRenderState.validFor = {
-                position: vec3.clone(light.position),
-                radius: light.radius,
-                enabled: light.enabled
-            }
-        }
-    }*/
 
     this.coalesceLightRenderState = function (lightId) {
 
