@@ -72,11 +72,11 @@
     this.initStaticMesh = function (staticMesh, options) {
 
         if (options.buildRotationSafeBoundingSphere) {
-            staticMesh.rotationSafeBoundingSphereRadius = this.buildStaticMeshRotationSafeBoundingSphereRadius(staticMesh);
+            this.buildStaticMeshRotationSafeBoundingSphereRadius(staticMesh);
         }
 
         if (options.buildChunkAABBs) {
-            staticMesh.chunkAABBs = this.buildStaticMeshChunkAABBs(staticMesh);
+            this.buildStaticMeshChunkAABBs(staticMesh);
         }
 
         staticMesh.buffers = {
@@ -129,7 +129,7 @@
 
         var radius = math3D.buildBoundingSphereRadiusAtOriginFromPoints(points);
 
-        return radius;
+        staticMesh.rotationSafeBoundingSphereRadius = radius;
     }
 
     this.buildStaticMeshChunkAABBs = function (staticMesh) {
@@ -165,7 +165,7 @@
             aabbs.push(aabb);
         }
 
-        return aabbs;
+        staticMesh.chunkAABBs = aabbs;
     }
 
     this.cleanUp = function () {
