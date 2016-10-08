@@ -29,4 +29,32 @@
 
         return distance;
     }
+
+    this.calculatePlaneIntersectionSlideReaction = function (plane, intersection, desiredDirection, desiredDistance) {
+
+        var targetPoint = [0, 0, 0];
+        vec3.scaleAndAdd(targetPoint, intersection, desiredDirection, desiredDistance);
+
+        var targetPointToProjectionPointRay = new Ray(targetPoint, plane.normal);
+
+        var projectionPoint = math3D.calculateRayIntersectionWithPlane(targetPointToProjectionPointRay, plane);
+
+        if (projectionPoint == null) {
+            return null;
+        }
+
+        var slideVector = [0, 0, 0];
+        vec3.subtract(slideVector, projectionPoint, intersection);
+
+        var slideDistance = vec3.length(slideVector);
+
+        vec3.normalize(slideVector, slideVector);
+
+        var result = {
+            direction: slideVector,
+            distance: slideDistance
+        }
+
+        return result;
+    }
 }

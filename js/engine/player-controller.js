@@ -2,7 +2,7 @@
 
     var self = this;
 
-    this.rotateRate = 0.004;
+    this.rotateRate = 0.002;
     this.moveRate = 0.1;
 
     this.init = function (callback) {
@@ -30,11 +30,14 @@
 
         var movementAmount = this.moveRate * engine.frameTimer.frameDelta;
 
-        vec3.scaleAndAdd(player.position, player.position, movementNormal, movementAmount);
+        this.movePlayerThoughMap(movementNormal, movementAmount);
+
+        engine.camera.position = player.position;
+
+        //vec3.scaleAndAdd(player.position, player.position, movementNormal, movementAmount);
 
         var lookAxes = math3D.buildAxesFromRotations(player.rotation);
 
-        engine.camera.position = player.position;
         engine.camera.axes = lookAxes;
     }
 
@@ -44,5 +47,41 @@
 
         player.rotation[0] += this.rotateRate * event.movementY * -1;
         player.rotation[1] += this.rotateRate * event.movementX * -1;
+    }
+
+    this.movePlayerThoughMap = function (movementNormal, movementAmount) {
+
+        var player = engine.map.player;
+        var heightOffGround = 0.5;
+
+        var collisionTestSphere = new Sphere(vec3.clone(player.position), 0.45);
+        vec3.sub(collisionTestSphere.position, collisionTestSphere.position, [0, heightOffGround, 0]);
+
+        engine.mapManager.moveSphereThroughMap(
+			collisionTestSphere, movementNormal, movementAmount, true);
+
+        var gravity = 0.2;
+
+        engine.mapManager.moveSphereThroughMap(
+            collisionTestSphere,
+            [0, -1, 0], gravity * engine.frameTimer.frameDelta, false);
+
+        /*if (this.cameraController.jumpPower == 0) {
+
+            var gravity = 0.2;
+
+            this.moveSphereThroughMap(
+				this.collisionTestSphere.position, this.collisionTestSphere.size,
+				[0, -1, 0], gravity * this.frameTimer.frameDelta, false);
+
+        } else {
+
+            this.moveSphereThroughMap(
+				this.collisionTestSphere.position, this.collisionTestSphere.size,
+				[0, 1, 0], this.cameraController.jumpPower * this.frameTimer.frameDelta, false);
+        }*/
+
+        vec3.copy(engine.camera.position, collisionTestSphere.position);
+        vec3.add(engine.camera.position, engine.camera.position, [0, heightOffGround, 0]);
     }
 }

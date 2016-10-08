@@ -28,6 +28,7 @@
     this.visibilityManager = new VisibilityManager(this);
     this.renderer = new Renderer(this);
     this.renderStateManager = new RenderStateManager(this);
+    this.mapManager = new MapManager(this);
     this.camera = new Camera(this);
     this.freeLookCameraController = new FreeLookCameraController(this);
     this.playerController = new PlayerController(this);
@@ -44,7 +45,8 @@
         var initObjects = [
             this.glManager, this.textureManager, this.effectManager, this.shadowMapManager,
             this.lineDrawer, this.staticMeshManager, this.skinnedMeshManager, this.skinnedMeshAnimationManager,
-            this.renderer, this.camera, this.freeLookCameraController, this.playerController,
+            this.renderer, this.renderStateManager, this.mapManager,
+            this.camera, this.freeLookCameraController, this.playerController,
             this.keyboard, this.mouse, this.frameTimer, this.editorHelper];
 
         util.recurse(function (recursor, recursionCount) {
