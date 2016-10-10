@@ -537,7 +537,7 @@
             gl.drawElements(gl.TRIANGLES, chunk.numFaces * 3, gl.UNSIGNED_SHORT, chunk.startIndex * 2);
         }
     }
-    //var test = 0;
+   
     this.renderSkinnedMesh = function (skinnedMesh, skinnedMeshAnimation, options) {
 
         // Check the parameters.
@@ -548,10 +548,6 @@
         if (skinnedMeshAnimation == null) {
             throw "Skinned mesh animation is null!";
         }
-
-       /* if (options.staticMeshRenderState == null && options.staticMeshChunkRenderStatesByIndex == null) {
-            throw "We can't render a static mesh without render states!";
-        }*/
 
         // Build the translation matrix.
         var translationMatrix = mat4.create();
@@ -588,20 +584,13 @@
 
         if (this.effect.uniforms.boneMatrices != null) {
 
-            /*var boneMatrix = mat4.create();
-            mat4.translate(boneMatrix, boneMatrix, [0, -0.805583, 0.860142]);
-            //mat4.rotateZ(boneMatrix, boneMatrix, test); test -= 0.01;
-            mat4.rotateZ(boneMatrix, boneMatrix, 0.012743);
-            mat4.rotateY(boneMatrix, boneMatrix, -1.568372);
-            mat4.rotateX(boneMatrix, boneMatrix, -1.583519);
-            mat4.translate(boneMatrix, boneMatrix, [-0.000000, 0.805583, -0.860142]);
+            var boneMatrixSet = this.buildSkinnedMeshAnimationBoneMatrixSetForFrame(skinnedMesh, skinnedMeshAnimation, options.frameIndex);
 
-            gl.uniformMatrix4fv(this.effect.uniforms.boneMatrices, false, boneMatrix);*/
-
-            var boneMatrices = this.buildSkinnedMeshAnimationBoneMatricesForFrame(skinnedMesh, skinnedMeshAnimation, options.frameIndex);
-            var concatenatedBoneMatrices = math3D.concatenateMatricesToSingleArray(boneMatrices);
+            var concatenatedBoneMatrices = math3D.concatenateMatricesToSingleArray(boneMatrixSet.boneMatrices);
+            var concatenatedBoneRotationOnlyMatrices = math3D.concatenateMatricesToSingleArray(boneMatrixSet.boneRotationOnlyMatrices);
 
             gl.uniformMatrix4fv(this.effect.uniforms.boneMatrices, false, concatenatedBoneMatrices);
+            //gl.uniformMatrix4fv(this.effect.uniforms.boneRotationOnlyMatrices, false, concatenatedBoneRotationOnlyMatrices);
         }
 
         // Bind the skinned mesh's buffers to the effect.
@@ -612,15 +601,19 @@
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.coalesceTexture('system/missing-diffuse-texture'));
+
+        gl.uniform3fv(this.effect.uniforms.globalIlluminationNormals, this.globalIlluminationNormals);
+        gl.uniform3fv(this.effect.uniforms.globalIlluminationColours, this.globalIlluminationColours);
         ////////////////////////
 
         // Draw the skinned mesh's triangles.
         gl.drawArrays(gl.TRIANGLES, 0, skinnedMesh.numberOfFaces);
     }
 
-    this.buildSkinnedMeshAnimationBoneMatricesForFrame = function (skinnedMesh, skinnedMeshAnimation, frameIndex) {
+    this.buildSkinnedMeshAnimationBoneMatrixSetForFrame = function (skinnedMesh, skinnedMeshAnimation, frameIndex) {
 
         var boneMatrices = [];
+        var boneRotationOnlyMatrices = [];
 
         var fromFrameIndex = Math.floor(frameIndex);
         var toFrameIndex = fromFrameIndex + 1;
@@ -636,6 +629,7 @@
         for (var boneIndex = 0; boneIndex < this.maxSkinnedMeshBones; boneIndex++) {
 
             var boneMatrix = mat4.create();
+            var boneRotationOnlyMatrix = mat4.create();
 
             var bone = skinnedMesh.bones[boneIndex];
 
@@ -657,107 +651,21 @@
                 mat4.multiply(boneMatrix, boneMatrix, rotationMatrix);
 
                 mat4.translate(boneMatrix, boneMatrix, inversePosition);
+
+                boneRotationOnlyMatrix = rotationMatrix;
             }
-
-            /*if (boneIndex == 0) {
-
-                var inversePosition = vec3.create();
-                vec3.scale(inversePosition, bone.position, -1);
-
-                mat4.translate(boneMatrix, boneMatrix, bone.position);
-                //mat4.rotateX(boneMatrix, boneMatrix, -0.5);
-
-
-                var rotationMatrix = mat4.create();
-                //mat4.fromQuat(rotationMatrix, quat.fromValues(-0.3827, 0.0000, -0.0000, 0.9239)); // About X (correct)
-                //mat4.fromQuat(rotationMatrix, quat.fromValues(0.0000, 0.3827, -0.0000, 0.9239)); // About Y (correct)
-               // mat4.fromQuat(rotationMatrix, quat.fromValues(0.2706, -0.6533, -0.2706,  0.6533)); // About X if correct
-                
-                mat4.multiply(boneMatrix, boneMatrix, rotationMatrix);
-
-                mat4.translate(boneMatrix, boneMatrix, inversePosition);
-
-            }
-
-            if (boneIndex == 1) {
-
-                var inversePosition = vec3.create();
-                vec3.scale(inversePosition, bone.position, -1);
-
-                mat4.translate(boneMatrix, boneMatrix, bone.position);
-                //mat4.rotateZ(boneMatrix, boneMatrix, 0.9);
-
-
-                var rotationMatrix = mat4.create();
-                mat4.fromQuat(rotationMatrix, quat.fromValues(0.0000, -0.3827, 0.0000, 0.9239));
-                mat4.multiply(boneMatrix, boneMatrix, rotationMatrix);
-
-                mat4.translate(boneMatrix, boneMatrix, inversePosition);
-
-            }
-
-            if (boneIndex == 2) {
-
-                var inversePosition = vec3.create();
-                vec3.scale(inversePosition, bone.position, -1);
-
-                mat4.translate(boneMatrix, boneMatrix, bone.position);
-                //mat4.rotateX(boneMatrix, boneMatrix, -0.5);
-
-        
-                var rotationMatrix = mat4.create();
-                mat4.fromQuat(rotationMatrix, quat.fromValues(0.0000, -0.3827, 0.0000, 0.9239));
-                mat4.multiply(boneMatrix, boneMatrix, rotationMatrix);
-
-                mat4.translate(boneMatrix, boneMatrix, inversePosition);
-
-            }
-
-            if (boneIndex == 3) {
-
-                var inversePosition = vec3.create();
-                vec3.scale(inversePosition, bone.position, -1);
-
-                mat4.translate(boneMatrix, boneMatrix, bone.position);
-                //mat4.rotateX(boneMatrix, boneMatrix, 0.5);
-
-
-                var rotationMatrix = mat4.create();
-               // mat4.fromQuat(rotationMatrix, quat.fromValues(-0.003, 0.0005246, -0.383, 0.924)); // About Z
-                mat4.multiply(boneMatrix, boneMatrix, rotationMatrix);
-
-                mat4.translate(boneMatrix, boneMatrix, inversePosition);
-
-            }
-
-            if (boneIndex == 4) {
-
-                var inversePosition = vec3.create();
-                vec3.scale(inversePosition, bone.position, -1);
-
-                mat4.translate(boneMatrix, boneMatrix, bone.position);
-                //mat4.rotateZ(boneMatrix, boneMatrix, 0.5);
-
-
-                var rotationMatrix = mat4.create();
-               // mat4.fromQuat(rotationMatrix, quat.fromValues(-0.003, 0.0005246, -0.383, 0.924)); // About Z
-                mat4.multiply(boneMatrix, boneMatrix, rotationMatrix);
-
-                mat4.translate(boneMatrix, boneMatrix, inversePosition);
-
-            }*/
-            
-            //mat4.fromQuat(boneMatrix, quat.fromValues(-0.371, 0.0, 0.0, 0.929));
-            //mat4.fromQuat(boneMatrix, quat.fromValues(-0.341, 0.147, -0.367, 0.853));
 
             boneMatrices.push(boneMatrix);
+            boneRotationOnlyMatrices.push(boneRotationOnlyMatrix);
         }
 
-        //test += 0.01;
-
         boneMatrices = this.applyHierachyToSkinnedMeshBoneMatrices(skinnedMesh, boneMatrices);
+        boneRotationOnlyMatrices = this.applyHierachyToSkinnedMeshBoneMatrices(skinnedMesh, boneRotationOnlyMatrices);
 
-        return boneMatrices;
+        return {
+            boneMatrices: boneMatrices,
+            boneRotationOnlyMatrices: boneRotationOnlyMatrices
+        };
     }
 
     this.applyHierachyToSkinnedMeshBoneMatrices = function (skinnedMesh, boneMatrices) {

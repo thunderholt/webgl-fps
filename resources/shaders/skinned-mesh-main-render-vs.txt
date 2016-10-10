@@ -15,21 +15,23 @@ uniform mat4 worldMatrix;
 uniform mat4 viewProjMatrix;
 uniform mat4 boneMatrices[30];
 
-/*varying vec3 fragmentWorldSpacePosition;
+//varying vec3 fragmentWorldSpacePosition;
 varying vec3 fragmentNormal;
-varying vec3 fragmentTangent;
+/*varying vec3 fragmentTangent;
 varying vec3 fragmentBitangent;*/
 varying vec2 texCoord;
 
-vec4 transformPositionByBone(int boneIndex);
+vec4 transformVectorByBone(int boneIndex, vec3 v);
+vec3 transformVectorByBoneRotationOnly(int boneIndex, vec3 v);
 mat4 getBoneMatrix(int boneIndex);
 
 void main(void) 
 {
-	vec4 positionTransformedByFirstBone = transformPositionByBone(int(firstBoneIndex));
-	vec4 positionTransformedBySecondBone = transformPositionByBone(int(secondBoneIndex));
-	vec4 positionTransformedByThirdBone = transformPositionByBone(int(thirdBoneIndex));
-	vec4 positionTransformedByFourthBone = transformPositionByBone(int(fourthBoneIndex));
+	// Calculate the skinned position.
+	vec4 positionTransformedByFirstBone = transformVectorByBone(int(firstBoneIndex), vertexPosition);
+	vec4 positionTransformedBySecondBone = transformVectorByBone(int(secondBoneIndex), vertexPosition);
+	vec4 positionTransformedByThirdBone = transformVectorByBone(int(thirdBoneIndex), vertexPosition);
+	vec4 positionTransformedByFourthBone = transformVectorByBone(int(fourthBoneIndex), vertexPosition);
 
 	vec4 positionTransformedByBones = 
 		(positionTransformedByFirstBone * firstWeight) +
@@ -39,26 +41,57 @@ void main(void)
 	
 	vec4 tempWorldSpacePosition = worldMatrix * positionTransformedByBones;
 
+	// Calculate the skinned normal.
+	vec3 normalTransformedByFirstBone = transformVectorByBoneRotationOnly(int(firstBoneIndex), vertexNormal);
+	vec3 normalTransformedBySecondBone = transformVectorByBoneRotationOnly(int(secondBoneIndex), vertexNormal);
+	vec3 normalTransformedByThirdBone = transformVectorByBoneRotationOnly(int(thirdBoneIndex), vertexNormal);
+	vec3 normalTransformedByFourthBone = transformVectorByBoneRotationOnly(int(fourthBoneIndex), vertexNormal);
+
+	vec3 normalTransformedByBones = 
+		(normalTransformedByFirstBone * firstWeight) +
+		(normalTransformedBySecondBone * secondWeight) +
+		(normalTransformedByThirdBone * thirdWeight) +
+		(normalTransformedByFourthBone * fourthWeight);
+	
+	vec3 tempWorldSpaceNormal = mat3(worldMatrix) * normalTransformedByBones;
+
+	// Output values.
 	texCoord = vertexTexCoord;
+
+	fragmentNormal = tempWorldSpaceNormal;
 
     gl_Position = viewProjMatrix * tempWorldSpacePosition;
 }
 
-vec4 transformPositionByBone(int boneIndex) 
+vec4 transformVectorByBone(int boneIndex, vec3 v) 
 {
 	if (boneIndex != -1) 
 	{
-		vec4 positionTransformedByBone = vec4(vertexPosition, 1.0);
-
 		mat4 boneMatrix = getBoneMatrix(boneIndex);
 
-		positionTransformedByBone = boneMatrix * positionTransformedByBone;
+		vec4 vectorTransformedByBone = boneMatrix * vec4(v, 1.0);
 
-		return positionTransformedByBone;
+		return vectorTransformedByBone;
 	}
 	else 
 	{
 		return vec4(0, 0, 0, 0);
+	}
+}
+
+vec3 transformVectorByBoneRotationOnly(int boneIndex, vec3 v) 
+{
+	if (boneIndex != -1) 
+	{
+		mat4 boneMatrix = getBoneMatrix(boneIndex);
+
+		vec3 vectorTransformedByBone = mat3(boneMatrix) * v;
+
+		return vectorTransformedByBone;
+	}
+	else 
+	{
+		return vec3(0, 0, 0);
 	}
 }
 

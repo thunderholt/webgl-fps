@@ -2,11 +2,42 @@
 
 uniform sampler2D diffuseSampler;
 
+uniform vec3 globalIlluminationNormals[8];
+uniform vec3 globalIlluminationColours[8];
+
+varying vec3 fragmentNormal;
 varying vec2 texCoord;
+
+vec4 calculateGlobalIlluminationColour(vec3 fragmentWorldSpaceNormal);
 
 void main(void) 
 {
 	vec4 diffuseColour = texture2D(diffuseSampler, texCoord);
 
-	gl_FragColor = diffuseColour;
+	vec4 totalLightBaseColour = calculateGlobalIlluminationColour(fragmentNormal);
+
+	//gl_FragColor = diffuseColour;
+
+	//gl_FragColor = vec4((fragmentNormal + 1.0) / 2.0, 1.0);
+
+	gl_FragColor = totalLightBaseColour;
+}
+
+vec4 calculateGlobalIlluminationColour(vec3 fragmentWorldSpaceNormal)
+{
+	vec4 totalGiColour = vec4(0.0, 0.0, 0.0, 1.0);
+
+	for (int i = 0; i < 8; i++) 
+	{
+		vec3 giNormal = globalIlluminationNormals[i];
+		vec3 giColour = globalIlluminationColours[i];
+
+		float amount = clamp(dot(fragmentWorldSpaceNormal, giNormal), 0.0, 1.0);
+
+		totalGiColour += vec4(giColour * amount, 0.0);
+	}
+
+	return totalGiColour;
+
+    //return vec4(textureCube(globalIlluminationSampler, fragmentWorldSpaceNormal).xyz * globalIlluminationColour, 1.0);
 }

@@ -54,9 +54,12 @@
       "rotationMatrix": null,
       "worldMatrix": null,
       "viewProjMatrix": null,
-      "boneMatrices":  null,
+      "boneMatrices": null,
 
-      "diffuseSampler": null
+      "diffuseSampler": null,
+
+      "globalIlluminationNormals": null,
+      "globalIlluminationColours": null
     }
   },
 
