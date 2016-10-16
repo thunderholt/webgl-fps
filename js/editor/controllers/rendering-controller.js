@@ -1,16 +1,17 @@
 ﻿editorApp.controller('RenderingController', ['$scope', function ($scope) {
 
-    $scope.renderingParameters = {
+    $scope.renderingOptions = {
         renderLightVolumes: false,
         renderWorldMeshChunkAABBs: false,
-        renderActorIdentifiers: true
+        renderActorIdentifiers: false,
+        renderActorBoundingSpheres: false
     }
 
     $scope.init = function () {
 
-        $scope.$watch('renderingParameters', function () {
+        $scope.$watch('renderingOptions', function () {
 
-            util.copyObjectPropertiesToOtherObject($scope.renderingParameters, engine.renderer.renderingParameters)
+            util.copyObjectPropertiesToOtherObject($scope.renderingOptions, engine.renderer.renderingOptions)
 
         }, true);
     }

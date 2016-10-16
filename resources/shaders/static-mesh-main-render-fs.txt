@@ -66,65 +66,20 @@ void main(void)
 
 	totalLightBaseColour += calculateGlobalIlluminationColour(fragmentWorldSpaceNormal);
 
-	if (lightEnableds[0] > 0) 
-    {
-        LightColour lightColour = calculateLightColour(
-            fragmentWorldSpacePosition, normalisedFragmentNormal, fragmentWorldSpaceNormal, 
-            lightWorldSpacePositions[0], lightRadiusSqrs[0], lightColours[0], 
-			lightStaticObjectShadowMapMasks[0], lightDynamicObjectShadowMapMasks[0],
-			pointLightShadowMapSamplers[0]);
+	for (int i = 0; i < 5; i++)
+	{
+		if (lightEnableds[i] > 0) 
+		{
+			LightColour lightColour = calculateLightColour(
+				fragmentWorldSpacePosition, normalisedFragmentNormal, fragmentWorldSpaceNormal, 
+				lightWorldSpacePositions[i], lightRadiusSqrs[i], lightColours[i], 
+				lightStaticObjectShadowMapMasks[i], lightDynamicObjectShadowMapMasks[i],
+				pointLightShadowMapSamplers[i]);
 
-        totalLightBaseColour += lightColour.baseColour;
-        totalLightSpecularColour += lightColour.specularColour;
-    }
-
-	if (lightEnableds[1] > 0) 
-    {
-        LightColour lightColour = calculateLightColour(
-            fragmentWorldSpacePosition, normalisedFragmentNormal, fragmentWorldSpaceNormal, 
-            lightWorldSpacePositions[1], lightRadiusSqrs[1], lightColours[1], 
-			lightStaticObjectShadowMapMasks[1], lightDynamicObjectShadowMapMasks[1],
-			pointLightShadowMapSamplers[1]);
-
-        totalLightBaseColour += lightColour.baseColour;
-        totalLightSpecularColour += lightColour.specularColour;
-    }
-
-	if (lightEnableds[2] > 0) 
-    {
-        LightColour lightColour = calculateLightColour(
-            fragmentWorldSpacePosition, normalisedFragmentNormal, fragmentWorldSpaceNormal, 
-            lightWorldSpacePositions[2], lightRadiusSqrs[2], lightColours[2], 
-			lightStaticObjectShadowMapMasks[2], lightDynamicObjectShadowMapMasks[2], 
-			pointLightShadowMapSamplers[2]);
-
-        totalLightBaseColour += lightColour.baseColour;
-        totalLightSpecularColour += lightColour.specularColour;
-    }
-
-	if (lightEnableds[3] > 0) 
-    {
-        LightColour lightColour = calculateLightColour(
-            fragmentWorldSpacePosition, normalisedFragmentNormal, fragmentWorldSpaceNormal, 
-            lightWorldSpacePositions[3], lightRadiusSqrs[3], lightColours[3], 
-			lightStaticObjectShadowMapMasks[3], lightDynamicObjectShadowMapMasks[3],
-			pointLightShadowMapSamplers[3]);
-
-        totalLightBaseColour += lightColour.baseColour;
-        totalLightSpecularColour += lightColour.specularColour;
-    }
-
-	if (lightEnableds[4] > 0) 
-    {
-        LightColour lightColour = calculateLightColour(
-            fragmentWorldSpacePosition, normalisedFragmentNormal, fragmentWorldSpaceNormal, 
-            lightWorldSpacePositions[4], lightRadiusSqrs[4], lightColours[4], 
-			lightStaticObjectShadowMapMasks[4], lightDynamicObjectShadowMapMasks[4], 
-			pointLightShadowMapSamplers[4]);
-
-        totalLightBaseColour += lightColour.baseColour;
-        totalLightSpecularColour += lightColour.specularColour;
-    }
+			totalLightBaseColour += lightColour.baseColour;
+			totalLightSpecularColour += lightColour.specularColour;
+		}
+	}
 
 	vec4 finalColour = diffuseColour * totalLightBaseColour + totalLightSpecularColour;
 
@@ -141,6 +96,8 @@ void main(void)
 
 
 	//gl_FragColor = vec4(diffuseColour.xyz * lambertTerm, 1.0);
+
+	//gl_FragColor = vec4((fragmentNormal + 1.0) / 2.0, 1.0);
 }
 
 vec4 calculateGlobalIlluminationColour(vec3 fragmentWorldSpaceNormal)

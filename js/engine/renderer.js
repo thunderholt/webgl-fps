@@ -955,17 +955,28 @@
 
             var actor = engine.map.actorsById[actorId];;
 
-            if (actor.staticMeshId == null) {
-                continue;
+            var sphereRadius = 0;
+
+            if (!util.stringIsNullOrEmpty(actor.staticMeshId)) {
+
+                var staticMesh = engine.staticMeshManager.getStaticMesh(actor.staticMeshId);
+
+                if (staticMesh != null) {
+                    sphereRadius = staticMesh.rotationSafeBoundingSphereRadius;
+                }
+
+            } else if (!util.stringIsNullOrEmpty(actor.skinnedMeshId)) {
+
+                var skinnedMesh = engine.skinnedMeshManager.getSkinnedMesh(actor.skinnedMeshId);
+
+                if (skinnedMesh != null) {
+                    sphereRadius = skinnedMesh.rotationSafeBoundingSphereRadius;
+                }
             }
 
-            var staticMesh = engine.staticMeshManager.getStaticMesh(actor.staticMeshId);
-
-            if (staticMesh == null) {
-                continue;
+            if (sphereRadius > 0) {
+                engine.lineDrawer.drawSphere(this.renderingParameters, actor.position, sphereRadius, [1, 0, 0], false);
             }
-
-            engine.lineDrawer.drawSphere(this.renderingParameters, actor.position, staticMesh.rotationSafeBoundingSphereRadius, [1, 0, 0], false);
         }
     }
 

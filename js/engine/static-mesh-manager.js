@@ -120,7 +120,6 @@
 
     this.buildStaticMeshRotationSafeBoundingSphereRadius = function (staticMesh) {
 
-        var indecies = staticMesh.indecies;
         var verts = staticMesh.verts;
         var points = [];
 

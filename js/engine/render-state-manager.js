@@ -54,7 +54,7 @@
                 var skinnedMesh = engine.skinnedMeshManager.getSkinnedMesh(actor.skinnedMeshId);
 
                 if (skinnedMesh == null) {
-                    engine.skinnedMeshManager.loadSkinnedMesh(actor.skinnedMeshId, {});
+                    engine.skinnedMeshManager.loadSkinnedMesh(actor.skinnedMeshId, { buildRotationSafeBoundingSphere: true });
                 }
             }
 

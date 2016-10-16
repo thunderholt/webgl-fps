@@ -53,7 +53,8 @@ void main(void)
 		(normalTransformedByThirdBone * thirdWeight) +
 		(normalTransformedByFourthBone * fourthWeight);
 	
-	vec3 tempWorldSpaceNormal = mat3(worldMatrix) * normalTransformedByBones;
+	vec3 tempWorldSpaceNormal = normalize(mat3(worldMatrix) * normalTransformedByBones);
+	//vec3 tempWorldSpaceNormal = vertexNormal;
 
 	// Output values.
 	texCoord = vertexTexCoord;

@@ -71,6 +71,10 @@
 
     this.initSkinnedMesh = function (skinnedMesh, options) {
 
+        if (options.buildRotationSafeBoundingSphere) {
+            this.buildSkinnedMeshRotationSafeBoundingSphereRadius(skinnedMesh);
+        }
+
         skinnedMesh.numberOfFaces = skinnedMesh.verts.length / 3;
 
         skinnedMesh.buffers = {
@@ -135,6 +139,23 @@
         delete skinnedMesh.secondWeights;
         delete skinnedMesh.thirdWeights;
         delete skinnedMesh.fourthWeights;
+    }
+
+    this.buildSkinnedMeshRotationSafeBoundingSphereRadius = function (skinnedMesh) {
+
+        var verts = skinnedMesh.verts;
+        var points = [];
+
+        for (var i = 0; i < skinnedMesh.verts.length; i += 3) {
+
+            var point = [verts[i], verts[i + 1], verts[i + 2]];
+
+            points.push(point);
+        }
+
+        var radius = math3D.buildBoundingSphereRadiusAtOriginFromPoints(points);
+
+        skinnedMesh.rotationSafeBoundingSphereRadius = radius;
     }
 
     this.cleanUp = function () {
