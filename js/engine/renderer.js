@@ -420,10 +420,12 @@
                 continue;
             }
 
-            var staticMeshRenderState = engine.renderStateManager.buildStaticMeshRenderState(staticMesh, actor.position);
+            //var staticMeshRenderState = engine.renderStateManager.buildStaticMeshRenderState(staticMesh, actor.position);
+
+            var actorRenderState = engine.renderStateManager.actorRenderStatesById[actor.id];
 
             var options = {
-                staticMeshRenderState: staticMeshRenderState,
+                effectiveLightIds: actorRenderState.effectiveLightIds,
                 position: actor.position,
                 rotation: actor.rotation
             };
@@ -475,7 +477,7 @@
             throw "Static mesh is null!";
         }
 
-        if (options.staticMeshRenderState == null && options.staticMeshChunkRenderStatesByIndex == null) {
+        if (options.effectiveLightIds == null && options.staticMeshChunkRenderStatesByIndex == null) {
             throw "We can't render a static mesh without render states!";
         }
 
@@ -536,6 +538,34 @@
 
             gl.drawElements(gl.TRIANGLES, chunk.numFaces * 3, gl.UNSIGNED_SHORT, chunk.startIndex * 2);
         }
+    }
+
+    this.prepareStaticMeshChunkForMainRender = function (chunk, chunkIndex, options) {
+
+        // Resolve the effective light IDs, either from the chunk render states (e.g. for the world static mesh) or 
+        // from the static mesh render state (for actors ands such like).
+        var effectiveLightIds = null;
+
+        if (options.staticMeshChunkRenderStatesByIndex != null) {
+
+            var chunkRenderState = options.staticMeshChunkRenderStatesByIndex[chunkIndex];
+
+            if (chunkRenderState == null) {
+                throw "Render state not found for chunk.";
+            }
+
+            effectiveLightIds = chunkRenderState.effectiveLightIds;
+
+        } else {
+
+            effectiveLightIds = options.effectiveLightIds;
+        }
+
+        //var effectiveLights = this.gatherLightsFromLightIds(effectiveLightIds);
+
+        var material = this.coalesceMaterial(chunk.materialId);
+
+        this.prepareStandardMaterial(material, this.effect, effectiveLightIds, engine.camera);
     }
    
     this.renderSkinnedMesh = function (skinnedMesh, skinnedMeshAnimation, options) {
@@ -852,35 +882,7 @@
         }
     }
 
-    this.prepareStaticMeshChunkForMainRender = function (chunk, chunkIndex, options) {
-
-        // Resolve the effective light IDs, either from the chunk render states (e.g. for the world static mesh) or 
-        // from the static mesh render state (for actors ands such like).
-        var effectiveLightIds = null;
-
-        if (options.staticMeshChunkRenderStatesByIndex != null) {
-
-            var chunkRenderState = options.staticMeshChunkRenderStatesByIndex[chunkIndex];
-
-            if (chunkRenderState == null) {
-                throw "Render state not found for chunk.";
-            }
-
-            effectiveLightIds = chunkRenderState.effectiveLightIds;
-
-        } else {
-
-            effectiveLightIds = options.staticMeshRenderState.effectiveLightIds;
-        }
-
-        var effectiveLights = this.gatherLightsFromLightIds(effectiveLightIds);
-
-        var material = this.coalesceMaterial(chunk.materialId);
-
-        this.prepareStandardMaterial(material, this.effect, effectiveLights, engine.camera);
-    }
-
-    this.gatherLightsFromLightIds = function (lightIds) {
+    /*this.gatherLightsFromLightIds = function (lightIds) {
 
         var lights = [];
 
@@ -895,7 +897,7 @@
         }
 
         return lights;
-    }
+    }*/
 
     this.renderLightVolumes = function () {
 
@@ -980,7 +982,7 @@
         }
     }
 
-    this.prepareStandardMaterial = function (material, effect, lights, camera) {
+    this.prepareStandardMaterial = function (material, effect, effectiveLightIds, camera) {
 
         var lightEnableds = [];
         var lightPositions = [];
@@ -992,7 +994,9 @@
 
         for (var i = 0; i < this.maxStandardMaterialLights; i++) {
 
-            var light = lights[i];
+            var lightId = effectiveLightIds[i];
+
+            var light = lightId != null ? engine.map.lightsById[lightId] : null;
 
             if (light != null && light.enabled && light.radius > 0) {
 

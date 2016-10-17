@@ -193,12 +193,12 @@
 
 		*/
 
-        var hypotenuse = [0, 0, 0];
+        var hypotenuse = vec3.create();
         vec3.sub(hypotenuse, point, ray.origin);
 
         var hypotenuseLength = vec3.length(hypotenuse);
 
-        var normalizedHypotenuse = [0, 0, 0];
+        var normalizedHypotenuse = vec3.create();
         vec3.scale(normalizedHypotenuse, hypotenuse, 1 / hypotenuseLength);
 
         var cosA = vec3.dot(ray.normal, normalizedHypotenuse);
@@ -211,7 +211,7 @@
             t = maxLengthAlongRay;
         }
 
-        var nearestPoint = [0, 0, 0];
+        var nearestPoint = vec3.create();
         vec3.scaleAndAdd(nearestPoint, ray.origin, ray.normal, t);
 
         return nearestPoint;

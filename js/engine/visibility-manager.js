@@ -34,11 +34,12 @@
 
         for (var actorId in engine.map.actorsById) {
 
-            var actor = engine.map.actorsById[actorId];
+            //var actor = engine.map.actorsById[actorId];
+            var actorRenderState = engine.renderStateManager.actorRenderStatesById[actorId];
 
-            var actorIsVisible = false;
+            var actorIsVisible = math3D.checkFrustumIntersectsSphere(frustum, actorRenderState.boundingSphere);
 
-            if (actor.staticMeshId != null) {
+            /*if (actor.staticMeshId != null) {
 
                 var staticMesh = engine.staticMeshManager.getStaticMesh(actor.staticMeshId);
 
@@ -49,7 +50,7 @@
                 var actorBoundingSphere = new Sphere(actor.position, staticMesh.rotationSafeBoundingSphereRadius);
 
                 actorIsVisible = math3D.checkFrustumIntersectsSphere(frustum, actorBoundingSphere);
-            }
+            }*/
 
             if (actorIsVisible) {
                 visibleActorIds.push(actorId);
@@ -88,9 +89,19 @@
 
             var actorId = visibleActorIds[i];
 
-            var actor = engine.map.actorsById[actorId];
+            //var actor = engine.map.actorsById[actorId];
+            var actorRenderState = engine.renderStateManager.actorRenderStatesById[actorId];
 
-            if (actor.staticMeshId != null) {
+            for (var j = 0; j < actorRenderState.effectiveLightIds.length; j++) {
+
+                var lightId = actorRenderState.effectiveLightIds[j];
+
+                if (lightIdLookup[lightId] == null) {
+                    lightIdLookup[lightId] = true;
+                }
+            }
+
+            /*if (actor.staticMeshId != null) {
 
                 var staticMesh = engine.staticMeshManager.getStaticMesh(actor.staticMeshId);
 
@@ -109,7 +120,7 @@
                         lightIdLookup[lightId] = true;
                     }
                 }
-            }
+            }*/
         }
 
         var lightIds = [];

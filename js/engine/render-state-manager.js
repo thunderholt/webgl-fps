@@ -1,5 +1,6 @@
 ﻿function RenderStateManager(engine) {
 
+    this.actorRenderStatesById = {};
     this.lightRenderStatesById = {};
     this.worldStaticMeshChunkRenderStatesByIndex = [];
 
@@ -20,6 +21,8 @@
         this.ensureActorResourcesAreLoaded();
 
         this.checkShadowMapAllocations();
+
+        this.updateActorRenderStates();
 
         this.updateLightRenderStates();
 
@@ -85,7 +88,7 @@
 
                 actor.frameIndex += engine.frameTimer.frameDelta / 30;//10;
 
-                if (actor.frameIndex >= skinnedMeshAnimation.frames.length) {
+                while (actor.frameIndex >= skinnedMeshAnimation.frames.length) {
                     actor.frameIndex -= skinnedMeshAnimation.frames.length;
                 }
             }
@@ -106,6 +109,60 @@
 
                 lightRenderState.shadowMapIndex = allocation.index;
                 lightRenderState.shadowMapChannel = allocation.channel;
+            }
+        }
+    }
+
+    this.updateActorRenderStates = function () {
+
+        for (var actorId in engine.map.actorsById) {
+
+            var actor = engine.map.actorsById[actorId];
+
+            var actorRenderState = this.coalesceActorRenderState(actorId);
+
+            // Update the actor's bounding sphere.
+            var boundingSphereRadius = 0;
+
+            if (!util.stringIsNullOrEmpty(actor.staticMeshId)) {
+
+                var staticMesh = engine.staticMeshManager.getStaticMesh(actor.staticMeshId);
+
+                if (staticMesh != null) {
+                    boundingSphereRadius = staticMesh.rotationSafeBoundingSphereRadius;
+                }
+
+            } else if (!util.stringIsNullOrEmpty(actor.skinnedMeshId)) {
+
+                var skinnedMesh = engine.skinnedMeshManager.getSkinnedMesh(actor.skinnedMeshId);
+
+                if (skinnedMesh != null) {
+                    boundingSphereRadius = skinnedMesh.rotationSafeBoundingSphereRadius;
+                }
+            }
+
+            actorRenderState.boundingSphere.position = actor.position;
+            actorRenderState.boundingSphere.radius = boundingSphereRadius;
+
+            // Update the actor's effective lights.
+            // TODO - don't loop through all of the lights. Use the sectors to find the relevant ones.
+            actorRenderState.effectiveLightIds = [];
+
+            for (var lightId in engine.map.lightsById) {
+
+                var light = engine.map.lightsById[lightId];
+
+                if (!light.enabled) {
+                    continue;
+                }
+
+                var lightSphere = new Sphere(light.position, light.radius);
+
+                var isEffectedByLight = math3D.checkSphereIntersectsSphere(lightSphere, actorRenderState.boundingSphere);
+
+                if (isEffectedByLight) {
+                    actorRenderState.effectiveLightIds.push(light.id);
+                }
             }
         }
     }
@@ -211,7 +268,7 @@
         }    
     }
     
-    this.buildStaticMeshRenderState = function (staticMesh, position) {
+    /*this.buildStaticMeshRenderState = function (staticMesh, position) {
 
         var staticMeshRenderState = {
             effectiveLightIds: []
@@ -238,6 +295,23 @@
         }
 
         return staticMeshRenderState;
+    }*/
+
+    this.coalesceActorRenderState = function (actorId) {
+
+        var actorRenderState = this.actorRenderStatesById[actorId];
+
+        if (actorRenderState == null) {
+
+            actorRenderState = {
+                boundingSphere: new Sphere([0, 0, 0], 0),
+                effectiveLightIds: []
+            };
+
+            this.actorRenderStatesById[actorId] = actorRenderState;
+        }
+
+        return actorRenderState;
     }
 
     this.coalesceLightRenderState = function (lightId) {
@@ -251,8 +325,7 @@
                 shadowMapIndex: null,
                 shadowMapChannel: null,
                 rebuildWorldStaticMeshEffectivenessThisFrame: false,
-                pointLightShadowMapFaceStates: [],
-                //validFor: null // FIXME - remove
+                pointLightShadowMapFaceStates: []
             };
 
             for (var i = 0; i < 6; i++) {
@@ -276,8 +349,6 @@
         return lightRenderState;
     }
 
-
-
     this.coalesceWorldStaticMeshChunkRenderState = function (chunkIndex) {
 
         var chunkRenderState = this.worldStaticMeshChunkRenderStatesByIndex[chunkIndex];
@@ -296,6 +367,7 @@
 
     this.cleanUp = function () {
 
+        this.actorRenderStatesById = {};
         this.lightRenderStatesById = {};
         this.worldStaticMeshChunkRenderStatesByIndex = [];
     }
