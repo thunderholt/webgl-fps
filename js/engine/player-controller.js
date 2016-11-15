@@ -31,10 +31,9 @@
         var movementAmount = this.moveRate * engine.frameTimer.frameDelta;
 
         this.movePlayerThoughMap(movementNormal, movementAmount);
+        //vec3.scaleAndAdd(player.position, player.position, movementNormal, movementAmount);
 
         engine.camera.position = player.position;
-
-        //vec3.scaleAndAdd(player.position, player.position, movementNormal, movementAmount);
 
         var lookAxes = math3D.buildAxesFromRotations(player.rotation);
 

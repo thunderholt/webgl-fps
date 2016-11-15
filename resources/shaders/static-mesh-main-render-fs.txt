@@ -1,11 +1,12 @@
-﻿precision highp  float;
+﻿precision highp float;
 
+// Samplers.
 uniform sampler2D diffuseSampler;
 uniform sampler2D normalSampler;
 uniform sampler2D selfIlluminationSampler;
-//uniform samplerCube globalIlluminationSampler;
 uniform samplerCube pointLightShadowMapSamplers[5];
 
+// Lighting uniforms.
 uniform int lightEnableds[5];
 uniform vec3 lightWorldSpacePositions[5];
 uniform float lightRadiusSqrs[5];
@@ -13,10 +14,15 @@ uniform vec3 lightColours[5];
 uniform vec4 lightStaticObjectShadowMapMasks[5];
 uniform vec4 lightDynamicObjectShadowMapMasks[5];
 uniform vec3 cameraWorldSpacePosition;
+
+// Global illumination uniforms.
 uniform vec3 globalIlluminationNormals[8];
 uniform vec3 globalIlluminationColours[8];
+
+// Self-illumination uniforms.
 uniform int hasSelfIllumination;
 
+// Varyings.
 varying vec3 fragmentWorldSpacePosition;
 varying vec3 fragmentNormal;
 varying vec3 fragmentTangent;
@@ -89,15 +95,6 @@ void main(void)
 	}
 
 	gl_FragColor = finalColour;
-
-	//vec3 fragmentToLightNormal = normalize(vec3(-1.0, 1.0, -1.0));
-
-	//float lambertTerm = clamp(dot(worldSpaceNormal, fragmentToLightNormal), 0.0, 1.0);
-
-
-	//gl_FragColor = vec4(diffuseColour.xyz * lambertTerm, 1.0);
-
-	//gl_FragColor = vec4((fragmentNormal + 1.0) / 2.0, 1.0);
 }
 
 vec4 calculateGlobalIlluminationColour(vec3 fragmentWorldSpaceNormal)
@@ -180,16 +177,6 @@ LightColour calculateLightColour(
     {
         return result;
     }
-
-	/*///////////////////
-
-	vec4 test = textureCube(pointLightShadowMapSampler, directionFromLight);
-    float test2 = dot(test, lightShadowMapMask);
-	if (distanceToLightSquared >= test2)
-    {
-	return result;
-    }
-	//////////////////*/
 
     // Calculate the light base colour.
     result.baseColour = vec4(lightColour * attenutation * fragmentLambertTerm, 1.0) * shadowMapSample;

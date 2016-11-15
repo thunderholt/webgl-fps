@@ -1,6 +1,6 @@
 ﻿function VisibilityManager(engine) {
 
-    this.gatherVisibleWorldStaticMeshChunkIndexes = function (position, frustum) {
+    this.gatherVisibleWorldStaticMeshChunkIndexes = function (out, position, frustum) {
 
         // TODO - allow sphere to be passed for extra culling for lights.
 
@@ -10,64 +10,55 @@
             throw "World static mesh not loaded";
         }
 
-        var visibleChunkIndexes = []
+        out.length = 0;
 
-        for (var chunkIndex = 0; chunkIndex < staticMesh.chunks.length; chunkIndex++) {
+        for (var chunkIndex = 0;
+            chunkIndex < staticMesh.chunks.length &&
+            out.length < out.maxLength;
+            chunkIndex++) {
 
             var chunk = staticMesh.chunks[chunkIndex];
 
             var chunkIsVisible = math3D.checkFrustumIntersectsAABB(frustum, chunk.aabb);
 
             if (chunkIsVisible) {
-                visibleChunkIndexes.push(chunkIndex);
+                out.items[out.length++] = chunkIndex;
             }
         }
-
-        return visibleChunkIndexes;
     }
 
-    this.gatherVisibleActorIds = function (position, frustum) {
+    this.gatherVisibleActorIds = function (out, position, frustum) {
 
         // TODO - allow sphere to be passed for extra culling for lights.
 
-        var visibleActorIds = [];
+        out.length = 0;
 
         for (var actorId in engine.map.actorsById) {
 
-            //var actor = engine.map.actorsById[actorId];
             var actorRenderState = engine.renderStateManager.actorRenderStatesById[actorId];
 
             var actorIsVisible = math3D.checkFrustumIntersectsSphere(frustum, actorRenderState.boundingSphere);
 
-            /*if (actor.staticMeshId != null) {
-
-                var staticMesh = engine.staticMeshManager.getStaticMesh(actor.staticMeshId);
-
-                if (staticMesh == null) {
-                    continue;
-                }
-
-                var actorBoundingSphere = new Sphere(actor.position, staticMesh.rotationSafeBoundingSphereRadius);
-
-                actorIsVisible = math3D.checkFrustumIntersectsSphere(frustum, actorBoundingSphere);
-            }*/
-
             if (actorIsVisible) {
-                visibleActorIds.push(actorId);
+                out.items[out.length++] = actorId;
+            }
+
+            if (out.length >= out.maxLength) {
+                break;
             }
         }
-
-        return visibleActorIds;
     }
 
     this.gatherVisibleLightIdsFromVisibleObjectsIds = function (
-        visibleWorldStaticMeshChunkIndexes, visibleActorIds) {
+        out, visibleWorldStaticMeshChunkIndexes, visibleActorIds) {
 
-        var lightIdLookup = {};
+        //var lightIdLookup = {};
+
+        util.clearFixedLengthArray(out, null);
 
         for (var i = 0; i < visibleWorldStaticMeshChunkIndexes.length; i++) {
 
-            var chunkIndex = visibleWorldStaticMeshChunkIndexes[i];
+            var chunkIndex = visibleWorldStaticMeshChunkIndexes.items[i];
 
             var chunkRenderState = engine.renderStateManager.worldStaticMeshChunkRenderStatesByIndex[chunkIndex];
 
@@ -77,58 +68,43 @@
 
             for (var j = 0; j < chunkRenderState.effectiveLightIds.length; j++) {
 
-                var lightId = chunkRenderState.effectiveLightIds[j];
+                var lightId = chunkRenderState.effectiveLightIds.items[j];
 
-                if (lightIdLookup[lightId] == null) {
+                /*if (lightIdLookup[lightId] == null) {
                     lightIdLookup[lightId] = true;
+                }*/
+
+                if (util.fixedLengthArrayIndexOf(out, lightId) == -1) {
+                    out.items[out.length++] = lightId;
                 }
             }
         }
 
         for (var i = 0; i < visibleActorIds.length; i++) {
 
-            var actorId = visibleActorIds[i];
+            var actorId = visibleActorIds.items[i];
 
-            //var actor = engine.map.actorsById[actorId];
             var actorRenderState = engine.renderStateManager.actorRenderStatesById[actorId];
 
             for (var j = 0; j < actorRenderState.effectiveLightIds.length; j++) {
 
-                var lightId = actorRenderState.effectiveLightIds[j];
+                var lightId = actorRenderState.effectiveLightIds.items[j];
 
-                if (lightIdLookup[lightId] == null) {
+                if (util.fixedLengthArrayIndexOf(out, lightId) == -1) {
+                    out.items[out.length++] = lightId;
+                }
+                /*if (lightIdLookup[lightId] == null) {
                     lightIdLookup[lightId] = true;
-                }
+                }*/
             }
-
-            /*if (actor.staticMeshId != null) {
-
-                var staticMesh = engine.staticMeshManager.getStaticMesh(actor.staticMeshId);
-
-                if (staticMesh == null) {
-                    continue;
-                }
-
-                // TODO - rebuilding this is inefficient.
-                var staticMeshRenderState = engine.renderStateManager.buildStaticMeshRenderState(staticMesh, actor.position);
-
-                for (var j = 0; j < staticMeshRenderState.effectiveLightIds.length; j++) {
-
-                    var lightId = staticMeshRenderState.effectiveLightIds[j];
-
-                    if (lightIdLookup[lightId] == null) {
-                        lightIdLookup[lightId] = true;
-                    }
-                }
-            }*/
         }
 
-        var lightIds = [];
+        /*var lightIds = [];
         for (var lightId in lightIdLookup) {
 
             lightIds.push(lightId);
         }
 
-        return lightIds;
+        return lightIds;*/
     }
 }

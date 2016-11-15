@@ -27,8 +27,10 @@
       "lightStaticObjectShadowMapMasks": null,
       "lightDynamicObjectShadowMapMasks": null,
       "cameraWorldSpacePosition": null,
+      
       "globalIlluminationNormals": null,
       "globalIlluminationColours": null,
+
       "hasSelfIllumination": null
     }
   },
@@ -57,9 +59,22 @@
       "boneMatrices": null,
 
       "diffuseSampler": null,
+      "normalSampler": null,
+      "selfIlluminationSampler": null,
+      "pointLightShadowMapSamplers": null,
+
+      "lightEnableds": null,
+      "lightWorldSpacePositions": null,
+      "lightRadiusSqrs": null,
+      "lightColours": null,
+      "lightStaticObjectShadowMapMasks": null,
+      "lightDynamicObjectShadowMapMasks": null,
+      "cameraWorldSpacePosition": null,
 
       "globalIlluminationNormals": null,
-      "globalIlluminationColours": null
+      "globalIlluminationColours": null,
+
+      "hasSelfIllumination": null
     }
   },
 

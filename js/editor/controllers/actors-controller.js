@@ -1,4 +1,4 @@
-﻿editorApp.controller('ActorsController', ['$scope', function ($scope) {
+﻿editorApp.controller('ActorsController', ['$scope', 'util', function ($scope, util) {
 
     $scope.editActor = function (actorId) {
 

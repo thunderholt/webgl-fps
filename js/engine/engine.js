@@ -60,14 +60,20 @@
 
     this.enterMainLoop = function () {
 
-        var frameFunction = null;
+        /*var frameFunction = null;
 
         frameFunction = function () {
             self.heartbeat();
             requestAnimationFrame(frameFunction);
-        }
+        }*/
 
-        requestAnimationFrame(frameFunction);
+        requestAnimationFrame(this.frameFunction);
+    }
+
+    this.frameFunction = function () {
+
+        self.heartbeat();
+        requestAnimationFrame(self.frameFunction);
     }
 
     this.startMap = function () {
@@ -108,6 +114,9 @@
                 }
             }
         }
+
+        this.camera.updateMatrixes(
+            Math.PI / 2.5, engine.glManager.viewportInfo.width / engine.glManager.viewportInfo.height, 0.1, 1000.0);
 
         this.renderStateManager.updateRenderStates();
 

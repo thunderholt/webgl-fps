@@ -35,10 +35,36 @@
         }
     }
 
+    this.arraySetMany = function (destArray, destStartIndex, srcArray) {
+        for (var i = 0; i < srcArray.length; i++) {
+            destArray[destStartIndex + i] = srcArray[i];
+        }
+    }
+
     this.arrayIndexOf = function (array, value) {
         var i = 0;
         for (var i = 0; i < array.length; i++) {
             if (array[i] == value) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    this.clearFixedLengthArray = function (array, clearValue) {
+
+        array.length = 0;
+
+        for (var i = 0; i < array.maxLength; i++) {
+            array.items[i] = clearValue;
+        }
+    }
+
+    this.fixedLengthArrayIndexOf = function (array, value) {
+        var i = 0;
+        for (var i = 0; i < array.length; i++) {
+            if (array.items[i] == value) {
                 return i;
             }
         }

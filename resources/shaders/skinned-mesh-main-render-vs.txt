@@ -15,7 +15,7 @@ uniform mat4 worldMatrix;
 uniform mat4 viewProjMatrix;
 uniform mat4 boneMatrices[30];
 
-//varying vec3 fragmentWorldSpacePosition;
+varying vec3 fragmentWorldSpacePosition;
 varying vec3 fragmentNormal;
 /*varying vec3 fragmentTangent;
 varying vec3 fragmentBitangent;*/
@@ -57,6 +57,8 @@ void main(void)
 	//vec3 tempWorldSpaceNormal = vertexNormal;
 
 	// Output values.
+	fragmentWorldSpacePosition = tempWorldSpacePosition.xyz;
+
 	texCoord = vertexTexCoord;
 
 	fragmentNormal = tempWorldSpaceNormal;

@@ -90,7 +90,7 @@
         this.log('Created new point light shadow map.');
     }
 
-    this.buildViewProjMatrixForPointLightCubeMapFaceBuild = function (position, face) {
+    this.buildViewProjMatrixForPointLightCubeMapFaceBuild = function (out, position, face) {
 
         var lookAt = vec3.create();
         vec3.add(lookAt, position, face.lookAt);
@@ -101,10 +101,10 @@
         var projMatrix = mat4.create();
         mat4.perspective(projMatrix, Math.PI / 2.0, 1.0, 0.1, 10000.0);
 
-        var viewProjMatrix = mat4.create();
-        mat4.multiply(viewProjMatrix, projMatrix, viewMatrix);
+        //var viewProjMatrix = mat4.create();
+        mat4.multiply(out, projMatrix, viewMatrix);
 
-        return viewProjMatrix;
+        //return viewProjMatrix;
     }
 
     this.cleanUp = function () {

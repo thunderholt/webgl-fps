@@ -1,5 +1,8 @@
 ﻿function Math3D() {
 
+    this.zeroVec3 = vec3.create();
+    this.zeroVec4 = vec4.create();
+
     this.buildAxesFromRotations = function (rotations) {
 
         var xAxis = [1, 0, 0];
@@ -96,19 +99,17 @@
         return result;
     }
 
-    this.concatenateMatricesToSingleArray = function (matrices) {
+    this.concatenateMatricesToSingleArray = function (out, matrices) {
 
-        var array = [];
+        var outIndex = 0;
 
         for (var i = 0; i < matrices.length; i++) {
             var matrix = matrices[i];
 
             for (var j = 0; j < matrix.length; j++) {
-                array.push(matrix[j]);
+                out[outIndex++] = matrix[j];
             }
         }
-
-        return array;
     }
 
     

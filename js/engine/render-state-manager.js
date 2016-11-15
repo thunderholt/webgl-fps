@@ -4,17 +4,14 @@
     this.lightRenderStatesById = {};
     this.worldStaticMeshChunkRenderStatesByIndex = [];
 
+    this.updateLightRenderStatesTempValues = {
+        viewProjMatrixForPointLightCubeMapFaceBuild: mat4.create()
+    }
+
     this.init = function (callback) {
 
         callback();
     }
-
-    /*this.invalidateAllLightRenderStates = function () {
-        for (var lightId in this.lightRenderStatesById) {
-            var lightRenderState = this.lightRenderStatesById[lightId];
-            lightRenderState.validFor = null;
-        }
-    }*/
 
     this.updateRenderStates = function () {
 
@@ -22,19 +19,14 @@
 
         this.checkShadowMapAllocations();
 
-        this.updateActorRenderStates();
+        this.updateLightBoundingSpheres();
+        this.updateActorBoundingSpheres();
 
         this.updateLightRenderStates();
-
         this.updateWorldStaticMeshRenderStates();
+        this.updateActorRenderStates();
 
         this.updateActorAnimationFrameIndexes();
-
-        //var invalidLightIds = this.findInvalidLightIds();
-
-        //this.updateWorldStaticMeshChunkRenderStates(invalidLightIds);
-
-        //this.updateLightRenderStates(invalidLightIds);
     }
 
     this.ensureActorResourcesAreLoaded = function () {
@@ -72,29 +64,6 @@
         }
     }
 
-    this.updateActorAnimationFrameIndexes = function () {
-
-        for (var actorId in engine.map.actorsById) {
-
-            var actor = engine.map.actorsById[actorId];
-
-            if (actor.skinnedMeshAnimationId != null) {
-
-                var skinnedMeshAnimation = engine.skinnedMeshAnimationManager.getSkinnedMeshAnimation(actor.skinnedMeshAnimationId);
-
-                if (skinnedMeshAnimation == null) {
-                    continue;
-                }
-
-                actor.frameIndex += engine.frameTimer.frameDelta / 30;//10;
-
-                while (actor.frameIndex >= skinnedMeshAnimation.frames.length) {
-                    actor.frameIndex -= skinnedMeshAnimation.frames.length;
-                }
-            }
-        }
-    }
-
     this.checkShadowMapAllocations = function () {
 
         for (var lightId in engine.map.lightsById) {
@@ -113,7 +82,23 @@
         }
     }
 
-    this.updateActorRenderStates = function () {
+    this.updateLightBoundingSpheres = function () {
+
+        for (var lightId in engine.map.lightsById) {
+
+            var light = engine.map.lightsById[lightId];
+
+            var lightRenderState = this.coalesceLightRenderState(light.id);
+
+            if (light.type == 'point') {
+
+                lightRenderState.boundingSphere.position = light.position;
+                lightRenderState.boundingSphere.radius = light.radius;
+            }
+        }
+    }
+
+    this.updateActorBoundingSpheres = function () {
 
         for (var actorId in engine.map.actorsById) {
 
@@ -143,27 +128,6 @@
 
             actorRenderState.boundingSphere.position = actor.position;
             actorRenderState.boundingSphere.radius = boundingSphereRadius;
-
-            // Update the actor's effective lights.
-            // TODO - don't loop through all of the lights. Use the sectors to find the relevant ones.
-            actorRenderState.effectiveLightIds = [];
-
-            for (var lightId in engine.map.lightsById) {
-
-                var light = engine.map.lightsById[lightId];
-
-                if (!light.enabled) {
-                    continue;
-                }
-
-                var lightSphere = new Sphere(light.position, light.radius);
-
-                var isEffectedByLight = math3D.checkSphereIntersectsSphere(lightSphere, actorRenderState.boundingSphere);
-
-                if (isEffectedByLight) {
-                    actorRenderState.effectiveLightIds.push(light.id);
-                }
-            }
         }
     }
 
@@ -179,7 +143,7 @@
 
             var lightRenderState = this.coalesceLightRenderState(light.id);
 
-            lightRenderState.rebuildWorldStaticMeshEffectivenessThisFrame = lightRenderState.isDirty;
+            //lightRenderState.rebuildWorldStaticMeshEffectivenessThisFrame = lightRenderState.isDirty;
 
             if (light.type == 'point') {
 
@@ -191,16 +155,18 @@
 
                     if (lightRenderState.isDirty) {
 
-                        var viewProjMatrix = engine.shadowMapManager.buildViewProjMatrixForPointLightCubeMapFaceBuild(light.position, face);
+                        engine.shadowMapManager.buildViewProjMatrixForPointLightCubeMapFaceBuild(
+                            this.updateLightRenderStatesTempValues.viewProjMatrixForPointLightCubeMapFaceBuild, light.position, face);
 
-                        faceRenderState.frustum = math3D.buildFrustumFromViewProjMatrix(viewProjMatrix);
+                        faceRenderState.frustum = math3D.buildFrustumFromViewProjMatrix(
+                            this.updateLightRenderStatesTempValues.viewProjMatrixForPointLightCubeMapFaceBuild);
 
-                        faceRenderState.visibleWorldStaticMeshChunkIndexes =
-                            engine.visibilityManager.gatherVisibleWorldStaticMeshChunkIndexes(light.position, faceRenderState.frustum);
+                        engine.visibilityManager.gatherVisibleWorldStaticMeshChunkIndexes(
+                            faceRenderState.visibleWorldStaticMeshChunkIndexes, light.position, faceRenderState.frustum);
                     }
 
-                    faceRenderState.visibleActorIds =
-                        engine.visibilityManager.gatherVisibleActorIds(light.position, faceRenderState.frustum);
+                    engine.visibilityManager.gatherVisibleActorIds(
+                        faceRenderState.visibleActorIds, light.position, faceRenderState.frustum);
 
                     faceRenderState.rebuildForStaticObjectsThisFrame =
                         lightRenderState.isDirty ||
@@ -230,6 +196,8 @@
             var chunk = staticMesh.chunks[chunkIndex];
             var chunkRenderState = this.coalesceWorldStaticMeshChunkRenderState(chunkIndex);
 
+            chunkRenderState.effectiveLightIds.length = 0;
+
             // TODO - don't loop through every single light - use sectors to find relevant ones.
             for (var lightId in engine.map.lightsById) {
 
@@ -237,20 +205,30 @@
 
                 var lightRenderState = this.coalesceLightRenderState(light.id);
 
-                if (!lightRenderState.rebuildWorldStaticMeshEffectivenessThisFrame) {
+                /*if (!lightRenderState.rebuildWorldStaticMeshEffectivenessThisFrame) {
                     continue;
-                }
+                }*/
 
-                var chunkIsEffectedByLight = false;
+                //var chunkIsEffectedByLight = false;
 
                 if (light.enabled) {
 
-                    var lightSphere = new Sphere(light.position, light.radius);
+                    var lightRenderState = this.coalesceLightRenderState(light.id);
+                    //var lightSphere = new Sphere(light.position, light.radius);
 
-                    chunkIsEffectedByLight = math3D.checkSphereIntersectsAABB(lightSphere, chunk.aabb);
+                    var chunkIsEffectedByLight = math3D.checkSphereIntersectsAABB(lightRenderState.boundingSphere, chunk.aabb);
+
+                    if (chunkIsEffectedByLight) {
+
+                        chunkRenderState.effectiveLightIds.items[chunkRenderState.effectiveLightIds.length++] = light.id;
+
+                        if (chunkRenderState.effectiveLightIds.length >= chunkRenderState.effectiveLightIds.maxLength) {
+                            break;
+                        }
+                    }
                 }
 
-                var existingEffectiveLightIdIndex = util.arrayIndexOf(chunkRenderState.effectiveLightIds, light.id);
+                /*var existingEffectiveLightIdIndex = util.arrayIndexOf(chunkRenderState.effectiveLightIds, light.id);
 
                 if (chunkIsEffectedByLight) {
 
@@ -263,39 +241,70 @@
                     if (existingEffectiveLightIdIndex != -1) {
                         chunkRenderState.effectiveLightIds.splice(existingEffectiveLightIdIndex, 1);
                     }
-                }
-            }
-        }    
-    }
-    
-    /*this.buildStaticMeshRenderState = function (staticMesh, position) {
-
-        var staticMeshRenderState = {
-            effectiveLightIds: []
-        };
-
-        // TODO - don't loop through all of the lights. Use the sectors to find the relevant ones.
-        for (var lightId in engine.map.lightsById) {
-
-            var light = engine.map.lightsById[lightId];
-
-            if (!light.enabled) {
-                continue;
-            }
-
-            var lightSphere = new Sphere(light.position, light.radius);
-
-            var staticMeshBoundingSphere = new Sphere(position, staticMesh.rotationSafeBoundingSphereRadius);
-
-            var isEffectedByLight = math3D.checkSphereIntersectsSphere(lightSphere, staticMeshBoundingSphere);
-
-            if (isEffectedByLight) {
-                staticMeshRenderState.effectiveLightIds.push(light.id);
+                }*/
             }
         }
+    }
 
-        return staticMeshRenderState;
-    }*/
+    this.updateActorRenderStates = function () {
+
+        for (var actorId in engine.map.actorsById) {
+
+            var actor = engine.map.actorsById[actorId];
+
+            var actorRenderState = this.coalesceActorRenderState(actorId);
+
+            // Update the actor's effective lights.
+            // TODO - don't loop through all of the lights. Use the sectors to find the relevant ones.
+            actorRenderState.effectiveLightIds.length = 0;
+
+            for (var lightId in engine.map.lightsById) {
+
+                var light = engine.map.lightsById[lightId];
+
+                if (!light.enabled) {
+                    continue;
+                }
+
+                var lightRenderState = this.coalesceLightRenderState(light.id);
+
+                //var lightSphere = new Sphere(light.position, light.radius);
+
+                var isEffectedByLight = math3D.checkSphereIntersectsSphere(lightRenderState.boundingSphere, actorRenderState.boundingSphere);
+
+                if (isEffectedByLight) {
+                    actorRenderState.effectiveLightIds.items[actorRenderState.effectiveLightIds.length++] = light.id;
+
+                    if (actorRenderState.effectiveLightIds.length >= actorRenderState.effectiveLightIds.maxLength) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    this.updateActorAnimationFrameIndexes = function () {
+
+        for (var actorId in engine.map.actorsById) {
+
+            var actor = engine.map.actorsById[actorId];
+
+            if (actor.skinnedMeshAnimationId != null) {
+
+                var skinnedMeshAnimation = engine.skinnedMeshAnimationManager.getSkinnedMeshAnimation(actor.skinnedMeshAnimationId);
+
+                if (skinnedMeshAnimation == null) {
+                    continue;
+                }
+
+                actor.frameIndex += engine.frameTimer.frameDelta / 30;//10;
+
+                while (actor.frameIndex >= skinnedMeshAnimation.frames.length) {
+                    actor.frameIndex -= skinnedMeshAnimation.frames.length;
+                }
+            }
+        }
+    }
 
     this.coalesceActorRenderState = function (actorId) {
 
@@ -305,7 +314,7 @@
 
             actorRenderState = {
                 boundingSphere: new Sphere([0, 0, 0], 0),
-                effectiveLightIds: []
+                effectiveLightIds: new FixedLengthArray(EngineLimits.MaxEffectiveLightsPerObject, null)
             };
 
             this.actorRenderStatesById[actorId] = actorRenderState;
@@ -324,8 +333,9 @@
                 isDirty: true,
                 shadowMapIndex: null,
                 shadowMapChannel: null,
-                rebuildWorldStaticMeshEffectivenessThisFrame: false,
-                pointLightShadowMapFaceStates: []
+                //rebuildWorldStaticMeshEffectivenessThisFrame: false,
+                pointLightShadowMapFaceStates: [],
+                boundingSphere: new Sphere([0, 0, 0], 0)
             };
 
             for (var i = 0; i < 6; i++) {
@@ -334,8 +344,8 @@
                     rebuildForStaticObjectsThisFrame: false,
                     rebuildForDynamicObjectsThisFrame: false,
                     frustum: null,
-                    visibleWorldStaticMeshChunkIndexes: [],
-                    visibleActorIds: [],
+                    visibleWorldStaticMeshChunkIndexes: new FixedLengthArray(EngineLimits.MaxVisibleWorldStaticMeshChunkIndexesPerLight, 0),
+                    visibleActorIds: new FixedLengthArray(EngineLimits.MaxVisibleActorsIdsPerLight, null),
                     lastStaticObjectBuildResult: ShadowMapBuildResult.NotBuilt,
                     lastDynamicObjectBuildResult: ShadowMapBuildResult.NotBuilt
                 };
@@ -356,7 +366,7 @@
         if (chunkRenderState == null) {
 
             chunkRenderState = {
-                effectiveLightIds: []
+                effectiveLightIds: new FixedLengthArray(EngineLimits.MaxEffectiveLightsPerObject, null)
             };
 
             this.worldStaticMeshChunkRenderStatesByIndex[chunkIndex] = chunkRenderState;
