@@ -11,6 +11,7 @@ uniform int lightEnableds[5];
 uniform vec3 lightWorldSpacePositions[5];
 uniform float lightRadiusSqrs[5];
 uniform vec3 lightColours[5];
+uniform int lightCastsShadows[5];
 uniform vec4 lightStaticObjectShadowMapMasks[5];
 uniform vec4 lightDynamicObjectShadowMapMasks[5];
 uniform vec3 cameraWorldSpacePosition;
@@ -42,7 +43,7 @@ vec4 calculateGlobalIlluminationColour(vec3 fragmentWorldSpaceNormal);
 LightColour calculateLightColour(
     vec3 fragmentWorldSpacePosition, vec3 faceWorldSpaceNormal, vec3 fragmentWorldSpaceNormal, 
     vec3 lightWorldSpacePosition, float lightRadiusSqr, vec3 lightColour,
-	vec4 staticObjectShadowMapMask, vec4 dynamicObjectShadowMapMask, samplerCube pointLightShadowMapSampler);
+	int castsShadows, vec4 staticObjectShadowMapMask, vec4 dynamicObjectShadowMapMask, samplerCube pointLightShadowMapSampler);
 
 float samplePointLightShadowMap(vec3 directionFromLight, vec4 staticObjectShadowMapMask, vec4 dynamicObjectShadowMapMask, float distanceToLightSquared, samplerCube shadowMapSampler);
 
@@ -79,7 +80,7 @@ void main(void)
 			LightColour lightColour = calculateLightColour(
 				fragmentWorldSpacePosition, normalisedFragmentNormal, fragmentWorldSpaceNormal, 
 				lightWorldSpacePositions[i], lightRadiusSqrs[i], lightColours[i], 
-				lightStaticObjectShadowMapMasks[i], lightDynamicObjectShadowMapMasks[i],
+				lightCastsShadows[i], lightStaticObjectShadowMapMasks[i], lightDynamicObjectShadowMapMasks[i],
 				pointLightShadowMapSamplers[i]);
 
 			totalLightBaseColour += lightColour.baseColour;
@@ -119,7 +120,7 @@ vec4 calculateGlobalIlluminationColour(vec3 fragmentWorldSpaceNormal)
 LightColour calculateLightColour(
     vec3 fragmentWorldSpacePosition, vec3 faceWorldSpaceNormal, vec3 fragmentWorldSpaceNormal, 
     vec3 lightWorldSpacePosition, float lightRadiusSqr, vec3 lightColour, 
-	vec4 staticObjectShadowMapMask, vec4 dynamicObjectShadowMapMask, samplerCube pointLightShadowMapSampler)
+	int castsShadows, vec4 staticObjectShadowMapMask, vec4 dynamicObjectShadowMapMask, samplerCube pointLightShadowMapSampler)
 {
     LightColour result = LightColour(vec4(0.0, 0.0, 0.0, 0.0), vec4(0.0, 0.0, 0.0, 0.0));
 
@@ -153,30 +154,35 @@ LightColour calculateLightColour(
     }
 
 	// Check shadow map.
-	vec3 directionFromLight = fragmentToLightDirection * -1.0;
-    float distanceToLightSquared = dot(fragmentToLightDirection, fragmentToLightDirection);
-	//float shadowMapSample = samplePointLightShadowMap(
-	//	directionFromLight, staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+	float shadowMapSample = 1.0;
 
-	float p = 0.03 + (noise * 0.05);
-    float p2 = 0.06 + (noise * 0.05);
-    float shadowMapSample1 = samplePointLightShadowMap(directionFromLight + vec3(p, 0.0, p), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
-    float shadowMapSample2 = samplePointLightShadowMap(directionFromLight + vec3(p, p, 0.0), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
-    float shadowMapSample3 = samplePointLightShadowMap(directionFromLight + vec3(0.0, p, p), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
-    float shadowMapSample4 = samplePointLightShadowMap(directionFromLight + vec3(-p, 0.0, -p), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
-    float shadowMapSample5 = samplePointLightShadowMap(directionFromLight + vec3(-p, -p, 0.0), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
-    float shadowMapSample6 = samplePointLightShadowMap(directionFromLight + vec3(0.0, -p, -p), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
-    float shadowMapSample7 = samplePointLightShadowMap(directionFromLight + vec3(0.0, p2, -p2), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
-    float shadowMapSample8 = samplePointLightShadowMap(directionFromLight + vec3(p2, p, -p2), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
-    float shadowMapSample9 = samplePointLightShadowMap(directionFromLight + vec3(p2, -p2, -p2), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
-    float shadowMapSample10 = samplePointLightShadowMap(directionFromLight + vec3(-p2, -p, p), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+	if (castsShadows > 0) 
+	{
+		vec3 directionFromLight = fragmentToLightDirection * -1.0;
+		float distanceToLightSquared = dot(fragmentToLightDirection, fragmentToLightDirection);
+		//float shadowMapSample = samplePointLightShadowMap(
+		//	directionFromLight, staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+
+		float p = 0.03 + (noise * 0.05);
+		float p2 = 0.06 + (noise * 0.05);
+		float shadowMapSample1 = samplePointLightShadowMap(directionFromLight + vec3(p, 0.0, p), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+		float shadowMapSample2 = samplePointLightShadowMap(directionFromLight + vec3(p, p, 0.0), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+		float shadowMapSample3 = samplePointLightShadowMap(directionFromLight + vec3(0.0, p, p), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+		float shadowMapSample4 = samplePointLightShadowMap(directionFromLight + vec3(-p, 0.0, -p), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+		float shadowMapSample5 = samplePointLightShadowMap(directionFromLight + vec3(-p, -p, 0.0), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+		float shadowMapSample6 = samplePointLightShadowMap(directionFromLight + vec3(0.0, -p, -p), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+		float shadowMapSample7 = samplePointLightShadowMap(directionFromLight + vec3(0.0, p2, -p2), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+		float shadowMapSample8 = samplePointLightShadowMap(directionFromLight + vec3(p2, p, -p2), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+		float shadowMapSample9 = samplePointLightShadowMap(directionFromLight + vec3(p2, -p2, -p2), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+		float shadowMapSample10 = samplePointLightShadowMap(directionFromLight + vec3(-p2, -p, p), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
     
-    float shadowMapSample = clamp((shadowMapSample1 + shadowMapSample2 + shadowMapSample3 + shadowMapSample4 + shadowMapSample5 + shadowMapSample6 + shadowMapSample7 + shadowMapSample8 + shadowMapSample9 + shadowMapSample10) / 6.0, 0.0, 1.0);
+		shadowMapSample = clamp((shadowMapSample1 + shadowMapSample2 + shadowMapSample3 + shadowMapSample4 + shadowMapSample5 + shadowMapSample6 + shadowMapSample7 + shadowMapSample8 + shadowMapSample9 + shadowMapSample10) / 6.0, 0.0, 1.0);
     
-	if (shadowMapSample == 0.0)
-    {
-        return result;
-    }
+		if (shadowMapSample == 0.0)
+		{
+			return result;
+		}
+	}
 
     // Calculate the light base colour.
     result.baseColour = vec4(lightColour * attenutation * fragmentLambertTerm, 1.0) * shadowMapSample;

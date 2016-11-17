@@ -87,6 +87,7 @@
         lightPositions: [],
         lightRadiusSqrs: [],
         lightColours: [],
+        lightCastsShadows: [],
         lightStaticObjectShadowMapMasks: [],
         lightDynamicObjectShadowMapMasks: [],
         pointLightShadowMapSamplers: []
@@ -208,6 +209,7 @@
             util.arrayPushMany(self.standardMaterialShaderData.lightPositions, [0, 0, 0]);
             self.standardMaterialShaderData.lightRadiusSqrs.push(0);
             util.arrayPushMany(self.standardMaterialShaderData.lightColours, [0, 0, 0]);
+            self.standardMaterialShaderData.lightCastsShadows.push(0);
             util.arrayPushMany(self.standardMaterialShaderData.lightStaticObjectShadowMapMasks, [0, 0, 0, 0]);
             util.arrayPushMany(self.standardMaterialShaderData.lightDynamicObjectShadowMapMasks, [0, 0, 0, 0]);
             self.standardMaterialShaderData.pointLightShadowMapSamplers.push(0);
@@ -1069,12 +1071,23 @@
                 util.arraySetMany(this.standardMaterialShaderData.lightPositions, i * 3, light.position);
                 this.standardMaterialShaderData.lightRadiusSqrs[i] = light.radius * light.radius;
                 util.arraySetMany(this.standardMaterialShaderData.lightColours, i * 3, light.colour);
-                util.arraySetMany(this.standardMaterialShaderData.lightStaticObjectShadowMapMasks, i * 4, this.shadowMapMasksForStaticObjectsByChannel[lightRenderState.shadowMapChannel]);
-                util.arraySetMany(this.standardMaterialShaderData.lightDynamicObjectShadowMapMasks, i * 4, this.shadowMapMasksForDynamicObjectsByChannel[lightRenderState.shadowMapChannel]);
-                this.standardMaterialShaderData.pointLightShadowMapSamplers[i] = 6 + i;
+                this.standardMaterialShaderData.lightCastsShadows[i] = light.castsShadows ? 1 : 0;
 
-                gl.activeTexture(gl.TEXTURE6 + i);
-                gl.bindTexture(gl.TEXTURE_CUBE_MAP, engine.shadowMapManager.shadowMaps[lightRenderState.shadowMapIndex].cubeTexture);
+                if (light.castsShadows) {
+
+                    util.arraySetMany(this.standardMaterialShaderData.lightStaticObjectShadowMapMasks, i * 4, this.shadowMapMasksForStaticObjectsByChannel[lightRenderState.shadowMapChannel]);
+                    util.arraySetMany(this.standardMaterialShaderData.lightDynamicObjectShadowMapMasks, i * 4, this.shadowMapMasksForDynamicObjectsByChannel[lightRenderState.shadowMapChannel]);
+                    this.standardMaterialShaderData.pointLightShadowMapSamplers[i] = 6 + i;
+
+                    gl.activeTexture(gl.TEXTURE6 + i);
+                    gl.bindTexture(gl.TEXTURE_CUBE_MAP, engine.shadowMapManager.shadowMaps[lightRenderState.shadowMapIndex].cubeTexture);
+
+                } else {
+
+                    util.arraySetMany(this.standardMaterialShaderData.lightStaticObjectShadowMapMasks, i * 4, math3D.zeroVec4);
+                    util.arraySetMany(this.standardMaterialShaderData.lightDynamicObjectShadowMapMasks, i * 4, math3D.zeroVec4);
+                    this.standardMaterialShaderData.pointLightShadowMapSamplers[i] = 3; // Point it at the reflection-cube texture unit, so that it always has something to point to, even if it isn't used.
+                }
 
             } else {
 
@@ -1082,6 +1095,7 @@
                 util.arraySetMany(this.standardMaterialShaderData.lightPositions, i * 3, math3D.zeroVec3);
                 this.standardMaterialShaderData.lightRadiusSqrs[i] = 0;
                 util.arraySetMany(this.standardMaterialShaderData.lightColours, i * 3, math3D.zeroVec3);
+                this.standardMaterialShaderData.lightCastsShadows[i] = 0;
                 util.arraySetMany(this.standardMaterialShaderData.lightStaticObjectShadowMapMasks, i * 4, math3D.zeroVec4);
                 util.arraySetMany(this.standardMaterialShaderData.lightDynamicObjectShadowMapMasks, i * 4, math3D.zeroVec4);
                 this.standardMaterialShaderData.pointLightShadowMapSamplers[i] = 3; // Point it at the reflection-cube texture unit, so that it always has something to point to, even if it isn't used.
@@ -1092,6 +1106,7 @@
         gl.uniform3fv(effect.uniforms.lightWorldSpacePositions, this.standardMaterialShaderData.lightPositions);
         gl.uniform1fv(effect.uniforms.lightRadiusSqrs, this.standardMaterialShaderData.lightRadiusSqrs);
         gl.uniform3fv(effect.uniforms.lightColours, this.standardMaterialShaderData.lightColours);
+        gl.uniform1iv(effect.uniforms.lightCastsShadows, this.standardMaterialShaderData.lightCastsShadows);
         gl.uniform4fv(effect.uniforms.lightStaticObjectShadowMapMasks, this.standardMaterialShaderData.lightStaticObjectShadowMapMasks);
         gl.uniform4fv(effect.uniforms.lightDynamicObjectShadowMapMasks, this.standardMaterialShaderData.lightDynamicObjectShadowMapMasks);
         gl.uniform3fv(effect.uniforms.cameraWorldSpacePosition, camera.position);

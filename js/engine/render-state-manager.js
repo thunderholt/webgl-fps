@@ -70,6 +70,10 @@
 
             var light = engine.map.lightsById[lightId];
 
+            if (!light.enabled || !light.castsShadows) {
+                continue;
+            }
+
             var lightRenderState = this.coalesceLightRenderState(light.id);
 
             if (lightRenderState.shadowMapIndex == null) {
@@ -145,6 +149,8 @@
 
             //lightRenderState.rebuildWorldStaticMeshEffectivenessThisFrame = lightRenderState.isDirty;
 
+            
+
             if (light.type == 'point') {
 
                 for (var faceIndex = 0; faceIndex < 6; faceIndex++) {
@@ -168,16 +174,25 @@
                     engine.visibilityManager.gatherVisibleActorIds(
                         faceRenderState.visibleActorIds, light.position, faceRenderState.frustum);
 
-                    faceRenderState.rebuildForStaticObjectsThisFrame =
-                        lightRenderState.isDirty ||
-                        faceRenderState.lastStaticObjectBuildResult == ShadowMapBuildResult.NotBuilt;
+                    if (light.castsShadows) {
 
-                    faceRenderState.rebuildForDynamicObjectsThisFrame =
-                        faceRenderState.visibleActorIds.length > 0 ||
-                        (faceRenderState.visibleActorIds.length == 0 && faceRenderState.lastDynamicObjectBuildResult == ShadowMapBuildResult.BuiltWithDynamicObjects) ||
-                        faceRenderState.lastDynamicObjectBuildResult == ShadowMapBuildResult.NotBuilt;
+                        faceRenderState.rebuildForStaticObjectsThisFrame =
+                            lightRenderState.isDirty ||
+                            faceRenderState.lastStaticObjectBuildResult == ShadowMapBuildResult.NotBuilt;
+
+                        faceRenderState.rebuildForDynamicObjectsThisFrame =
+                            faceRenderState.visibleActorIds.length > 0 ||
+                            (faceRenderState.visibleActorIds.length == 0 && faceRenderState.lastDynamicObjectBuildResult == ShadowMapBuildResult.BuiltWithDynamicObjects) ||
+                            faceRenderState.lastDynamicObjectBuildResult == ShadowMapBuildResult.NotBuilt;
+
+                    } else {
+
+                        faceRenderState.rebuildForStaticObjectsThisFrame = false;
+                        faceRenderState.rebuildForDynamicObjectsThisFrame = false;
+                    }
                 }
             }
+            
 
             lightRenderState.isDirty = false;
         }
