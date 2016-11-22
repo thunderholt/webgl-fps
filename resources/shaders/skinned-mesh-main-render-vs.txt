@@ -21,25 +21,25 @@ varying vec3 fragmentNormal;
 varying vec3 fragmentBitangent;*/
 varying vec2 texCoord;
 
-vec4 transformVectorByBone(int boneIndex, vec3 v);
+vec3 transformVectorByBone(int boneIndex, vec3 v);
 vec3 transformVectorByBoneRotationOnly(int boneIndex, vec3 v);
 mat4 getBoneMatrix(int boneIndex);
 
 void main(void) 
 {
 	// Calculate the skinned position.
-	vec4 positionTransformedByFirstBone = transformVectorByBone(int(firstBoneIndex), vertexPosition);
-	vec4 positionTransformedBySecondBone = transformVectorByBone(int(secondBoneIndex), vertexPosition);
-	vec4 positionTransformedByThirdBone = transformVectorByBone(int(thirdBoneIndex), vertexPosition);
-	vec4 positionTransformedByFourthBone = transformVectorByBone(int(fourthBoneIndex), vertexPosition);
+	vec3 positionTransformedByFirstBone = transformVectorByBone(int(firstBoneIndex), vertexPosition);
+	vec3 positionTransformedBySecondBone = transformVectorByBone(int(secondBoneIndex), vertexPosition);
+	vec3 positionTransformedByThirdBone = transformVectorByBone(int(thirdBoneIndex), vertexPosition);
+	vec3 positionTransformedByFourthBone = transformVectorByBone(int(fourthBoneIndex), vertexPosition);
 
-	vec4 positionTransformedByBones = 
+	vec3 positionTransformedByBones = 
 		(positionTransformedByFirstBone * firstWeight) +
 		(positionTransformedBySecondBone * secondWeight) +
 		(positionTransformedByThirdBone * thirdWeight) +
 		(positionTransformedByFourthBone * fourthWeight);
 	
-	vec4 tempWorldSpacePosition = worldMatrix * positionTransformedByBones;
+	vec4 tempWorldSpacePosition = worldMatrix * vec4(positionTransformedByBones, 1.0);
 
 	// Calculate the skinned normal.
 	vec3 normalTransformedByFirstBone = transformVectorByBoneRotationOnly(int(firstBoneIndex), vertexNormal);
@@ -66,7 +66,7 @@ void main(void)
     gl_Position = viewProjMatrix * tempWorldSpacePosition;
 }
 
-vec4 transformVectorByBone(int boneIndex, vec3 v) 
+vec3 transformVectorByBone(int boneIndex, vec3 v) 
 {
 	if (boneIndex != -1) 
 	{
@@ -74,11 +74,11 @@ vec4 transformVectorByBone(int boneIndex, vec3 v)
 
 		vec4 vectorTransformedByBone = boneMatrix * vec4(v, 1.0);
 
-		return vectorTransformedByBone;
+		return vectorTransformedByBone.xyz;
 	}
 	else 
 	{
-		return vec4(0, 0, 0, 0);
+		return vec3(0, 0, 0);
 	}
 }
 

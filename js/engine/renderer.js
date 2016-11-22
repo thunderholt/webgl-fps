@@ -751,7 +751,10 @@
 
         var material = this.coalesceMaterial('tiled-floor-1'); // FIXME!
 
-        this.prepareStandardMaterial(material, this.effect, this.renderSkinnedMeshOptions.effectiveLightIds, engine.camera);
+        if (this.renderingParameters.mode == 'main-render') {
+
+            this.prepareStandardMaterial(material, this.effect, this.renderSkinnedMeshOptions.effectiveLightIds, engine.camera);
+        }
 
         // Draw the skinned mesh's triangles.
         gl.drawArrays(gl.TRIANGLES, 0, skinnedMesh.numberOfFaces);
