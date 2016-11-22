@@ -454,7 +454,7 @@
         }
         else {
 
-            // Render actor meshes.
+            // Render static actor meshes.
             if (isBackPass) {
 
                 this.effect = engine.effectManager.useEffect('static-mesh-shadow-map-build-back-pass');
@@ -468,11 +468,25 @@
             gl.uniform4fv(this.effect.uniforms.shadowMapMask, this.shadowMapMasksForDynamicObjectsByChannel[lightRenderState.shadowMapChannel]);
             gl.uniform1f(this.effect.uniforms.shadowMapSize, engine.shadowMapManager.bufferSize);
 
+            this.renderActorStaticMeshes(faceRenderState.visibleActorIds);
+
+            // Render static skinned meshes.
+            if (isBackPass) {
+
+                this.effect = engine.effectManager.useEffect('skinned-mesh-shadow-map-build-back-pass');
+
+            } else {
+
+                this.effect = engine.effectManager.useEffect('skinned-mesh-shadow-map-build-front-pass');
+            }
+
+            gl.uniform3fv(this.effect.uniforms.lightWorldPosition, light.position);
+            gl.uniform4fv(this.effect.uniforms.shadowMapMask, this.shadowMapMasksForDynamicObjectsByChannel[lightRenderState.shadowMapChannel]);
+            gl.uniform1f(this.effect.uniforms.shadowMapSize, engine.shadowMapManager.bufferSize);
+
+            this.renderActorSkinnedMeshes(faceRenderState.visibleActorIds);
+
             if (faceRenderState.visibleActorIds.length > 0) {
-
-                this.renderActorStaticMeshes(faceRenderState.visibleActorIds);
-
-                // TODO - Actor skinned meshes.
 
                 faceRenderState.lastDynamicObjectBuildResult = ShadowMapBuildResult.BuiltWithDynamicObjects;
 

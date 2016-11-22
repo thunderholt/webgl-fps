@@ -1,0 +1,86 @@
+attribute vec3 vertexPosition;
+attribute float firstBoneIndex;
+attribute float secondBoneIndex;
+attribute float thirdBoneIndex;
+attribute float fourthBoneIndex;
+attribute float firstWeight;
+attribute float secondWeight;
+attribute float thirdWeight;
+attribute float fourthWeight;
+
+uniform mat4 worldMatrix;
+uniform mat4 viewProjMatrix;
+uniform mat4 boneMatrices[30];
+
+varying vec3 worldVertexPosition;
+
+vec4 transformVectorByBone(int boneIndex, vec3 v);
+vec3 transformVectorByBoneRotationOnly(int boneIndex, vec3 v);
+mat4 getBoneMatrix(int boneIndex);
+
+void main(void) 
+{
+	// Calculate the skinned position.
+	vec4 positionTransformedByFirstBone = transformVectorByBone(int(firstBoneIndex), vertexPosition);
+	vec4 positionTransformedBySecondBone = transformVectorByBone(int(secondBoneIndex), vertexPosition);
+	vec4 positionTransformedByThirdBone = transformVectorByBone(int(thirdBoneIndex), vertexPosition);
+	vec4 positionTransformedByFourthBone = transformVectorByBone(int(fourthBoneIndex), vertexPosition);
+
+	vec4 positionTransformedByBones = 
+		(positionTransformedByFirstBone * firstWeight) +
+		(positionTransformedBySecondBone * secondWeight) +
+		(positionTransformedByThirdBone * thirdWeight) +
+		(positionTransformedByFourthBone * fourthWeight);
+	
+	vec4 tempWorldSpacePosition = worldMatrix * positionTransformedByBones;
+
+	// Output values.
+	worldVertexPosition = tempWorldSpacePosition.xyz;
+
+    gl_Position = viewProjMatrix * tempWorldSpacePosition;
+}
+
+vec4 transformVectorByBone(int boneIndex, vec3 v) 
+{
+	if (boneIndex != -1) 
+	{
+		mat4 boneMatrix = getBoneMatrix(boneIndex);
+
+		vec4 vectorTransformedByBone = boneMatrix * vec4(v, 1.0);
+
+		return vectorTransformedByBone;
+	}
+	else 
+	{
+		return vec4(0, 0, 0, 0);
+	}
+}
+
+vec3 transformVectorByBoneRotationOnly(int boneIndex, vec3 v) 
+{
+	if (boneIndex != -1) 
+	{
+		mat4 boneMatrix = getBoneMatrix(boneIndex);
+
+		vec3 vectorTransformedByBone = mat3(boneMatrix) * v;
+
+		return vectorTransformedByBone;
+	}
+	else 
+	{
+		return vec3(0, 0, 0);
+	}
+}
+
+mat4 getBoneMatrix(int boneIndex) 
+{
+	for (int i = 0; i < 30; i++) 
+	{
+        if (i == boneIndex) 
+		{
+			return boneMatrices[i];
+		}
+    }
+
+	return boneMatrices[0]; // This just shuts the compiler up. This should never happen.
+}

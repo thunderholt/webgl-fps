@@ -96,15 +96,64 @@
   },
 
   "static-mesh-shadow-map-build-front-pass": {
-		"id": "static-mesh-shadow-map-build-front-pass",
+    "id": "static-mesh-shadow-map-build-front-pass",
+
+    "attributes": {
+      "vertexPosition": null
+    },
+
+    "uniforms": {
+      "worldMatrix": null,
+      "viewProjMatrix": null,
+      "lightWorldPosition": null,
+      "shadowMapMask": null,
+      "shadowMapSize": null
+    }
+  },
+
+  "skinned-mesh-shadow-map-build-back-pass": {
+    "id": "skinned-mesh-shadow-map-build-back-pass",
+
+    "attributes": {
+      "vertexPosition": null,
+      "firstBoneIndex": null,
+      "secondBoneIndex": null,
+      "thirdBoneIndex": null,
+      "fourthBoneIndex": null,
+      "firstWeight": null,
+      "secondWeight": null,
+      "thirdWeight": null,
+      "fourthWeight": null
+    },
+
+    "uniforms": {
+      "worldMatrix": null,
+      "viewProjMatrix": null,
+      "boneMatrices": null,
+      "lightWorldPosition": null,
+      "shadowMapMask": null
+    }
+  },
+
+  "skinned-mesh-shadow-map-build-front-pass": {
+		"id": "skinned-mesh-shadow-map-build-front-pass",
 
 		"attributes": {
-			"vertexPosition": null
+			"vertexPosition": null,
+      "firstBoneIndex": null,
+      "secondBoneIndex": null,
+      "thirdBoneIndex": null,
+      "fourthBoneIndex": null,
+      "firstWeight": null,
+      "secondWeight": null,
+      "thirdWeight": null,
+      "fourthWeight": null
 		},
 
 		"uniforms": {
       "worldMatrix": null,
 			"viewProjMatrix": null,
+      "boneMatrices": null,
 			"lightWorldPosition": null,
       "shadowMapMask": null,
       "shadowMapSize":  null

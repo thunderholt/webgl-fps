@@ -1,0 +1,16 @@
+precision mediump float;
+
+uniform vec3 lightWorldPosition;
+uniform vec4 shadowMapMask;
+
+varying vec3 worldVertexPosition;
+
+void main(void)
+{
+    vec3 lightToVertex = worldVertexPosition - lightWorldPosition;
+
+    float distanceSquared = dot(lightToVertex, lightToVertex);
+
+    gl_FragColor = shadowMapMask * distanceSquared;
+	//gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+}
