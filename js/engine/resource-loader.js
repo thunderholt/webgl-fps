@@ -70,6 +70,7 @@
             'static-mesh': 'static-meshes',
             'skinned-mesh': 'skinned-meshes',
             'skinned-mesh-animation': 'skinned-mesh-animations',
+            'sector-set': 'sector-sets',
             'shader': 'shaders',
             'material': 'materials',
             'texture': 'textures',

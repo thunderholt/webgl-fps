@@ -22,3 +22,7 @@ var EngineLimits = {
     MaxVisibleLightIdsForCamera: 1000,
     MaxEffectiveLightsPerObject: 5 
 }
+
+var RgbColours = {
+    Red: [1, 0, 0]
+}

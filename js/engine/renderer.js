@@ -11,7 +11,8 @@
         renderLightVolumeForLightId: null,
         renderLightVolumes: false,
         renderWorldStaticMeshAABBs: false,
-        renderActorBoundingSpheres: false
+        renderActorBoundingSpheres: false,
+        renderSectors: true
     };
 
     this.renderingParameters = {
@@ -80,6 +81,10 @@
         boneRotationMatrix: mat4.create(),
         slerpedRotationQuaternion: quat.create(),
         concatenatedBoneMatrices: []
+    }
+
+    this.renderSectorsTempValues = {
+        cubeFrom: vec3.create()
     }
 
     this.standardMaterialShaderData = {
@@ -305,6 +310,8 @@
         this.renderActorIdentifiers();
 
         this.renderActorBoundingSpheres();
+
+        this.renderSectors();
     }
 
     this.buildShadowMaps = function (visibleLightIds) {
@@ -998,7 +1005,7 @@
             if (this.renderingOptions.renderLightVolumes || this.renderingOptions.renderLightVolumeForLightId == light.id) {
 
                 engine.lineDrawer.drawSphere(this.renderingParameters, light.position, 0.1, light.colour, true);
-                engine.lineDrawer.drawSphere(this.renderingParameters, light.position, light.radius, [1, 1, 1], true);
+                engine.lineDrawer.drawSphere(this.renderingParameters, light.position, light.radius, RgbColours.Red, true);
             }
         }
     }
@@ -1019,7 +1026,7 @@
 
             var chunk = staticMesh.chunks[i];
 
-            engine.lineDrawer.drawCube(this.renderingParameters, chunk.aabb.from, math3D.calculateAABBSize(chunk.aabb), [1, 1, 1], false);
+            engine.lineDrawer.drawCube(this.renderingParameters, chunk.aabb.from, math3D.calculateAABBSize(chunk.aabb), RgbColours.Red, false);
         }
     }
 
@@ -1033,7 +1040,7 @@
 
             var actor = engine.map.actorsById[actorId];
 
-            engine.lineDrawer.drawSphere(this.renderingParameters, actor.position, 0.1, [1, 0, 0], false);
+            engine.lineDrawer.drawSphere(this.renderingParameters, actor.position, 0.1, RgbColours.Red, false);
         }
     }
 
@@ -1067,7 +1074,30 @@
             }
 
             if (sphereRadius > 0) {
-                engine.lineDrawer.drawSphere(this.renderingParameters, actor.position, sphereRadius, [1, 0, 0], false);
+                engine.lineDrawer.drawSphere(this.renderingParameters, actor.position, sphereRadius, RgbColours.Red, false);
+            }
+        }
+    }
+
+    this.renderSectors = function () {
+
+        if (!this.renderingOptions.renderSectors) {
+            return;
+        }
+
+        for (var x = 0; x < engine.sectorSet.metrics.sectorCount[0]; x++) {
+
+            for (var y = 0; y < engine.sectorSet.metrics.sectorCount[1]; y++) {
+
+                for (var z = 0; z < engine.sectorSet.metrics.sectorCount[2]; z++) {
+
+                    this.renderSectorsTempValues.cubeFrom[0] = x * engine.sectorSet.metrics.sectorSize[0];
+                    this.renderSectorsTempValues.cubeFrom[1] = y * engine.sectorSet.metrics.sectorSize[1];
+                    this.renderSectorsTempValues.cubeFrom[2] = z * -engine.sectorSet.metrics.sectorSize[2];
+
+
+                    engine.lineDrawer.drawCube(this.renderingParameters, this.renderSectorsTempValues.cubeFrom, engine.sectorSet.metrics.sectorSize, RgbColours.Red, false);
+                }
             }
         }
     }

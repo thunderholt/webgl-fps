@@ -4,6 +4,7 @@
 
     // Data.
     this.map = null;
+    this.sectorSet = null;
     this.mapIsReady = false;
     this.actorControllersById = {};
     this.mode = 'editor';
@@ -133,23 +134,28 @@
 
         self.textureManager.cleanUp();
         self.staticMeshManager.cleanUp();
+        self.skinnedMeshManager.cleanUp();
+        self.skinnedMeshAnimationManager.cleanUp();
 
-        this.resourceLoader.loadJsonResource('map', mapId, function (map) {
+        var worldStaticMeshLoadOptions = {
+            buildChunkAABBs: true,
+            buildChunkCollisionFaces: true
+        }
 
-            self.map = map;
+        self.resourceLoader.loadJsonResource('map', mapId, function (map) {
 
-            var worldStaticMeshLoadOptions = {
-                buildChunkAABBs: true,
-                buildChunkCollisionFaces: true
-            }
+            self.staticMeshManager.loadStaticMesh(map.worldStaticMeshId, worldStaticMeshLoadOptions, function () {
 
-            self.staticMeshManager.loadStaticMesh(self.map.worldStaticMeshId, worldStaticMeshLoadOptions, function () {
+                self.resourceLoader.loadJsonResource('sector-set', map.sectorSetId, function (sectorSet) {
 
-                self.mapIsReady = true;
+                    self.map = map;
+                    self.sectorSet = sectorSet;
+                    self.mapIsReady = true;
 
-                if (callback != null) {
-                    callback();
-                }
+                    if (callback != null) {
+                        callback();
+                    }
+                });
             });
         });
     }
