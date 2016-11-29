@@ -50,19 +50,25 @@
 
     this.movePlayerThoughMap = function (movementNormal, movementAmount) {
 
+        var worldStaticMesh = engine.staticMeshManager.getStaticMesh(engine.map.worldStaticMeshId);
+
+        if (worldStaticMesh == null) {
+            return;
+        }
+
         var player = engine.map.player;
         var heightOffGround = 0.5;
 
         var collisionTestSphere = new Sphere(vec3.clone(player.position), 0.45);
         vec3.sub(collisionTestSphere.position, collisionTestSphere.position, [0, heightOffGround, 0]);
 
-        engine.mapManager.moveSphereThroughMap(
-			collisionTestSphere, movementNormal, movementAmount, true);
+        engine.staticMeshMathHelper.moveSphereThroughStaticMesh(
+			collisionTestSphere, worldStaticMesh, movementNormal, movementAmount, true);
 
         var gravity = 0.2;
 
-        engine.mapManager.moveSphereThroughMap(
-            collisionTestSphere,
+        engine.staticMeshMathHelper.moveSphereThroughStaticMesh(
+            collisionTestSphere, worldStaticMesh,
             [0, -1, 0], gravity * engine.frameTimer.frameDelta, false);
 
         /*if (this.cameraController.jumpPower == 0) {

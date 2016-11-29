@@ -27,6 +27,14 @@ function Ray(origin, normal) {
     this.normal = normal;
 }
 
+function CollisionLine(from, to, ray, length) {
+
+    this.from = from;
+    this.to = to;
+    this.ray = ray;
+    this.length = length;
+}
+
 function CollisionFace(points, facePlane, edgePlanes, freeNormalisedEdges, edgeLengths) {
 
     this.points = points;

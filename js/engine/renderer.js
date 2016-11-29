@@ -312,6 +312,12 @@
         this.renderActorBoundingSpheres();
 
         this.renderSectors();
+
+        //------ TEST CODE --------
+        var worldStaticMesh = engine.staticMeshManager.getStaticMesh(engine.map.worldStaticMeshId);
+        engine.stats.cameraIsWithinMap = engine.staticMeshMathHelper.determineIfPointIsWithinStaticMesh(engine.camera.position, worldStaticMesh);
+        engine.lineDrawer.drawSphere(this.renderingParameters, worldStaticMesh.pointCompletelyOutsideOfExtremities, 0.1, RgbColours.Red, false);
+        //-------------------------
     }
 
     this.buildShadowMaps = function (visibleLightIds) {

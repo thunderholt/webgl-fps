@@ -73,6 +73,13 @@
             numberOfShadowMapsBuiltThisFrameElement.innerHTML = engine.stats.numberOfShadowMapsBuiltThisFrame;
         }
 
+        var cameraIsWithinMapElement = document.getElementById('camera-is-within-map');
+        if (cameraIsWithinMapElement != null) {
+            cameraIsWithinMapElement.innerHTML = engine.stats.cameraIsWithinMap;
+        }
+
+        
+
         this.lastTenFramesTotalDuration = 0;
         this.fpsCounterTickUp = 0;
     }

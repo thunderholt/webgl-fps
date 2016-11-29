@@ -1,11 +1,11 @@
-﻿function MapManager(engine) {
+﻿function StaticMeshMathHelper(engine) {
 
     this.init = function (callback) {
 
         callback();
     }
 
-    this.moveSphereThroughMap = function (sphere, desiredDirection, desiredDistance, allowSliding, recursionDepth) {
+    this.moveSphereThroughStaticMesh = function (sphere, staticMesh, desiredDirection, desiredDistance, allowSliding, recursionDepth) {
 
         if (desiredDirection[0] == 0 &&
 			desiredDirection[1] == 0 &&
@@ -19,11 +19,11 @@
 
         var nearestCollisionResult = null;
 
-        var staticMesh = engine.staticMeshManager.getStaticMesh(engine.map.worldStaticMeshId);
+        /*var staticMesh = engine.staticMeshManager.getStaticMesh(engine.map.worldStaticMeshId);
 
         if (staticMesh == null) {
             return;
-        }
+        }*/
 
         for (var chunkIndex = 0; chunkIndex < staticMesh.chunks.length; chunkIndex++) {
 
@@ -83,8 +83,48 @@
 
             if (slideReaction != null && slideReaction.distance > 0) {
 
-                this.moveSphereThroughMap(sphere, slideReaction.direction, slideReaction.distance, true, recursionDepth + 1);
+                this.moveSphereThroughStaticMesh(sphere, staticMesh, slideReaction.direction, slideReaction.distance, true, recursionDepth + 1);
             }
         }
+    }
+
+    this.determineIfPointIsWithinStaticMesh = function (point, staticMesh) {
+
+        var collisionLine = math3D.buildCollisionLineFromPoints(point, staticMesh.pointCompletelyOutsideOfExtremities);
+
+        //var numberOfCollisions = 0;
+
+        var faceIntersection = vec3.create();
+        var nearestFaceIntersectionDistanceSqr = null;
+        var nearestFaceIntersectionType = null;
+
+        for (var chunkIndex = 0; chunkIndex < staticMesh.chunks.length; chunkIndex++) {
+
+            var chunk = staticMesh.chunks[chunkIndex];
+
+            // TODO - AABB check
+
+            for (var faceIndex = 0; faceIndex < chunk.collisionFaces.length; faceIndex++) {
+
+                var collisionFace = chunk.collisionFaces[faceIndex];
+
+                var faceIntersectionType = math3D.calculateCollisionLineIntersectionWithCollisionFace(faceIntersection, collisionLine, collisionFace)
+
+                if (faceIntersectionType != FaceIntersectionType.None) {
+                    
+                    var faceIntersectionDistanceSqr = vec3.sqrDist(point, faceIntersection);
+                    if (nearestFaceIntersectionDistanceSqr == null || faceIntersectionDistanceSqr < nearestFaceIntersectionDistanceSqr) {
+                        nearestFaceIntersectionType = faceIntersectionType;
+                        nearestFaceIntersectionDistanceSqr = faceIntersectionDistanceSqr;
+                    }
+                }
+            }
+        }
+
+        return nearestFaceIntersectionType == FaceIntersectionType.FrontSide;
+
+        //var numberOfCollisionsIsOdd = numberOfCollisions % 2 == 1;
+
+        //return numberOfCollisionsIsOdd;
     }
 }

@@ -537,6 +537,15 @@
             var result = math3D.calculateRayIntersectionWithPlane(ray, plane);
 
             assert(result == null);
+
+            // Check 3.
+            var ray = new Ray([0, 5, 3], [1, 0, 0]);
+
+            var result = math3D.calculateRayIntersectionWithPlane(ray, plane);
+
+            assert(result[0] == 3);
+            assert(result[1] == 5);
+            assert(result[2] == 3);
         },
 
         "Math3D.calculateNearestPointOnRayToOtherPoint": function () {

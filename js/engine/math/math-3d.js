@@ -119,4 +119,5 @@
     util.copyObjectPropertiesToOtherObject(new MathPlane(), this);
     util.copyObjectPropertiesToOtherObject(new MathFrustum(), this);
     util.copyObjectPropertiesToOtherObject(new MathCollisionFace(), this);
+    util.copyObjectPropertiesToOtherObject(new MathCollisionLine(), this);
 }

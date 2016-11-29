@@ -26,3 +26,9 @@ var EngineLimits = {
 var RgbColours = {
     Red: [1, 0, 0]
 }
+
+var FaceIntersectionType = {
+    None: 0,
+    FrontSide: 1,
+    BackSide: 2
+}

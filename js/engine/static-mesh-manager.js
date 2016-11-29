@@ -83,6 +83,10 @@
             this.buildStaticMeshChunkCollisionFaces(staticMesh);
         }
 
+        if (options.findPointCompletelyOutsideOfExtremities) {
+            this.findStaticMeshPointCompletelyOutsideOfExtremities(staticMesh);
+        }
+
         staticMesh.buffers = {
             vertexBuffer: gl.createBuffer(),
             normalsBuffer: gl.createBuffer(),
@@ -193,6 +197,30 @@
                 chunk.collisionFaces.push(collisionFace);
             }
         }
+    }
+
+    this.findStaticMeshPointCompletelyOutsideOfExtremities = function (staticMesh) {
+
+        var max = null;
+
+        for (var i = 0; i < staticMesh.verts.length; i += 3) {
+
+            var vert = [staticMesh.verts[i], staticMesh.verts[i + 1], staticMesh.verts[i + 2]];
+
+            if (max == null) {
+                max = vert;
+            } else if (vert[0] > max[0]) {
+                max[0] = vert[0];
+            } else if (vert[1] > max[1]) {
+                max[1] = vert[1];
+            } else if (vert[2] < max[2]) {
+                max[2] = vert[2];
+            }
+        }
+
+        vec3.add(max, max, [10, 10, -10]);
+
+        staticMesh.pointCompletelyOutsideOfExtremities = max;
     }
 
     this.cleanUp = function () {

@@ -12,7 +12,8 @@
         numberOfVisibleWorldStaticMeshChunks: 0,
         numberOfVisibleActors: 0,
         numberOfShadowMapsBuiltThisFrame: 0,
-        numberOfVisibleLights: 0
+        numberOfVisibleLights: 0,
+        cameraIsWithinMap: false
     }
 
     // Game logic.
@@ -22,6 +23,7 @@
     this.shadowMapManager = new ShadowMapManager(this);
     this.lineDrawer = new LineDrawer(this);
     this.staticMeshManager = new StaticMeshManager(this);
+    this.staticMeshMathHelper = new StaticMeshMathHelper(this);
     this.skinnedMeshManager = new SkinnedMeshManager(this);
     this.skinnedMeshAnimationManager = new SkinnedMeshAnimationManager(this);
     this.resourceLoader = new ResourceLoader(this);
@@ -29,7 +31,6 @@
     this.visibilityManager = new VisibilityManager(this);
     this.renderer = new Renderer(this);
     this.renderStateManager = new RenderStateManager(this);
-    this.mapManager = new MapManager(this);
     this.camera = new Camera(this);
     this.freeLookCameraController = new FreeLookCameraController(this);
     this.playerController = new PlayerController(this);
@@ -45,8 +46,9 @@
 
         var initObjects = [
             this.glManager, this.textureManager, this.effectManager, this.shadowMapManager,
-            this.lineDrawer, this.staticMeshManager, this.skinnedMeshManager, this.skinnedMeshAnimationManager,
-            this.renderer, this.renderStateManager, this.mapManager,
+            this.lineDrawer, this.staticMeshManager, this.staticMeshMathHelper,
+            this.skinnedMeshManager, this.skinnedMeshAnimationManager,
+            this.renderer, this.renderStateManager,
             this.camera, this.freeLookCameraController, this.playerController,
             this.keyboard, this.mouse, this.frameTimer, this.editorHelper];
 
@@ -139,7 +141,8 @@
 
         var worldStaticMeshLoadOptions = {
             buildChunkAABBs: true,
-            buildChunkCollisionFaces: true
+            buildChunkCollisionFaces: true,
+            findPointCompletelyOutsideOfExtremities: true
         }
 
         self.resourceLoader.loadJsonResource('map', mapId, function (map) {
