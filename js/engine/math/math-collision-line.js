@@ -1,17 +1,21 @@
 ﻿function MathCollisionLine() {
 
-    this.buildCollisionLineFromPoints = function (from, to) {
+    this.buildCollisionLineFromFromAndToPoints = function (out) {
 
-        var freeVector = vec3.create();
-        vec3.sub(freeVector, to, from);
-        var length = vec3.length(freeVector);
+        //var freeVector = vec3.create();
+        vec3.copy(out.ray.origin, out.from);
 
-        var normal = vec3.create();
-        vec3.normalize(normal, freeVector);
+        vec3.sub(out.ray.normal, out.to, out.from);
+        out.length = vec3.length(out.ray.normal);
 
-        var line = new CollisionLine(from, to, new Ray(from, normal), length);
+        //var normal = vec3.create();
+        vec3.normalize(out.ray.normal, out.ray.normal);
 
-        return line;
+        
+
+        //var line = new CollisionLine(from, to, new Ray(from, normal), length);
+
+        //return out;
     }
 
     this.calculateCollisionLineIntersectionWithCollisionFace = function (out, line, face) {

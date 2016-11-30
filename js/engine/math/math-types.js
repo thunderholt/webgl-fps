@@ -23,16 +23,16 @@ function Frustum(planes) {
 
 function Ray(origin, normal) {
 
-    this.origin = origin;
-    this.normal = normal;
+    this.origin = origin || vec3.create();
+    this.normal = normal || vec3.create();
 }
 
 function CollisionLine(from, to, ray, length) {
 
-    this.from = from;
-    this.to = to;
-    this.ray = ray;
-    this.length = length;
+    this.from = from || vec3.create();
+    this.to = to || vec3.create()
+    this.ray = ray || new Ray();
+    this.length = length || 0;
 }
 
 function CollisionFace(points, facePlane, edgePlanes, freeNormalisedEdges, edgeLengths) {
