@@ -1,7 +1,7 @@
 ﻿editorApp.controller('EditorController', ['$scope', 'ws', function ($scope, ws) {
     
     $scope.mapMetaData = {
-        mapId: 'test-map-1'
+        mapId: 'test-map-2'
     }
 
     $scope.map = null;

@@ -4,7 +4,7 @@
 
     this.rotation = [0, 0, 0];
     this.rotateRate = 0.001;
-    this.moveRate = 0.1;
+    this.moveRate = 0.3;
 
     this.init = function (callback) {
 

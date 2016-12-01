@@ -10,7 +10,7 @@ engine.init(function () {
 
     if (typeof(isEditor) == 'undefined') {
 
-        engine.loadMap('test-map-1', function () {
+        engine.loadMap('test-map-2', function () {
 
             engine.startMap();
         });

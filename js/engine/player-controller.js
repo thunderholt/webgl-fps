@@ -3,7 +3,7 @@
     var self = this;
 
     this.rotateRate = 0.002;
-    this.moveRate = 0.1;
+    this.moveRate = 0.2;
 
     this.init = function (callback) {
 
@@ -57,7 +57,7 @@
         }
 
         var player = engine.map.player;
-        var heightOffGround = 0.5;
+        var heightOffGround = 1.0;
 
         var collisionTestSphere = new Sphere(vec3.clone(player.position), 0.45);
         vec3.sub(collisionTestSphere.position, collisionTestSphere.position, [0, heightOffGround, 0]);
