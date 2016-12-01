@@ -1,4 +1,4 @@
-﻿editorApp.controller('MapController', ['$scope', '$rootScope', function ($scope, $rootScope) {
+﻿editorApp.controller('MapController', ['$scope', '$rootScope', 'sectorSetBuilder', function ($scope, $rootScope, sectorSetBuilder) {
     
     $scope.chooseWorldStaticMesh = function () {
 
@@ -10,7 +10,13 @@
                 engine.reloadWorldMeshSet();
             }
         });
+    }
 
-        
+    $scope.rebuildSectorSet = function () {
+
+        engine.resourceLoader.loadJsonResource('static-mesh', $scope.map.worldStaticMeshId, function (staticMesh) {
+
+            sectorSetBuilder.buildSectorSetForStaticMesh(staticMesh);
+        });
     }
 }]);

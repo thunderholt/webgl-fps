@@ -5,6 +5,107 @@
         callback();
     }
 
+    this.buildStaticMeshRotationSafeBoundingSphereRadius = function (staticMesh) {
+
+        var verts = staticMesh.verts;
+        var points = [];
+
+        for (var i = 0; i < staticMesh.verts.length; i += 3) {
+
+            var point = [verts[i], verts[i + 1], verts[i + 2]];
+
+            points.push(point);
+        }
+
+        var radius = math3D.buildBoundingSphereRadiusAtOriginFromPoints(points);
+
+        staticMesh.rotationSafeBoundingSphereRadius = radius;
+    }
+
+    this.buildStaticMeshChunkAABBs = function (staticMesh) {
+
+        var indecies = staticMesh.indecies;
+        var verts = staticMesh.verts;
+
+        for (var chunkIndex = 0; chunkIndex < staticMesh.chunks.length; chunkIndex++) {
+
+            var chunk = staticMesh.chunks[chunkIndex];
+
+            var chunkPoints = [];
+
+            for (var i = chunk.startIndex; i < chunk.startIndex + chunk.numFaces * 3; i += 3) {
+
+                var vertIndex0 = indecies[i] * 3;
+                var vertIndex1 = indecies[i + 1] * 3;
+                var vertIndex2 = indecies[i + 2] * 3;
+
+                var facePoints = [
+					[verts[vertIndex0], verts[vertIndex0 + 1], verts[vertIndex0 + 2]],
+					[verts[vertIndex1], verts[vertIndex1 + 1], verts[vertIndex1 + 2]],
+					[verts[vertIndex2], verts[vertIndex2 + 1], verts[vertIndex2 + 2]]
+                ];
+
+                util.arrayPushMany(chunkPoints, facePoints);
+            }
+
+            chunk.aabb = math3D.buildAABBFromPoints(chunkPoints);
+        }
+    }
+
+    this.buildStaticMeshChunkCollisionFaces = function (staticMesh) {
+
+        var indecies = staticMesh.indecies;
+        var verts = staticMesh.verts;
+
+        for (var chunkIndex = 0; chunkIndex < staticMesh.chunks.length; chunkIndex++) {
+
+            var chunk = staticMesh.chunks[chunkIndex];
+
+            chunk.collisionFaces = [];
+
+            for (var i = chunk.startIndex; i < chunk.startIndex + chunk.numFaces * 3; i += 3) {
+
+                var vertIndex0 = indecies[i] * 3;
+                var vertIndex1 = indecies[i + 1] * 3;
+                var vertIndex2 = indecies[i + 2] * 3;
+
+                var facePoints = [
+					[verts[vertIndex0], verts[vertIndex0 + 1], verts[vertIndex0 + 2]],
+					[verts[vertIndex1], verts[vertIndex1 + 1], verts[vertIndex1 + 2]],
+					[verts[vertIndex2], verts[vertIndex2 + 1], verts[vertIndex2 + 2]]
+                ];
+
+                var collisionFace = math3D.buildCollisionFaceFromPoints(facePoints);
+
+                chunk.collisionFaces.push(collisionFace);
+            }
+        }
+    }
+
+    this.findStaticMeshPointCompletelyOutsideOfExtremities = function (staticMesh) {
+
+        var max = null;
+
+        for (var i = 0; i < staticMesh.verts.length; i += 3) {
+
+            var vert = [staticMesh.verts[i], staticMesh.verts[i + 1], staticMesh.verts[i + 2]];
+
+            if (max == null) {
+                max = vert;
+            } else if (vert[0] > max[0]) {
+                max[0] = vert[0];
+            } else if (vert[1] > max[1]) {
+                max[1] = vert[1];
+            } else if (vert[2] < max[2]) {
+                max[2] = vert[2];
+            }
+        }
+
+        vec3.add(max, max, [10, 10, -10]);
+
+        staticMesh.pointCompletelyOutsideOfExtremities = max;
+    }
+
     this.moveSphereThroughStaticMesh = function (sphere, staticMesh, desiredDirection, desiredDistance, allowSliding, recursionDepth) {
 
         if (desiredDirection[0] == 0 &&
@@ -90,7 +191,9 @@
 
     this.determineIfPointIsWithinStaticMesh = function (point, staticMesh) {
 
-        var collisionLine = math3D.buildCollisionLineFromPoints(point, staticMesh.pointCompletelyOutsideOfExtremities);
+        var collisionLine = new CollisionLine(point, staticMesh.pointCompletelyOutsideOfExtremities);
+
+        math3D.buildCollisionLineFromFromAndToPoints(collisionLine);
 
         //var numberOfCollisions = 0;
 

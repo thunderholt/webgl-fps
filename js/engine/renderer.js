@@ -1101,6 +1101,7 @@
                     this.renderSectorsTempValues.cubeFrom[1] = y * engine.sectorSet.metrics.sectorSize[1];
                     this.renderSectorsTempValues.cubeFrom[2] = z * -engine.sectorSet.metrics.sectorSize[2];
 
+                    vec3.add(this.renderSectorsTempValues.cubeFrom, engine.sectorSet.metrics.rootOrigin, this.renderSectorsTempValues.cubeFrom);
 
                     engine.lineDrawer.drawCube(this.renderingParameters, this.renderSectorsTempValues.cubeFrom, engine.sectorSet.metrics.sectorSize, RgbColours.Red, false);
                 }
