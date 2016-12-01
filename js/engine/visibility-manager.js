@@ -1,5 +1,33 @@
 ﻿function VisibilityManager(engine) {
 
+    this.getSectorIndexAtPosition = function (position) {
+
+        var rootOrigin = engine.sectorSet.metrics.rootOrigin;
+        var sectorSize = engine.sectorSet.metrics.sectorSize;
+
+        var x = Math.floor((position[0] - rootOrigin[0]) / sectorSize[0]);
+        var y = Math.floor((position[1] - rootOrigin[1]) / sectorSize[1]);
+        var z = Math.floor(-(position[2] - rootOrigin[2]) / sectorSize[2]);
+
+        return this.getSectorIndexFromComponents(x, y, z);
+    }
+
+    this.getSectorIndexFromComponents = function (x, y, z) {
+
+        var sectorCount = engine.sectorSet.metrics.sectorCount;
+
+        if (x < 0 || y < 0 || z < 0 || x > sectorCount[0] || y > sectorCount[1] || z > sectorCount[2]) {
+            return -1;
+        }
+
+        var index =
+            x * sectorCount[1] * sectorCount[2] +
+            y * sectorCount[1] +
+            z;
+
+        return index;
+    }
+
     this.gatherVisibleWorldStaticMeshChunkIndexes = function (out, position, frustum) {
 
         // TODO - allow sphere to be passed for extra culling for lights.

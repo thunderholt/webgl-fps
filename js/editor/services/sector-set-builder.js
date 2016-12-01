@@ -11,9 +11,9 @@
 
             var sectorSet = {
                 metrics: {
-                    sectorCount: [5, 2, 5],
-                    sectorSize: [4, 4, 4],
-                    rootOrigin: [-10, 0, 10]
+                    sectorCount: [4, 1, 3],
+                    sectorSize: [12, 12, 12],
+                    rootOrigin: [-24, 0, 12]
                 },
                 sectors: []
             }
@@ -24,7 +24,7 @@
 
                 sectorPointsByIndex[sectorIndex] = [];
 
-                for (var i = 0; i < 1000; i++) {
+                for (var i = 0; i < 100; i++) {
 
                     var point = vec3.create();
                     
@@ -59,35 +59,16 @@
                             line.to = sectorPointsByIndex[sectorBIndex][j];
                             math3D.buildCollisionLineFromFromAndToPoints(line);
 
-                            if (self.determineIfLineIntersectsAnyFace(line, staticMesh)) {
+                            if (!self.determineIfLineIntersectsAnyFace(line, staticMesh)) {
+                                sector.visibleSectorIndexes.push(sectorBIndex);
                                 return;
                             }
-
-                            sector.visibleSectorIndexes.push(sectorBIndex);
                         }
                     }
-
-                    /*for (var i = 0; i < 10000; i++) {
-
-                        self.createRandomLineBetweenSectors(
-                            line, sectorSet.metrics, sectorAOrigin, sectorBOrigin);
-
-                        if (!engine.staticMeshMathHelper.determineIfPointIsWithinStaticMesh(line.from, staticMesh)) {
-                            return;
-                        }
-
-                        if (!engine.staticMeshMathHelper.determineIfPointIsWithinStaticMesh(line.to, staticMesh)) {
-                            return;
-                        }
-
-                        if (self.determineIfLineIntersectsAnyFace(line, staticMesh)) {
-                            return;
-                        }
-
-                        sector.visibleSectorIndexes.push(sectorBIndex);
-                    }*/
                 });
             });
+
+            return sectorSet;
         },
 
         forEachSector: function (sectorSet, callback) {

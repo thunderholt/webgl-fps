@@ -32,6 +32,19 @@
             return FaceIntersectionType.None;
         }
 
+        //var lineFromToFacePlaneIntersection = vec3.create();
+
+        //vec3.sub(lineFromToFacePlaneIntersection, facePlaneIntersection, line.from);
+
+        var distanceToFacePlaneIntersectionSqr = vec3.squaredDistance(line.from, facePlaneIntersection);
+
+        var lineLengthSqr = line.length * line.length;
+
+        if (distanceToFacePlaneIntersectionSqr > lineLengthSqr) {
+            return FaceIntersectionType.None;
+        }
+        
+
         if (out != null) {
             vec3.copy(out, facePlaneIntersection);
         }

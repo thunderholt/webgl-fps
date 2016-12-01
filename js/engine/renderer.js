@@ -1091,11 +1091,17 @@
             return;
         }
 
+        var cameraSectorIndex = engine.visibilityManager.getSectorIndexAtPosition(engine.camera.position);
+
+        var cameraSector = engine.sectorSet.sectors[cameraSectorIndex];
+
         for (var x = 0; x < engine.sectorSet.metrics.sectorCount[0]; x++) {
 
             for (var y = 0; y < engine.sectorSet.metrics.sectorCount[1]; y++) {
 
                 for (var z = 0; z < engine.sectorSet.metrics.sectorCount[2]; z++) {
+
+                    var sectorIndex = engine.visibilityManager.getSectorIndexFromComponents(x, y, z);
 
                     this.renderSectorsTempValues.cubeFrom[0] = x * engine.sectorSet.metrics.sectorSize[0];
                     this.renderSectorsTempValues.cubeFrom[1] = y * engine.sectorSet.metrics.sectorSize[1];
@@ -1103,7 +1109,19 @@
 
                     vec3.add(this.renderSectorsTempValues.cubeFrom, engine.sectorSet.metrics.rootOrigin, this.renderSectorsTempValues.cubeFrom);
 
-                    engine.lineDrawer.drawCube(this.renderingParameters, this.renderSectorsTempValues.cubeFrom, engine.sectorSet.metrics.sectorSize, RgbColours.Red, false);
+                    var colour = null;
+                    if (sectorIndex == cameraSectorIndex) {
+                        colour = RgbColours.Green;
+                    } else {
+
+                        if (cameraSector != null && util.arrayIndexOf(cameraSector.visibleSectorIndexes, sectorIndex) != -1) {
+                            colour = RgbColours.Blue;
+                        } else {
+                            colour = RgbColours.Red;
+                        }
+                    }
+
+                    engine.lineDrawer.drawCube(this.renderingParameters, this.renderSectorsTempValues.cubeFrom, engine.sectorSet.metrics.sectorSize, colour, false);
                 }
             }
         }
