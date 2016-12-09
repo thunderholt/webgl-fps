@@ -19,6 +19,7 @@ var EngineLimits = {
     //MaxVisibleWorldStaticMeshChunkIndexesPerLight: 400,
     MaxVisibleActorsIdsPerLight: 100,
     MaxVisibleActorsIdsForCamera: 100,
+    //MaxActorResidentSectorIndexes: 16,
     MaxVisibleLightIdsForCamera: 1000,
     MaxEffectiveLightsPerObject: 5 
 }

@@ -83,8 +83,6 @@
 
     this.buildVisibleWorldStaticMeshChunkField = function (out, position, frustum, boundingSphere) {
 
-        // TODO - allow sphere to be passed for extra culling for lights.
-
         var staticMesh = engine.staticMeshManager.getStaticMesh(engine.map.worldStaticMeshId);
 
         if (staticMesh == null) {
@@ -135,13 +133,32 @@
 
     this.gatherVisibleActorIds = function (out, position, frustum, boundingSphere) {
 
-        // TODO - allow sphere to be passed for extra culling for lights.
+        var sectorIndex = this.getSectorIndexAtPosition(position);
+        var sector = engine.sectorSet.sectors[sectorIndex];
 
         out.length = 0;
 
         for (var actorId in engine.map.actorsById) {
 
             var actorRenderState = engine.renderStateManager.actorRenderStatesById[actorId];
+
+            if (sector != null) {
+
+                var actorIsPotentiallyVisible = false;
+
+                for (var i = 0; i < sector.visibleSectorIndexes.length; i++) {
+                    var visibleSectorIndex = sector.visibleSectorIndexes[i];
+
+                    if (actorRenderState.residentSectorIndexField.getBit(visibleSectorIndex)) {
+                        actorIsPotentiallyVisible = true;
+                        break;
+                    }
+                }
+
+                if (!actorIsPotentiallyVisible) {
+                    continue;
+                }
+            }
 
             if (frustum != null && !math3D.checkFrustumIntersectsSphere(frustum, actorRenderState.boundingSphere)) {
                 continue;
