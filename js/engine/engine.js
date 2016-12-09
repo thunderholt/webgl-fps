@@ -153,6 +153,7 @@
 
                     self.map = map;
                     self.sectorSet = sectorSet;
+                    self.visibilityManager.rebuildSectorStates();
                     self.mapIsReady = true;
 
                     if (callback != null) {

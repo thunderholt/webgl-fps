@@ -100,4 +100,19 @@
 
         return clampedPoint;
     }
+
+    this.checkAAABIntersectsAABB = function (aabb1, aabb2) {
+
+        if (aabb1.from[0] > aabb2.to[0] ||
+            aabb1.from[1] > aabb2.to[1] ||
+            aabb1.from[2] < aabb2.to[2] ||
+            aabb1.to[0] < aabb2.from[0] ||
+            aabb1.to[1] < aabb2.from[1] ||
+            aabb1.to[2] > aabb2.from[2]) {
+
+            return false;
+        }
+
+        return true;
+    }
 }

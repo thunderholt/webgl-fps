@@ -15,8 +15,8 @@ var FrustumPlane = {
 }
 
 var EngineLimits = {
-    MaxVisibleWorldStaticMeshChunkIndexesForCamera: 1000,
-    MaxVisibleWorldStaticMeshChunkIndexesPerLight: 400,
+    //MaxVisibleWorldStaticMeshChunkIndexesForCamera: 1000,
+    //MaxVisibleWorldStaticMeshChunkIndexesPerLight: 400,
     MaxVisibleActorsIdsPerLight: 100,
     MaxVisibleActorsIdsForCamera: 100,
     MaxVisibleLightIdsForCamera: 1000,

@@ -147,10 +147,6 @@
 
             var lightRenderState = this.coalesceLightRenderState(light.id);
 
-            //lightRenderState.rebuildWorldStaticMeshEffectivenessThisFrame = lightRenderState.isDirty;
-
-            
-
             if (light.type == 'point') {
 
                 for (var faceIndex = 0; faceIndex < 6; faceIndex++) {
@@ -167,12 +163,14 @@
                         faceRenderState.frustum = math3D.buildFrustumFromViewProjMatrix(
                             this.updateLightRenderStatesTempValues.viewProjMatrixForPointLightCubeMapFaceBuild);
 
-                        engine.visibilityManager.gatherVisibleWorldStaticMeshChunkIndexes(
-                            faceRenderState.visibleWorldStaticMeshChunkIndexes, light.position, faceRenderState.frustum);
+                        engine.visibilityManager.buildVisibleWorldStaticMeshChunkField(
+                            faceRenderState.visibleWorldStaticMeshChunkField, light.position,
+                            faceRenderState.frustum, lightRenderState.boundingSphere);
                     }
 
                     engine.visibilityManager.gatherVisibleActorIds(
-                        faceRenderState.visibleActorIds, light.position, faceRenderState.frustum);
+                        faceRenderState.visibleActorIds, light.position,
+                        faceRenderState.frustum, lightRenderState.boundingSphere);
 
                     if (light.castsShadows) {
 
@@ -359,7 +357,7 @@
                     rebuildForStaticObjectsThisFrame: false,
                     rebuildForDynamicObjectsThisFrame: false,
                     frustum: null,
-                    visibleWorldStaticMeshChunkIndexes: new FixedLengthArray(EngineLimits.MaxVisibleWorldStaticMeshChunkIndexesPerLight, 0),
+                    visibleWorldStaticMeshChunkField: new BitField(),//new FixedLengthArray(EngineLimits.MaxVisibleWorldStaticMeshChunkIndexesPerLight, 0),
                     visibleActorIds: new FixedLengthArray(EngineLimits.MaxVisibleActorsIdsPerLight, null),
                     lastStaticObjectBuildResult: ShadowMapBuildResult.NotBuilt,
                     lastDynamicObjectBuildResult: ShadowMapBuildResult.NotBuilt

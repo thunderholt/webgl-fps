@@ -41,13 +41,13 @@
     this.globalIlluminationNormals = [];
     this.globalIlluminationColours = [];
 
-    this.visibleWorldStaticMeshChunkIndexesForCamera = new FixedLengthArray(EngineLimits.MaxVisibleWorldStaticMeshChunkIndexesForCamera, 0);
+    this.visibleWorldStaticMeshChunkFieldForCamera = new BitField();//new FixedLengthArray(EngineLimits.MaxVisibleWorldStaticMeshChunkIndexesForCamera, 0);
     this.visibleActorIdsForCamera = new FixedLengthArray(EngineLimits.MaxVisibleActorsIdsForCamera, null);
     this.visibleLightIdsForCamera = new FixedLengthArray(EngineLimits.MaxVisibleLightIdsForCamera, null);
 
     this.renderStaticMeshOptions = {
         staticMeshChunkRenderStatesByIndex: null,
-        visibleChunkIndexes: null,
+        visibleChunkField: null,
         effectiveLightIds: null,
         position: null,
         rotation: null
@@ -257,16 +257,16 @@
 
         var cameraFrustum = math3D.buildFrustumFromViewProjMatrix(engine.camera.viewProjMatrix);
 
-        engine.visibilityManager.gatherVisibleWorldStaticMeshChunkIndexes(
-            this.visibleWorldStaticMeshChunkIndexesForCamera, engine.camera.position, cameraFrustum);
+        engine.visibilityManager.buildVisibleWorldStaticMeshChunkField(
+            this.visibleWorldStaticMeshChunkFieldForCamera, engine.camera.position, cameraFrustum, null);
 
         engine.visibilityManager.gatherVisibleActorIds(
-            this.visibleActorIdsForCamera, engine.camera.position, cameraFrustum);
+            this.visibleActorIdsForCamera, engine.camera.position, cameraFrustum, null);
 
          engine.visibilityManager.gatherVisibleLightIdsFromVisibleObjectsIds(
-            this.visibleLightIdsForCamera, this.visibleWorldStaticMeshChunkIndexesForCamera, this.visibleActorIdsForCamera);
+            this.visibleLightIdsForCamera, this.visibleWorldStaticMeshChunkFieldForCamera, this.visibleActorIdsForCamera);
 
-        engine.stats.numberOfVisibleWorldStaticMeshChunks = this.visibleWorldStaticMeshChunkIndexesForCamera.length;
+        engine.stats.numberOfVisibleWorldStaticMeshChunks = this.visibleWorldStaticMeshChunkFieldForCamera.countSetBits();
         engine.stats.numberOfVisibleActors = this.visibleActorIdsForCamera.length;
         engine.stats.numberOfVisibleLights = this.visibleLightIdsForCamera.length;
 
@@ -295,7 +295,7 @@
 
         this.prepareForStaticMeshMainRender();
 
-        this.renderWorldStaticMesh(this.visibleWorldStaticMeshChunkIndexesForCamera);
+        this.renderWorldStaticMesh(this.visibleWorldStaticMeshChunkFieldForCamera);
 
         this.renderActorStaticMeshes(this.visibleActorIdsForCamera);
 
@@ -461,7 +461,7 @@
             gl.uniform4fv(this.effect.uniforms.shadowMapMask, this.shadowMapMasksForStaticObjectsByChannel[lightRenderState.shadowMapChannel]);
             gl.uniform1f(this.effect.uniforms.shadowMapSize, engine.shadowMapManager.bufferSize);
             
-            this.renderWorldStaticMesh(faceRenderState.visibleWorldStaticMeshChunkIndexes);
+            this.renderWorldStaticMesh(faceRenderState.visibleWorldStaticMeshChunkField);
 
             faceRenderState.lastStaticObjectBuildResult = ShadowMapBuildResult.Built;
         }
@@ -520,7 +520,7 @@
         this.effect = engine.effectManager.useEffect('skinned-mesh-main-render');
     }
 
-    this.renderWorldStaticMesh = function (visibleChunkIndexes) {
+    this.renderWorldStaticMesh = function (visibleChunkField) {
 
         var staticMesh = engine.staticMeshManager.getStaticMesh(engine.map.worldStaticMeshId);
 
@@ -534,7 +534,7 @@
         };*/
 
         this.renderStaticMeshOptions.staticMeshChunkRenderStatesByIndex = engine.renderStateManager.worldStaticMeshChunkRenderStatesByIndex;
-        this.renderStaticMeshOptions.visibleChunkIndexes = visibleChunkIndexes;
+        this.renderStaticMeshOptions.visibleChunkField = visibleChunkField;
         this.renderStaticMeshOptions.effectiveLightIds = null;
         this.renderStaticMeshOptions.position = null;
         this.renderStaticMeshOptions.rotation = null;
@@ -563,7 +563,7 @@
             var actorRenderState = engine.renderStateManager.actorRenderStatesById[actor.id];
 
             this.renderStaticMeshOptions.staticMeshChunkRenderStatesByIndex = null;
-            this.renderStaticMeshOptions.visibleChunkIndexes = null;
+            this.renderStaticMeshOptions.visibleChunkField = null;
             this.renderStaticMeshOptions.effectiveLightIds = actorRenderState.effectiveLightIds;
             this.renderStaticMeshOptions.position = actor.position;
             this.renderStaticMeshOptions.rotation = actor.rotation;
@@ -653,13 +653,12 @@
         this.bindStaticMeshBuffersToEffect(staticMesh);
 
         // Render the chunks.
-        if (this.renderStaticMeshOptions.visibleChunkIndexes != null) {
-            for (var i = 0; i < this.renderStaticMeshOptions.visibleChunkIndexes.length; i++) {
-                this.renderStaticMeshChunk(staticMesh, this.renderStaticMeshOptions.visibleChunkIndexes.items[i]);
-            }
-        } else {
-            for (var i = 0; i < staticMesh.chunks.length; i++) {
-                this.renderStaticMeshChunk(staticMesh, i);
+        for (var chunkIndex = 0; chunkIndex < staticMesh.chunks.length; chunkIndex++) {
+
+            if (this.renderStaticMeshOptions.visibleChunkField == null ||
+                this.renderStaticMeshOptions.visibleChunkField.getBit(chunkIndex)) {
+
+                this.renderStaticMeshChunk(staticMesh, chunkIndex);
             }
         }
     }
@@ -1095,7 +1094,26 @@
 
         var cameraSector = engine.sectorSet.sectors[cameraSectorIndex];
 
-        for (var x = 0; x < engine.sectorSet.metrics.sectorCount[0]; x++) {
+        for (var sectorIndex = 0; sectorIndex < engine.sectorSet.sectors.length; sectorIndex++) {
+
+            var sectorState = engine.visibilityManager.sectorStatesBySectorIndex[sectorIndex];
+
+            var colour = null;
+            if (sectorIndex == cameraSectorIndex) {
+                colour = RgbColours.Green;
+            } else {
+
+                if (cameraSector != null && util.arrayIndexOf(cameraSector.visibleSectorIndexes, sectorIndex) != -1) {
+                    colour = RgbColours.Blue;
+                } else {
+                    colour = RgbColours.Red;
+                }
+            }
+
+            engine.lineDrawer.drawCube(this.renderingParameters, sectorState.origin, engine.sectorSet.metrics.sectorSize, colour, false);
+        }
+
+        /*for (var x = 0; x < engine.sectorSet.metrics.sectorCount[0]; x++) {
 
             for (var y = 0; y < engine.sectorSet.metrics.sectorCount[1]; y++) {
 
@@ -1124,7 +1142,7 @@
                     engine.lineDrawer.drawCube(this.renderingParameters, this.renderSectorsTempValues.cubeFrom, engine.sectorSet.metrics.sectorSize, colour, false);
                 }
             }
-        }
+        }*/
     }
 
     this.prepareStandardMaterial = function (material, effect, effectiveLightIds, camera) {

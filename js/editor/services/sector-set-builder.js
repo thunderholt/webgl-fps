@@ -20,11 +20,13 @@
 
             var sectorPointsByIndex = [];
 
+            console.log('Creating sector points.');
+
             self.forEachSector(sectorSet, function (sectorIndex, sectorOrigin) {
 
                 sectorPointsByIndex[sectorIndex] = [];
 
-                for (var i = 0; i < 100; i++) {
+                for (var i = 0; i < 200; i++) {
 
                     var point = vec3.create();
                     
@@ -40,9 +42,13 @@
 
             self.forEachSector(sectorSet, function (sectorAIndex, sectorAOrigin) {
 
+                console.log('Checking sector ' + sectorAIndex + '.');
+
                 var sector = {
                     visibleSectorIndexes: []
                 }
+
+                sector.visibleSectorIndexes.push(sectorAIndex);
 
                 sectorSet.sectors[sectorAIndex] = sector;
 
@@ -67,6 +73,8 @@
                     }
                 });
             });
+
+            console.log('Done!');
 
             return sectorSet;
         },

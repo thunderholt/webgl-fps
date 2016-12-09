@@ -773,6 +773,52 @@
             result = math3D.determineIfPointOnFacePlaneIsWithinCollisionFace(face, [2, -1, 3]);
 
             assert(result == false);
+        },
+
+        'BitField': function () {
+
+            var bf = new BitField();
+
+            bf.reset(20);
+
+            bf.setBit(0);
+            bf.setBit(0);
+            bf.setBit(3);
+            bf.setBit(4);
+            bf.setBit(7);
+            bf.setBit(9);
+            bf.unsetBit(9);
+            bf.setBit(9);
+            bf.unsetBit(10);
+            bf.setBit(11);
+            bf.setBit(12);
+            bf.setBit(13);
+            bf.setBit(14);
+            bf.unsetBit(17);
+            bf.unsetBit(17);
+            bf.setBit(19);
+
+            assert(bf.getBit(0));
+            assert(!bf.getBit(1));
+            assert(!bf.getBit(2));
+            assert(bf.getBit(3));
+            assert(bf.getBit(4));
+            assert(!bf.getBit(5));
+            assert(!bf.getBit(6));
+            assert(bf.getBit(7));
+            assert(!bf.getBit(8));
+            assert(bf.getBit(9));
+            assert(!bf.getBit(10));
+            assert(bf.getBit(11));
+            assert(bf.getBit(12));
+            assert(bf.getBit(13));
+            assert(bf.getBit(14));
+            assert(!bf.getBit(15));
+            assert(!bf.getBit(16));
+            assert(!bf.getBit(17));
+            assert(!bf.getBit(18));
+            assert(bf.getBit(19));
+            assert(bf.countSetBits() == 10);
         }
     }
 }

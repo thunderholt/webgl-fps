@@ -1,5 +1,58 @@
 ﻿function VisibilityManager(engine) {
 
+    this.sectorStatesBySectorIndex = null;
+
+    this.rebuildSectorStates = function () {
+
+        this.sectorStatesBySectorIndex = new Array(engine.sectorSet.sectors.length);
+
+        var staticMesh = engine.staticMeshManager.getStaticMesh(engine.map.worldStaticMeshId);
+
+        for (var x = 0; x < engine.sectorSet.metrics.sectorCount[0]; x++) {
+
+            for (var y = 0; y < engine.sectorSet.metrics.sectorCount[1]; y++) {
+
+                for (var z = 0; z < engine.sectorSet.metrics.sectorCount[2]; z++) {
+
+                    var sectorIndex = engine.visibilityManager.getSectorIndexFromComponents(x, y, z);
+
+                    var sectorState = {
+                        origin: vec3.create(),
+                        aabb: null,
+                        intersectingWorldStaticMeshChunkField: new BitField()
+                    }
+
+                    // Calculate the origin.
+                    vec3.set(sectorState.origin, x, y, -z);
+                    vec3.multiply(sectorState.origin, sectorState.origin, engine.sectorSet.metrics.sectorSize);
+                    vec3.add(sectorState.origin, engine.sectorSet.metrics.rootOrigin, sectorState.origin);
+
+                    // Calculate the AABB.
+                    var to = vec3.create();
+                    to[0] = sectorState.origin[0] + engine.sectorSet.metrics.sectorSize[0];
+                    to[1] = sectorState.origin[1] + engine.sectorSet.metrics.sectorSize[1];
+                    to[2] = sectorState.origin[2] - engine.sectorSet.metrics.sectorSize[2];
+                    sectorState.aabb = new AABB(sectorState.origin, to);
+
+                    // Build the intersecting world static mesh chunk field.
+                    sectorState.intersectingWorldStaticMeshChunkField.reset(staticMesh.chunks.length);
+
+                    for (var chunkIndex = 0; chunkIndex < staticMesh.chunks.length; chunkIndex++) {
+
+                        var chunk = staticMesh.chunks[chunkIndex];
+
+                        if (math3D.checkAAABIntersectsAABB(chunk.aabb, sectorState.aabb)) {
+                            sectorState.intersectingWorldStaticMeshChunkField.setBit(chunkIndex);
+                        }
+                    }
+
+                    // The sector state is built!
+                    this.sectorStatesBySectorIndex[sectorIndex] = sectorState;
+                }
+            }
+        }
+    }
+
     this.getSectorIndexAtPosition = function (position) {
 
         var rootOrigin = engine.sectorSet.metrics.rootOrigin;
@@ -16,7 +69,7 @@
 
         var sectorCount = engine.sectorSet.metrics.sectorCount;
 
-        if (x < 0 || y < 0 || z < 0 || x > sectorCount[0] || y > sectorCount[1] || z > sectorCount[2]) {
+        if (x < 0 || y < 0 || z < 0 || x >= sectorCount[0] || y >= sectorCount[1] || z >= sectorCount[2]) {
             return -1;
         }
 
@@ -28,7 +81,7 @@
         return index;
     }
 
-    this.gatherVisibleWorldStaticMeshChunkIndexes = function (out, position, frustum) {
+    this.buildVisibleWorldStaticMeshChunkField = function (out, position, frustum, boundingSphere) {
 
         // TODO - allow sphere to be passed for extra culling for lights.
 
@@ -38,24 +91,49 @@
             throw "World static mesh not loaded";
         }
 
-        out.length = 0;
+        var sectorIndex = this.getSectorIndexAtPosition(position);
+        var sector = engine.sectorSet.sectors[sectorIndex];
+
+        out.reset(staticMesh.chunks.length);
 
         for (var chunkIndex = 0;
-            chunkIndex < staticMesh.chunks.length &&
-            out.length < out.maxLength;
+            chunkIndex < staticMesh.chunks.length;
             chunkIndex++) {
 
             var chunk = staticMesh.chunks[chunkIndex];
 
-            var chunkIsVisible = math3D.checkFrustumIntersectsAABB(frustum, chunk.aabb);
+            if (sector != null) {
 
-            if (chunkIsVisible) {
-                out.items[out.length++] = chunkIndex;
+                var chunkIsPotentiallyVisible = false;
+
+                for (var i = 0; i < sector.visibleSectorIndexes.length; i++) {
+                    var visibleSectorIndex = sector.visibleSectorIndexes[i];
+                    var visibleSectorState = this.sectorStatesBySectorIndex[visibleSectorIndex];
+
+                    if (visibleSectorState.intersectingWorldStaticMeshChunkField.getBit(chunkIndex)) {
+                        chunkIsPotentiallyVisible = true;
+                        break;
+                    }
+                }
+         
+                if (!chunkIsPotentiallyVisible) {
+                    continue;
+                }
+            } 
+
+            if (frustum != null && !math3D.checkFrustumIntersectsAABB(frustum, chunk.aabb)) {
+                continue;
             }
+
+            if (boundingSphere != null && !math3D.checkSphereIntersectsAABB(boundingSphere, chunk.aabb)) {
+                continue;
+            }
+
+            out.setBit(chunkIndex);
         }
     }
 
-    this.gatherVisibleActorIds = function (out, position, frustum) {
+    this.gatherVisibleActorIds = function (out, position, frustum, boundingSphere) {
 
         // TODO - allow sphere to be passed for extra culling for lights.
 
@@ -65,12 +143,16 @@
 
             var actorRenderState = engine.renderStateManager.actorRenderStatesById[actorId];
 
-            var actorIsVisible = math3D.checkFrustumIntersectsSphere(frustum, actorRenderState.boundingSphere);
-
-            if (actorIsVisible) {
-                out.items[out.length++] = actorId;
+            if (frustum != null && !math3D.checkFrustumIntersectsSphere(frustum, actorRenderState.boundingSphere)) {
+                continue;
             }
 
+            if (boundingSphere != null && !math3D.checkSphereIntersectsSphere(boundingSphere, actorRenderState.boundingSphere)) {
+                continue;
+            }
+
+            out.items[out.length++] = actorId;
+            
             if (out.length >= out.maxLength) {
                 break;
             }
@@ -80,13 +162,17 @@
     this.gatherVisibleLightIdsFromVisibleObjectsIds = function (
         out, visibleWorldStaticMeshChunkIndexes, visibleActorIds) {
 
-        //var lightIdLookup = {};
-
         util.clearFixedLengthArray(out, null);
 
-        for (var i = 0; i < visibleWorldStaticMeshChunkIndexes.length; i++) {
+        //for (var i = 0; i < visibleWorldStaticMeshChunkIndexes.length; i++) {
 
-            var chunkIndex = visibleWorldStaticMeshChunkIndexes.items[i];
+            //var chunkIndex = visibleWorldStaticMeshChunkIndexes.items[i];
+
+        for (var chunkIndex = 0; chunkIndex < visibleWorldStaticMeshChunkIndexes.length; chunkIndex++) {
+
+            if (!visibleWorldStaticMeshChunkIndexes.getBit(chunkIndex)) {
+                continue;
+            }
 
             var chunkRenderState = engine.renderStateManager.worldStaticMeshChunkRenderStatesByIndex[chunkIndex];
 
@@ -97,10 +183,6 @@
             for (var j = 0; j < chunkRenderState.effectiveLightIds.length; j++) {
 
                 var lightId = chunkRenderState.effectiveLightIds.items[j];
-
-                /*if (lightIdLookup[lightId] == null) {
-                    lightIdLookup[lightId] = true;
-                }*/
 
                 if (util.fixedLengthArrayIndexOf(out, lightId) == -1) {
                     out.items[out.length++] = lightId;
@@ -121,18 +203,7 @@
                 if (util.fixedLengthArrayIndexOf(out, lightId) == -1) {
                     out.items[out.length++] = lightId;
                 }
-                /*if (lightIdLookup[lightId] == null) {
-                    lightIdLookup[lightId] = true;
-                }*/
             }
         }
-
-        /*var lightIds = [];
-        for (var lightId in lightIdLookup) {
-
-            lightIds.push(lightId);
-        }
-
-        return lightIds;*/
     }
 }
