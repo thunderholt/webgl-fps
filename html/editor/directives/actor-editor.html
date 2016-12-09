@@ -13,28 +13,50 @@
         </div>
 
         <div class="form-group">
-            <label>Static Mesh ID</label>
-            <input type="text" class="form-control" ng-model="actor.staticMeshId" />
+            <label>Static Mesh</label>
+            <div class="input-group">
+                <input type="text" class="form-control" ng-model="actor.staticMeshId" />
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" ng-click="chooseStaticMesh()">Choose</button>
+                    <button class="btn btn-default btn-warning" type="button" ng-click="clearStaticMesh()"><span class="glyphicon glyphicon-remove-circle"></span></button>
+                </span>
+            </div>
         </div>
 
         <div class="form-group">
-            <label>Skinned Mesh ID</label>
-            <input type="text" class="form-control" ng-model="actor.skinnedMeshId" />
+            <label>Skinned Mesh</label>
+            <div class="input-group">
+                <input type="text" class="form-control" ng-model="actor.skinnedMeshId" />
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" ng-click="chooseSkinnedMesh()">Choose</button>
+                    <button class="btn btn-default btn-warning" type="button" ng-click="clearSkinnedMesh()"><span class="glyphicon glyphicon-remove-circle"></span></button>
+                </span>
+            </div>
         </div>
 
         <div class="form-group">
-            <label>Skinned Mesh Animation ID</label>
-            <input type="text" class="form-control" ng-model="actor.skinnedMeshAnimationId" />
+            <label>Skinned Mesh Animation</label>
+            <div class="input-group">
+                <input type="text" class="form-control" ng-model="actor.skinnedMeshAnimationId" />
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" ng-click="chooseSkinnedMeshAnimation()">Choose</button>
+                    <button class="btn btn-default btn-warning" type="button" ng-click="clearSkinnedMeshAnimation()"><span class="glyphicon glyphicon-remove-circle"></span></button>
+                </span>
+            </div>
         </div>
 
         <div class="form-group">
             <label>Animation Frame Index</label>
-            <input type="number" class="form-control" ng-model="actor.frameIndex" />
+            <div class="input-group">
+                <input type="number" class="form-control" ng-model="actor.frameIndex" />
+            </div>
         </div>
 
         <div class="form-group">
-            <label>Controller ID</label>
-            <input type="text" class="form-control" ng-model="actor.controllerId" />
+            <label>Controller</label>
+            <div class="input-group">
+                <input type="text" class="form-control" ng-model="actor.controllerId" />
+            </div>
         </div>
     </div>
 
