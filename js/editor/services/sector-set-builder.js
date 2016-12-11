@@ -26,7 +26,7 @@
 
                 sectorPointsByIndex[sectorIndex] = [];
 
-                for (var i = 0; i < 200; i++) {
+                for (var i = 0; i < 150; i++) {
 
                     var point = vec3.create();
                     
