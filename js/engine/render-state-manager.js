@@ -21,6 +21,7 @@
 
         this.updateLightBoundingSpheres();
         this.updateActorBoundingSpheres();
+        this.updateActorResidentSectorIndexField();
 
         this.updateLightRenderStates();
         this.updateWorldStaticMeshRenderStates();
@@ -135,6 +136,28 @@
         }
     }
 
+    this.updateActorResidentSectorIndexField = function () {
+
+        for (var actorId in engine.map.actorsById) {
+
+            var actor = engine.map.actorsById[actorId];
+
+            var actorRenderState = this.coalesceActorRenderState(actorId);
+
+            actorRenderState.residentSectorIndexField.reset(engine.sectorSet.sectors.length);
+
+            for (var sectorIndex = 0; sectorIndex < engine.sectorSet.sectors.length; sectorIndex++) {
+
+                var sectorState = engine.visibilityManager.sectorStatesBySectorIndex[sectorIndex];
+
+                if (math3D.checkSphereIntersectsAABB(actorRenderState.boundingSphere, sectorState.aabb)) {
+
+                    actorRenderState.residentSectorIndexField.setBit(sectorIndex);
+                }
+            }
+        }
+    }
+
     this.updateLightRenderStates = function () {
 
         for (var lightId in engine.map.lightsById) {
@@ -148,6 +171,13 @@
             var lightRenderState = this.coalesceLightRenderState(light.id);
 
             if (light.type == 'point') {
+
+                if (lightRenderState.isDirty) {
+
+                    engine.visibilityManager.buildVisibleWorldStaticMeshChunkField(
+                        lightRenderState.visibleWorldStaticMeshChunkField, light.position,
+                        null, lightRenderState.boundingSphere);
+                }
 
                 for (var faceIndex = 0; faceIndex < 6; faceIndex++) {
 
@@ -218,43 +248,24 @@
 
                 var lightRenderState = this.coalesceLightRenderState(light.id);
 
-                /*if (!lightRenderState.rebuildWorldStaticMeshEffectivenessThisFrame) {
-                    continue;
-                }*/
-
-                //var chunkIsEffectedByLight = false;
-
                 if (light.enabled) {
 
                     var lightRenderState = this.coalesceLightRenderState(light.id);
-                    //var lightSphere = new Sphere(light.position, light.radius);
+                 
+                    if (!lightRenderState.visibleWorldStaticMeshChunkField.getBit(chunkIndex)) {
+                        continue;
+                    }
 
-                    var chunkIsEffectedByLight = math3D.checkSphereIntersectsAABB(lightRenderState.boundingSphere, chunk.aabb);
+                    /*if (!math3D.checkSphereIntersectsAABB(lightRenderState.boundingSphere, chunk.aabb)) {
+                        continue;
+                    }*/
 
-                    if (chunkIsEffectedByLight) {
+                    chunkRenderState.effectiveLightIds.items[chunkRenderState.effectiveLightIds.length++] = light.id;
 
-                        chunkRenderState.effectiveLightIds.items[chunkRenderState.effectiveLightIds.length++] = light.id;
-
-                        if (chunkRenderState.effectiveLightIds.length >= chunkRenderState.effectiveLightIds.maxLength) {
-                            break;
-                        }
+                    if (chunkRenderState.effectiveLightIds.length >= chunkRenderState.effectiveLightIds.maxLength) {
+                        break;
                     }
                 }
-
-                /*var existingEffectiveLightIdIndex = util.arrayIndexOf(chunkRenderState.effectiveLightIds, light.id);
-
-                if (chunkIsEffectedByLight) {
-
-                    if (existingEffectiveLightIdIndex == -1) {
-                        chunkRenderState.effectiveLightIds.push(light.id);
-                    }
-
-                } else {
-
-                    if (existingEffectiveLightIdIndex != -1) {
-                        chunkRenderState.effectiveLightIds.splice(existingEffectiveLightIdIndex, 1);
-                    }
-                }*/
             }
         }
     }
@@ -327,7 +338,8 @@
 
             actorRenderState = {
                 boundingSphere: new Sphere([0, 0, 0], 0),
-                effectiveLightIds: new FixedLengthArray(EngineLimits.MaxEffectiveLightsPerObject, null)
+                effectiveLightIds: new FixedLengthArray(EngineLimits.MaxEffectiveLightsPerObject, null),
+                residentSectorIndexField: new BitField()
             };
 
             this.actorRenderStatesById[actorId] = actorRenderState;
@@ -346,9 +358,9 @@
                 isDirty: true,
                 shadowMapIndex: null,
                 shadowMapChannel: null,
-                //rebuildWorldStaticMeshEffectivenessThisFrame: false,
                 pointLightShadowMapFaceStates: [],
-                boundingSphere: new Sphere([0, 0, 0], 0)
+                boundingSphere: new Sphere([0, 0, 0], 0),
+                visibleWorldStaticMeshChunkField: new BitField()
             };
 
             for (var i = 0; i < 6; i++) {
@@ -357,7 +369,7 @@
                     rebuildForStaticObjectsThisFrame: false,
                     rebuildForDynamicObjectsThisFrame: false,
                     frustum: null,
-                    visibleWorldStaticMeshChunkField: new BitField(),//new FixedLengthArray(EngineLimits.MaxVisibleWorldStaticMeshChunkIndexesPerLight, 0),
+                    visibleWorldStaticMeshChunkField: new BitField(),
                     visibleActorIds: new FixedLengthArray(EngineLimits.MaxVisibleActorsIdsPerLight, null),
                     lastStaticObjectBuildResult: ShadowMapBuildResult.NotBuilt,
                     lastDynamicObjectBuildResult: ShadowMapBuildResult.NotBuilt

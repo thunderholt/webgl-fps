@@ -12,7 +12,7 @@
         renderLightVolumes: false,
         renderWorldStaticMeshAABBs: false,
         renderActorBoundingSpheres: false,
-        renderSectors: true
+        renderSectors: false
     };
 
     this.renderingParameters = {
