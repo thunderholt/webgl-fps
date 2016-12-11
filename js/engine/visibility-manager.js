@@ -75,7 +75,7 @@
 
         var index =
             x * sectorCount[1] * sectorCount[2] +
-            y * sectorCount[1] +
+            y * sectorCount[2] +
             z;
 
         return index;
@@ -109,6 +109,10 @@
                 for (var i = 0; i < sector.visibleSectorIndexes.length; i++) {
                     var visibleSectorIndex = sector.visibleSectorIndexes[i];
                     var visibleSectorState = this.sectorStatesBySectorIndex[visibleSectorIndex];
+
+                    if (visibleSectorState == null) {
+                        console.log('Arrgh.');
+                    }
 
                     if (visibleSectorState.intersectingWorldStaticMeshChunkField.getBit(chunkIndex)) {
                         chunkIsPotentiallyVisible = true;

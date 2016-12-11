@@ -11,7 +11,7 @@
 
             var sectorSet = {
                 metrics: {
-                    sectorCount: [4, 1, 3],
+                    sectorCount: [4, 2, 3],
                     sectorSize: [12, 12, 12],
                     rootOrigin: [-24, 0, 12]
                 },
