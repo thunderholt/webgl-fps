@@ -38,6 +38,7 @@
     this.mouse = new Mouse(this);
     this.frameTimer = new FrameTimer(this);
     this.editorHelper = new EditorHelper(this);
+    this.mapManager = new MapManager(this);
     this.unitTests = new UnitTests();
 
     this.init = function (callback) {

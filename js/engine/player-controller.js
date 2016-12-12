@@ -50,7 +50,7 @@
 
     this.movePlayerThoughMap = function (movementNormal, movementAmount) {
 
-        var worldStaticMesh = engine.staticMeshManager.getStaticMesh(engine.map.worldStaticMeshId);
+        /*var worldStaticMesh = engine.staticMeshManager.getStaticMesh(engine.map.worldStaticMeshId);
 
         if (worldStaticMesh == null) {
             return;
@@ -69,7 +69,7 @@
 
         engine.staticMeshMathHelper.moveSphereThroughStaticMesh(
             collisionTestSphere, worldStaticMesh,
-            [0, -1, 0], gravity * engine.frameTimer.frameDelta, false);
+            [0, -1, 0], gravity * engine.frameTimer.frameDelta, false);*/
 
         /*if (this.cameraController.jumpPower == 0) {
 
@@ -85,6 +85,14 @@
 				this.collisionTestSphere.position, this.collisionTestSphere.size,
 				[0, 1, 0], this.cameraController.jumpPower * this.frameTimer.frameDelta, false);
         }*/
+
+        var player = engine.map.player;
+        var heightOffGround = 1.0;
+
+        var collisionTestSphere = new Sphere(vec3.clone(player.position), 0.45);
+        vec3.sub(collisionTestSphere.position, collisionTestSphere.position, [0, heightOffGround, 0]);
+
+        engine.mapManager.moveSphereThroughMap(collisionTestSphere, movementNormal, movementAmount, true);
 
         vec3.copy(engine.camera.position, collisionTestSphere.position);
         vec3.add(engine.camera.position, engine.camera.position, [0, heightOffGround, 0]);
