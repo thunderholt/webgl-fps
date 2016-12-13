@@ -107,12 +107,12 @@ function EnemyActorController() {
         }
 
         vec3.copy(actor.data.collisionTestSphere.position, actor.position);
-        actor.data.collisionTestSphere.position[1] -= 2.5;
+        actor.data.collisionTestSphere.position[1] += actor.data.collisionTestSphere.radius;
 
         engine.mapManager.moveSphereThroughMap(actor.data.collisionTestSphere, actor.data.movementNormal, actor.data.movementAmount, true);
 
         vec3.copy(actor.position, actor.data.collisionTestSphere.position);
-        actor.position[1] += 2.5;
+        actor.position[1] -= actor.data.collisionTestSphere.radius;
     }
 }
 
