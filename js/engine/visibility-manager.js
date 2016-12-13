@@ -109,7 +109,7 @@
                     var visibleSectorState = this.sectorStatesBySectorIndex[visibleSectorIndex];
 
                     if (visibleSectorState == null) {
-                        console.log('Arrgh.');
+                        throw 'Arrgh.';
                     }
 
                     if (visibleSectorState.intersectingWorldStaticMeshChunkField.getBit(chunkIndex)) {

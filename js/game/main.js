@@ -51,8 +51,10 @@ function GameController() {
         }
 
         // Init the particle's data.
-        particle.data = particle.data || {
-            movementNormal: vec3.create()
+        if (particle.data == null) {
+            particle.data = {
+                movementNormal: vec3.create()
+            }
         }
 
         // Set the particle's initial position.
@@ -96,11 +98,46 @@ function EnemyActorController() {
 
     this.heartbeat = function (actor) {
 
-        if (actor.data.movementNormal == null) {
-            actor.data.movementNormal = vec3.fromValues(1, 0, 0);
+        var frameDelta = engine.frameTimer.frameDelta;
+
+        if (actor.data == null) {
+            actor.data = {};
         }
 
-        actor.data.movementAmount = 0.01;
+        if (actor.data.movementNormal == null) {
+            actor.data.movementNormal = vec3.fromValues(0, 0, 0);
+        }
+
+        vec3.set(actor.data.movementNormal, 0, 0, 1);
+        vec3.rotateY(actor.data.movementNormal, actor.data.movementNormal, math3D.zeroVec3, actor.rotation[1]);
+
+        
+
+        if (actor.data.targetYRotation == null) {
+            actor.data.targetYRotation = 0;
+        }
+
+        if (actor.data.changeDirectionCountdown == null) {
+            actor.data.changeDirectionCountdown = 0;
+        }
+
+        actor.data.changeDirectionCountdown -= frameDelta;
+
+        if (actor.data.changeDirectionCountdown <= 0) {
+            actor.data.changeDirectionCountdown = 200;
+
+            actor.data.targetYRotation = (Math.random() * Math.PI * 2) - Math.PI;
+        }
+
+        if (actor.rotation[1] > actor.data.targetYRotation) {
+            actor.rotation[1] -= 0.1 * frameDelta;
+            actor.rotation[1] = Math.max(actor.rotation[1], actor.data.targetYRotation);
+        } else if (actor.rotation[1] < actor.data.targetYRotation) {
+            actor.rotation[1] += 0.1 * frameDelta;
+            actor.rotation[1] = Math.min(actor.rotation[1], actor.data.targetYRotation);
+        }
+
+        actor.data.movementAmount = 0.03;
 
         if (actor.data.collisionTestSphere == null) {
             actor.data.collisionTestSphere = new Sphere(vec3.create(), 0.45);

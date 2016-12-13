@@ -321,7 +321,7 @@
                     continue;
                 }
 
-                actor.frameIndex += engine.frameTimer.frameDelta / 30;//10;
+                actor.frameIndex += engine.frameTimer.frameDelta / 10;
 
                 while (actor.frameIndex >= skinnedMeshAnimation.frames.length) {
                     actor.frameIndex -= skinnedMeshAnimation.frames.length;
