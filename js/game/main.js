@@ -2,8 +2,13 @@
 var util = new Util();
 var math3D = new Math3D();
 
+engine.gameControllersById['GameController'] = new GameController();
+
 engine.actorControllersById['TestActorController'] = new TestActorController();
 engine.actorControllersById['EnemyActorController'] = new EnemyActorController();
+
+engine.particleControllersById['ProjectileParticleController'] = new ProjectileParticleController();
+
 
 engine.init(function () {
 
@@ -17,6 +22,49 @@ engine.init(function () {
         });
     }
 });
+
+function GameController() {
+
+    this.heartbeat = function () {
+
+        if (engine.mouse.mouseIsDown) {
+            
+            this.playerShoot();
+        }
+    }
+
+    this.playerShoot = function () {
+
+        // Grab the projectiles emitter.
+        var emitter = engine.map.emittersById['projectiles'];
+
+        if (emitter == null) {
+            console.log('Projectiles emitter not found!');
+            return;
+        }
+
+        // Spawn a particle.
+        var particle = engine.particleManager.spawnParticle(emitter);
+
+        if (particle == null) {
+            return;
+        }
+
+        // Init the particle's data.
+        particle.data = particle.data || {
+            movementNormal: vec3.create()
+        }
+
+        // Set the particle's initial position.
+        var player = engine.map.player;
+
+        vec3.copy(particle.position, player.position);
+
+        // Set the particle's movement normal.
+        var playerAxes = math3D.buildAxesFromRotations(player.rotation);
+        vec3.copy(particle.data.movementNormal, playerAxes.zAxis);
+    }
+}
 
 function TestActorController() {
 
@@ -65,5 +113,13 @@ function EnemyActorController() {
 
         vec3.copy(actor.position, actor.data.collisionTestSphere.position);
         actor.position[1] += 2.5;
+    }
+}
+
+function ProjectileParticleController() {
+
+    this.heartbeat = function (emitter, particle) {
+
+        vec3.scaleAndAdd(particle.position, particle.position, particle.data.movementNormal, 0.1);
     }
 }

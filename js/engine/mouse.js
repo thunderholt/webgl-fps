@@ -1,12 +1,13 @@
 ﻿function Mouse(engine) {
 
-    this.mouseMouseListeners = [];
+    this.mouseMoveListeners = [];
+    this.mouseIsDown = false;
 
     this.init = function (callback) {
 
         var self = this;
 
-        var canvas = document.getElementById("canvas");
+        var canvas = document.getElementById('canvas');
 
         canvas.onclick = function () {
 
@@ -18,7 +19,7 @@
             canvas.requestPointerLock();
         }
 
-        document.addEventListener("mousemove", function (event) {
+        document.addEventListener('mousemove', function (event) {
 
             document.pointerLockElement =
                 document.pointerLockElement ||
@@ -29,9 +30,21 @@
                 return;
             }
 
-            for (var i = 0; i < self.mouseMouseListeners.length; i++) {
-                self.mouseMouseListeners[i](event);
+            for (var i = 0; i < self.mouseMoveListeners.length; i++) {
+                self.mouseMoveListeners[i](event);
             }
+
+        }, false);
+
+        document.addEventListener('mousedown', function (event) {
+
+            self.mouseIsDown = true;
+
+        }, false);
+
+        document.addEventListener('mouseup', function (event) {
+
+            self.mouseIsDown = false;
 
         }, false);
 
@@ -40,6 +53,6 @@
 
     this.addMouseMoveListener = function (callback) {
         
-        this.mouseMouseListeners.push(callback);
+        this.mouseMoveListeners.push(callback);
     }
 }

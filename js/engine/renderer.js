@@ -303,6 +303,8 @@
 
         this.renderActorSkinnedMeshes(this.visibleActorIdsForCamera);
 
+        this.renderParticles();
+
         this.renderLightVolumes();
   
         this.renderWorldStaticMeshChunkAABBs();
@@ -998,6 +1000,25 @@
                 this.effect.attributes.fourthWeight,
                 1, gl.FLOAT, false, 0, 0);
             gl.enableVertexAttribArray(this.effect.attributes.fourthWeight);
+        }
+    }
+
+    this.renderParticles = function () {
+
+        for (var emitterId in engine.map.emittersById) {
+
+            var emitter = engine.map.emittersById[emitterId];
+
+            for (var i = 0; i < emitter.particles.length; i++) {
+
+                var particle = emitter.particles[i];
+
+                if (!particle.active) {
+                    continue;
+                }
+
+                engine.lineDrawer.drawSphere(this.renderingParameters, particle.position, 0.1, RgbColours.Red, true);
+            }
         }
     }
 

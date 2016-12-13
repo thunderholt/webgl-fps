@@ -6,7 +6,10 @@
     this.map = null;
     this.sectorSet = null;
     this.mapIsReady = false;
+    this.gameControllersById = {};
     this.actorControllersById = {};
+    this.emitterControllersById = {};
+    this.particleControllersById = {};
     this.mode = 'editor';
     this.stats = {
         numberOfVisibleWorldStaticMeshChunks: 0,
@@ -39,6 +42,7 @@
     this.frameTimer = new FrameTimer(this);
     this.editorHelper = new EditorHelper(this);
     this.mapManager = new MapManager(this);
+    this.particleManager = new ParticleManager(this);
     this.unitTests = new UnitTests();
 
     this.init = function (callback) {
@@ -104,7 +108,12 @@
 
         } else if (this.mode == 'game') {
 
+            var gameController = this.gameControllersById[this.map.gameControllerId];
+            gameController.heartbeat();
+
             this.playerController.heartbeat();
+
+            this.particleManager.updateParticles();
 
             for (var actorId in this.map.actorsById) {
 
