@@ -59,7 +59,10 @@
 
                     var lastError = gl.getProgramInfoLog(effect.shaderProgram);
 
-                    throw 'Failed to initialise shader: ' + name + '. Last error: ' + lastError;
+                    //var compilationLog = gl.getShaderInfoLog(effect.shaderProgram);
+                    //console.log('Shader compiler log: ' + compilationLog);
+
+                    throw 'Failed to initialise shader: ' + name + '. Last error: ' + lastError + '.';
                 }
 
                 // Setup the effect's attributes.

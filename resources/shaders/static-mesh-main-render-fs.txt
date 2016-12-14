@@ -73,7 +73,7 @@ void main(void)
 
 	totalLightBaseColour += calculateGlobalIlluminationColour(fragmentWorldSpaceNormal);
 
-	for (int i = 0; i < 5; i++)
+	/*for (int i = 0; i < 2; i++)
 	{
 		if (lightEnableds[i] > 0) 
 		{
@@ -86,6 +86,66 @@ void main(void)
 			totalLightBaseColour += lightColour.baseColour;
 			totalLightSpecularColour += lightColour.specularColour;
 		}
+	}*/
+
+	if (lightEnableds[0] > 0) 
+	{
+		LightColour lightColour = calculateLightColour(
+			fragmentWorldSpacePosition, normalisedFragmentNormal, fragmentWorldSpaceNormal, 
+			lightWorldSpacePositions[0], lightRadiusSqrs[0], lightColours[0], 
+			lightCastsShadows[0], lightStaticObjectShadowMapMasks[0], lightDynamicObjectShadowMapMasks[0],
+			pointLightShadowMapSamplers[0]);
+
+		totalLightBaseColour += lightColour.baseColour;
+		totalLightSpecularColour += lightColour.specularColour;
+	}
+
+	if (lightEnableds[1] > 0) 
+	{
+		LightColour lightColour = calculateLightColour(
+			fragmentWorldSpacePosition, normalisedFragmentNormal, fragmentWorldSpaceNormal, 
+			lightWorldSpacePositions[1], lightRadiusSqrs[1], lightColours[1], 
+			lightCastsShadows[1], lightStaticObjectShadowMapMasks[1], lightDynamicObjectShadowMapMasks[1],
+			pointLightShadowMapSamplers[1]);
+
+		totalLightBaseColour += lightColour.baseColour;
+		totalLightSpecularColour += lightColour.specularColour;
+	}
+
+	if (lightEnableds[2] > 0) 
+	{
+		LightColour lightColour = calculateLightColour(
+			fragmentWorldSpacePosition, normalisedFragmentNormal, fragmentWorldSpaceNormal, 
+			lightWorldSpacePositions[2], lightRadiusSqrs[2], lightColours[2], 
+			lightCastsShadows[2], lightStaticObjectShadowMapMasks[2], lightDynamicObjectShadowMapMasks[2],
+			pointLightShadowMapSamplers[2]);
+
+		totalLightBaseColour += lightColour.baseColour;
+		totalLightSpecularColour += lightColour.specularColour;
+	}
+
+	if (lightEnableds[3] > 0) 
+	{
+		LightColour lightColour = calculateLightColour(
+			fragmentWorldSpacePosition, normalisedFragmentNormal, fragmentWorldSpaceNormal, 
+			lightWorldSpacePositions[3], lightRadiusSqrs[3], lightColours[3], 
+			lightCastsShadows[3], lightStaticObjectShadowMapMasks[3], lightDynamicObjectShadowMapMasks[3],
+			pointLightShadowMapSamplers[3]);
+
+		totalLightBaseColour += lightColour.baseColour;
+		totalLightSpecularColour += lightColour.specularColour;
+	}
+
+	if (lightEnableds[4] > 0) 
+	{
+		LightColour lightColour = calculateLightColour(
+			fragmentWorldSpacePosition, normalisedFragmentNormal, fragmentWorldSpaceNormal, 
+			lightWorldSpacePositions[4], lightRadiusSqrs[4], lightColours[4], 
+			lightCastsShadows[4], lightStaticObjectShadowMapMasks[4], lightDynamicObjectShadowMapMasks[4],
+			pointLightShadowMapSamplers[4]);
+
+		totalLightBaseColour += lightColour.baseColour;
+		totalLightSpecularColour += lightColour.specularColour;
 	}
 
 	vec4 finalColour = diffuseColour * totalLightBaseColour + totalLightSpecularColour;
@@ -113,8 +173,6 @@ vec4 calculateGlobalIlluminationColour(vec3 fragmentWorldSpaceNormal)
 	}
 
 	return totalGiColour;
-
-    //return vec4(textureCube(globalIlluminationSampler, fragmentWorldSpaceNormal).xyz * globalIlluminationColour, 1.0);
 }
 
 LightColour calculateLightColour(
@@ -163,21 +221,6 @@ LightColour calculateLightColour(
 		float shadowMapSample = samplePointLightShadowMap(
 			directionFromLight, staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
 
-		/*float p = 0.03 + (noise * 0.05);
-		float p2 = 0.06 + (noise * 0.05);
-		float shadowMapSample1 = samplePointLightShadowMap(directionFromLight + vec3(p, 0.0, p), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
-		float shadowMapSample2 = samplePointLightShadowMap(directionFromLight + vec3(p, p, 0.0), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
-		float shadowMapSample3 = samplePointLightShadowMap(directionFromLight + vec3(0.0, p, p), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
-		float shadowMapSample4 = samplePointLightShadowMap(directionFromLight + vec3(-p, 0.0, -p), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
-		float shadowMapSample5 = samplePointLightShadowMap(directionFromLight + vec3(-p, -p, 0.0), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
-		float shadowMapSample6 = samplePointLightShadowMap(directionFromLight + vec3(0.0, -p, -p), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
-		float shadowMapSample7 = samplePointLightShadowMap(directionFromLight + vec3(0.0, p2, -p2), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
-		float shadowMapSample8 = samplePointLightShadowMap(directionFromLight + vec3(p2, p, -p2), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
-		float shadowMapSample9 = samplePointLightShadowMap(directionFromLight + vec3(p2, -p2, -p2), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
-		float shadowMapSample10 = samplePointLightShadowMap(directionFromLight + vec3(-p2, -p, p), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
-    
-		shadowMapSample = clamp((shadowMapSample1 + shadowMapSample2 + shadowMapSample3 + shadowMapSample4 + shadowMapSample5 + shadowMapSample6 + shadowMapSample7 + shadowMapSample8 + shadowMapSample9 + shadowMapSample10) / 6.0, 0.0, 1.0);
-		*/
 		if (shadowMapSample == 0.0)
 		{
 			return result;
@@ -229,3 +272,21 @@ vec4 applySelfIllumination(vec4 baseColour)
 
 	return vec4(mix(baseColour.xyz, selfIlluminationColour.xyz, selfIlluminationColour.w), 1.0);
 }
+
+
+
+/*float p = 0.03 + (noise * 0.05);
+float p2 = 0.06 + (noise * 0.05);
+float shadowMapSample1 = samplePointLightShadowMap(directionFromLight + vec3(p, 0.0, p), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+float shadowMapSample2 = samplePointLightShadowMap(directionFromLight + vec3(p, p, 0.0), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+float shadowMapSample3 = samplePointLightShadowMap(directionFromLight + vec3(0.0, p, p), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+float shadowMapSample4 = samplePointLightShadowMap(directionFromLight + vec3(-p, 0.0, -p), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+float shadowMapSample5 = samplePointLightShadowMap(directionFromLight + vec3(-p, -p, 0.0), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+float shadowMapSample6 = samplePointLightShadowMap(directionFromLight + vec3(0.0, -p, -p), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+float shadowMapSample7 = samplePointLightShadowMap(directionFromLight + vec3(0.0, p2, -p2), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+float shadowMapSample8 = samplePointLightShadowMap(directionFromLight + vec3(p2, p, -p2), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+float shadowMapSample9 = samplePointLightShadowMap(directionFromLight + vec3(p2, -p2, -p2), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+float shadowMapSample10 = samplePointLightShadowMap(directionFromLight + vec3(-p2, -p, p), staticObjectShadowMapMask, dynamicObjectShadowMapMask, distanceToLightSquared, pointLightShadowMapSampler);
+    
+shadowMapSample = clamp((shadowMapSample1 + shadowMapSample2 + shadowMapSample3 + shadowMapSample4 + shadowMapSample5 + shadowMapSample6 + shadowMapSample7 + shadowMapSample8 + shadowMapSample9 + shadowMapSample10) / 6.0, 0.0, 1.0);
+*/
