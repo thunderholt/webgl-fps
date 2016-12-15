@@ -120,12 +120,7 @@
 
         var nearestCollisionResult = null;
 
-        /*var staticMesh = engine.staticMeshManager.getStaticMesh(engine.map.worldStaticMeshId);
-
-        if (staticMesh == null) {
-            return;
-        }*/
-
+        // TODO - don't check all the chunks, use sectors!
         for (var chunkIndex = 0; chunkIndex < staticMesh.chunks.length; chunkIndex++) {
 
             var chunk = staticMesh.chunks[chunkIndex];
@@ -139,10 +134,6 @@
                 var collisionResult = math3D.calculateSphereCollisionWithCollisionFace(sphere, collisionFace, desiredDirection);
 
                 if (collisionResult != null) {
-
-                    /*if (collisionResult.distance < 0) {
-                        console.log("Wierd distance");
-                    }*/
 
                     if (nearestCollisionResult == null || collisionResult.distance < nearestCollisionResult.distance) {
                         nearestCollisionResult = collisionResult;
@@ -172,7 +163,7 @@
 
         var remainingDistance = desiredDistance - maximumDesiredDirectionMovementDistance;
 
-        if (recursionDepth > 10) {
+        if (recursionDepth > 4) {
             console.log("Recursion limit hit, remainingDistance = " + remainingDistance);
             return;
         }
@@ -189,13 +180,35 @@
         }
     }
 
+    this.determineIfLineIntersectsStaticMesh = function (out, collisionLine, staticMesh) {
+
+        for (var chunkIndex = 0; chunkIndex < staticMesh.chunks.length; chunkIndex++) {
+
+            var chunk = staticMesh.chunks[chunkIndex];
+
+            // TODO - AABB check
+
+            for (var faceIndex = 0; faceIndex < chunk.collisionFaces.length; faceIndex++) {
+
+                var collisionFace = chunk.collisionFaces[faceIndex];
+
+                var faceIntersectionType = math3D.calculateCollisionLineIntersectionWithCollisionFace(out, collisionLine, collisionFace)
+
+                if (faceIntersectionType != FaceIntersectionType.None) {
+
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     this.determineIfPointIsWithinStaticMesh = function (point, staticMesh) {
 
         var collisionLine = new CollisionLine(point, staticMesh.pointCompletelyOutsideOfExtremities);
 
         math3D.buildCollisionLineFromFromAndToPoints(collisionLine);
-
-        //var numberOfCollisions = 0;
 
         var faceIntersection = vec3.create();
         var nearestFaceIntersectionDistanceSqr = null;
@@ -225,9 +238,5 @@
         }
 
         return nearestFaceIntersectionType == FaceIntersectionType.FrontSide;
-
-        //var numberOfCollisionsIsOdd = numberOfCollisions % 2 == 1;
-
-        //return numberOfCollisionsIsOdd;
     }
 }

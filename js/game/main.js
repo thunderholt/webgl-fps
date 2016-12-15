@@ -27,10 +27,29 @@ function GameController() {
 
     this.heartbeat = function () {
 
-        if (engine.mouse.mouseIsDown) {
-            
-            this.playerShoot();
+        var gameData = engine.map.gameData;
+        var frameDelta = engine.frameTimer.frameDelta;
+
+        if (gameData.playerShootCountdown == null) {
+
+            gameData.playerShootCountdown = 0;
         }
+
+        if (gameData.playerShootCountdown > 0) {
+
+            gameData.playerShootCountdown -= frameDelta;
+
+        } else {
+
+            if (engine.mouse.mouseIsDown) {
+
+                this.playerShoot();
+
+                gameData.playerShootCountdown = 10;
+            }
+        }
+
+        
     }
 
     this.playerShoot = function () {
@@ -52,9 +71,7 @@ function GameController() {
 
         // Init the particle's data.
         if (particle.data == null) {
-            particle.data = {
-                movementNormal: vec3.create()
-            }
+            particle.data = {}
         }
 
         // Set the particle's initial position.
@@ -63,6 +80,10 @@ function GameController() {
         vec3.copy(particle.position, player.position);
 
         // Set the particle's movement normal.
+        if (particle.data.movementNormal == null) {
+            particle.data.movementNormal = vec3.create();
+        }
+
         var playerAxes = math3D.buildAxesFromRotations(player.rotation);
         vec3.copy(particle.data.movementNormal, playerAxes.zAxis);
     }
@@ -157,6 +178,31 @@ function ProjectileParticleController() {
 
     this.heartbeat = function (emitter, particle) {
 
-        vec3.scaleAndAdd(particle.position, particle.position, particle.data.movementNormal, 0.1);
+        if (particle.data.collisionLine == null) {
+            particle.data.collisionLine = new CollisionLine(null, null, null, null);
+        }
+
+        vec3.copy(particle.data.collisionLine.from, particle.position);
+        
+        vec3.scaleAndAdd(particle.data.collisionLine.to, particle.position, particle.data.movementNormal, 0.1);
+
+        math3D.buildCollisionLineFromFromAndToPoints(particle.data.collisionLine);
+
+        if (particle.data.collisionPoint == null) {
+            particle.data.collisionPoint = vec3.create();
+        }
+
+        var collidesWithMap = engine.mapManager.determineIfLineIntersectsMap(particle.data.collisionPoint, particle.data.collisionLine);
+        if (collidesWithMap) {
+
+            vec3.copy(particle.position, particle.data.collisionPoint);
+
+            particle.active = false;
+            console.log('Particle collided with map!');
+
+        } else {
+
+            vec3.copy(particle.position, particle.data.collisionLine.to);
+        }
     }
 }

@@ -20,4 +20,17 @@
                 [0, -1, 0], gravity * engine.frameTimer.frameDelta, false);
         }
     }
+
+    this.determineIfLineIntersectsMap = function (out, collisionLine) {
+
+        var worldStaticMesh = engine.staticMeshManager.getStaticMesh(engine.map.worldStaticMeshId);
+
+        if (worldStaticMesh == null) {
+            return false;
+        }
+
+        var collidesWithWorldSaticMesh = engine.staticMeshMathHelper.determineIfLineIntersectsStaticMesh(out, collisionLine, worldStaticMesh);
+
+        return collidesWithWorldSaticMesh;
+    }
 }
