@@ -2,20 +2,12 @@
 
     this.buildCollisionLineFromFromAndToPoints = function (out) {
 
-        //var freeVector = vec3.create();
         vec3.copy(out.ray.origin, out.from);
 
         vec3.sub(out.ray.normal, out.to, out.from);
         out.length = vec3.length(out.ray.normal);
 
-        //var normal = vec3.create();
         vec3.normalize(out.ray.normal, out.ray.normal);
-
-        
-
-        //var line = new CollisionLine(from, to, new Ray(from, normal), length);
-
-        //return out;
     }
 
     this.calculateCollisionLineIntersectionWithCollisionFace = function (out, line, face) {
@@ -31,10 +23,6 @@
         if (!math3D.determineIfPointOnFacePlaneIsWithinCollisionFace(face, facePlaneIntersection)) {
             return FaceIntersectionType.None;
         }
-
-        //var lineFromToFacePlaneIntersection = vec3.create();
-
-        //vec3.sub(lineFromToFacePlaneIntersection, facePlaneIntersection, line.from);
 
         var distanceToFacePlaneIntersectionSqr = vec3.squaredDistance(line.from, facePlaneIntersection);
 
