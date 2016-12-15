@@ -3,6 +3,7 @@
   "gameControllerId": "GameController",
   "worldStaticMeshId": "test-map-2",
   "sectorSetId": "test-map-2",
+  "gameData": { },
   "player": {
     "position": [ 2, 2.4600000381469727, -6 ],
     "rotation": [ -0.6179999999999999, 5.844000000000543, 0 ]
