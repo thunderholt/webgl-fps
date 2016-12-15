@@ -75,7 +75,7 @@
             this.buildSkinnedMeshRotationSafeBoundingSphereRadius(skinnedMesh);
         }
 
-        skinnedMesh.numberOfFaces = skinnedMesh.verts.length / 3;
+        skinnedMesh.numberOfVerts = skinnedMesh.verts.length / 3;
 
         skinnedMesh.buffers = {
             vertexBuffer: gl.createBuffer(),

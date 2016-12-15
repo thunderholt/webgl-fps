@@ -1,0 +1,18 @@
+﻿//attribute vec3 vertexPosition;
+attribute vec2 vertexOffset;
+
+uniform mat4 viewProjMatrix;
+uniform vec3 position;
+uniform vec2 size;
+uniform vec3 cameraXAxis;
+uniform vec3 cameraYAxis;
+
+void main(void) 
+{
+	vec3 temp = position;
+
+	temp += (vertexOffset.x * size.x) * cameraXAxis;
+	temp += (vertexOffset.y * size.y) * cameraYAxis;
+
+    gl_Position = viewProjMatrix * vec4(temp, 1.0);
+}

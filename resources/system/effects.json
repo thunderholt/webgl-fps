@@ -160,6 +160,22 @@
 		}
 	},
 
+  "particle": {
+		"id": "particle",
+
+		"attributes": {
+      "vertexOffset": null
+		},
+
+		"uniforms": {
+      "viewProjMatrix": null,
+      "position": null,
+			"size": null,
+      "cameraXAxis": null,
+      "cameraYAxis": null
+		}
+	},
+
   "line": {
 		"id": "line",
 

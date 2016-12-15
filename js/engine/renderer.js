@@ -98,6 +98,11 @@
         pointLightShadowMapSamplers: []
     }
 
+    this.particleVertexBuffers = {
+        //verts: null,
+        offsets: null
+    };
+
     this.init = function (callback) {
 
         gl = engine.glManager.gl;
@@ -109,7 +114,8 @@
             this.initGlobalIllumination,
             this.initStandardMaterialShaderData,
             this.initRenderSkinnedMeshMatrices,
-            this.initRenderSkinnedMeshTempValues];
+            this.initRenderSkinnedMeshTempValues,
+            this.initParticleVertexBuffers];
 
         util.recurse(function (recursor, recursionCount) {
             if (recursionCount < initFunctions.length) {
@@ -238,6 +244,44 @@
         for (var i = 0; i < self.maxSkinnedMeshBones * 16; i++) {
             self.renderSkinnedMeshTempValues.concatenatedBoneMatrices[i] = 0;
         }
+
+        callback();
+    }
+
+    this.initParticleVertexBuffers = function (callback) {
+
+        /*// Create the verts buffer.
+        var verts = [
+			0, 0, 0,
+            0, 0, 0,
+            0, 0, 0,
+
+            0, 0, 0,
+            0, 0, 0,
+            0, 0, 0
+        ];
+
+        self.particleVertexBuffers.verts = gl.createBuffer();
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, self.particleVertexBuffers.verts);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW);*/
+
+        // Create the offsets buffer.
+        var offsets = [
+			-1, 1,
+            1, -1,
+            1, 1,
+
+            
+            1, -1,
+            -1, 1,
+            -1, -1
+        ];
+
+        self.particleVertexBuffers.offsets = gl.createBuffer();
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, self.particleVertexBuffers.offsets);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(offsets), gl.STATIC_DRAW);
 
         callback();
     }
@@ -771,7 +815,7 @@
         }
 
         // Draw the skinned mesh's triangles.
-        gl.drawArrays(gl.TRIANGLES, 0, skinnedMesh.numberOfFaces);
+        gl.drawArrays(gl.TRIANGLES, 0, skinnedMesh.numberOfVerts);
     }
 
     this.buildSkinnedMeshAnimationBoneMatrixSetForFrame = function (skinnedMesh, skinnedMeshAnimation, frameIndex) {
@@ -1005,6 +1049,27 @@
 
     this.renderParticles = function () {
 
+        var effect = engine.effectManager.useEffect('particle');
+
+        //gl.disable(gl.BLEND);
+        //gl.enable(gl.DEPTH_TEST);
+
+        // Set the uniforms.
+        gl.uniformMatrix4fv(effect.uniforms.viewProjMatrix, false, this.renderingParameters.viewProjMatrix);
+        gl.uniform3fv(effect.uniforms.cameraXAxis, engine.camera.axes.xAxis);
+        gl.uniform3fv(effect.uniforms.cameraYAxis, engine.camera.axes.yAxis);
+        gl.uniform2fv(effect.uniforms.size, [1, 1]); // FIXME
+      
+        /*// Bind the verts buffer.
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.particleVertexBuffers.verts);
+        gl.vertexAttribPointer(effect.attributes.vertexPosition, 3, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(effect.attributes.vertexPosition);*/
+
+        // Bind the offsets buffer.
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.particleVertexBuffers.offsets);
+        gl.vertexAttribPointer(effect.attributes.vertexOffset, 2, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(effect.attributes.vertexOffset);
+
         for (var emitterId in engine.map.emittersById) {
 
             var emitter = engine.map.emittersById[emitterId];
@@ -1017,7 +1082,11 @@
                     continue;
                 }
 
-                engine.lineDrawer.drawSphere(this.renderingParameters, particle.position, 0.1, RgbColours.Red, true);
+                gl.uniform3fv(effect.uniforms.position, particle.position);
+
+                gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+                //engine.lineDrawer.drawSphere(this.renderingParameters, particle.position, 0.1, RgbColours.Red, true);
             }
         }
     }
