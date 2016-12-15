@@ -49,6 +49,8 @@ float samplePointLightShadowMap(vec3 directionFromLight, vec4 staticObjectShadow
 
 vec4 applySelfIllumination(vec4 baseColour);
 
+vec4 applyFog(vec4 baseColour);
+
 void main(void) 
 {
 	noise = fract(sin(dot(texCoord.xy, vec2(12.9898,78.233))) * 43758.5453);
@@ -154,6 +156,8 @@ void main(void)
 	{
 		finalColour = applySelfIllumination(finalColour);
 	}
+
+	finalColour = applyFog(finalColour);
 
 	gl_FragColor = finalColour;
 }
@@ -273,7 +277,17 @@ vec4 applySelfIllumination(vec4 baseColour)
 	return vec4(mix(baseColour.xyz, selfIlluminationColour.xyz, selfIlluminationColour.w), 1.0);
 }
 
+vec4 applyFog(vec4 baseColour)
+{
+	vec3 cameraToFragment = fragmentWorldSpacePosition - cameraWorldSpacePosition;
+	float lengthSqr = dot(cameraToFragment, cameraToFragment);
 
+	float fogAmount = min(lengthSqr / 3000.0, 1.0);
+
+	vec4 fogColour = vec4(0.5, 0.5, 1.0, 1.0);
+	
+	return mix(baseColour, fogColour, fogAmount);
+}
 
 /*float p = 0.03 + (noise * 0.05);
 float p2 = 0.06 + (noise * 0.05);

@@ -100,7 +100,8 @@
 
     this.particleVertexBuffers = {
         //verts: null,
-        offsets: null
+        offsets: null,
+        texCoords: null
     };
 
     this.init = function (callback) {
@@ -250,29 +251,12 @@
 
     this.initParticleVertexBuffers = function (callback) {
 
-        /*// Create the verts buffer.
-        var verts = [
-			0, 0, 0,
-            0, 0, 0,
-            0, 0, 0,
-
-            0, 0, 0,
-            0, 0, 0,
-            0, 0, 0
-        ];
-
-        self.particleVertexBuffers.verts = gl.createBuffer();
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, self.particleVertexBuffers.verts);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW);*/
-
         // Create the offsets buffer.
         var offsets = [
 			-1, 1,
             1, -1,
             1, 1,
 
-            
             1, -1,
             -1, 1,
             -1, -1
@@ -282,6 +266,22 @@
 
         gl.bindBuffer(gl.ARRAY_BUFFER, self.particleVertexBuffers.offsets);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(offsets), gl.STATIC_DRAW);
+
+        // Create the texture coords buffer.
+        var texCoords = [
+			0, 0,
+            1, 1,
+            1, 0,
+
+            1, 1,
+            0, 0,
+            0, 1
+        ];
+
+        self.particleVertexBuffers.texCoords = gl.createBuffer();
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, self.particleVertexBuffers.texCoords);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoords), gl.STATIC_DRAW);
 
         callback();
     }
@@ -323,7 +323,7 @@
         gl.viewport(0, 0, engine.glManager.viewportInfo.width, engine.glManager.viewportInfo.height);
 
         gl.colorMask(true, true, true, true);
-        gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        gl.clearColor(0.0, 0.0, 1.0, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         gl.enable(gl.CULL_FACE);
@@ -1051,8 +1051,10 @@
 
         var effect = engine.effectManager.useEffect('particle');
 
-        //gl.disable(gl.BLEND);
-        //gl.enable(gl.DEPTH_TEST);
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+
+        gl.enable(gl.DEPTH_TEST);
 
         // Set the uniforms.
         gl.uniformMatrix4fv(effect.uniforms.viewProjMatrix, false, this.renderingParameters.viewProjMatrix);
@@ -1060,15 +1062,26 @@
         gl.uniform3fv(effect.uniforms.cameraYAxis, engine.camera.axes.yAxis);
         gl.uniform2fv(effect.uniforms.size, [1, 1]); // FIXME
       
-        /*// Bind the verts buffer.
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.particleVertexBuffers.verts);
-        gl.vertexAttribPointer(effect.attributes.vertexPosition, 3, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(effect.attributes.vertexPosition);*/
-
         // Bind the offsets buffer.
         gl.bindBuffer(gl.ARRAY_BUFFER, this.particleVertexBuffers.offsets);
         gl.vertexAttribPointer(effect.attributes.vertexOffset, 2, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(effect.attributes.vertexOffset);
+
+        // Bind the texture cords buffer.
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.particleVertexBuffers.texCoords);
+        gl.vertexAttribPointer(effect.attributes.vertexTexCoord, 2, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(effect.attributes.vertexTexCoord);
+
+        // Bind texture 1.
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, this.coalesceTexture('particle-1', 'system/missing-diffuse-texture')); // FIXME
+
+        // Bind texture 2.
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, this.coalesceTexture('particle-2', 'system/missing-diffuse-texture')); // FIXME
+
+        gl.uniform1i(effect.uniforms.texture1Sampler, 0);
+        gl.uniform1i(effect.uniforms.texture2Sampler, 1);
 
         for (var emitterId in engine.map.emittersById) {
 

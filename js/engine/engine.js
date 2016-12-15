@@ -129,7 +129,7 @@
         }
 
         this.camera.updateMatrixes(
-            Math.PI / 2.5, engine.glManager.viewportInfo.width / engine.glManager.viewportInfo.height, 0.1, 1000.0);
+            Math.PI / 2, engine.glManager.viewportInfo.width / engine.glManager.viewportInfo.height, 0.1, 1000.0);
 
         this.renderStateManager.updateRenderStates();
 

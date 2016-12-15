@@ -164,7 +164,8 @@
 		"id": "particle",
 
 		"attributes": {
-      "vertexOffset": null
+      "vertexOffset": null,
+      "vertexTexCoord": null
 		},
 
 		"uniforms": {
@@ -172,7 +173,9 @@
       "position": null,
 			"size": null,
       "cameraXAxis": null,
-      "cameraYAxis": null
+      "cameraYAxis": null,
+      "texture1Sampler": null,
+      "texture2Sampler": null
 		}
 	},
 
@@ -180,7 +183,7 @@
 		"id": "line",
 
 		"attributes": {
-			"vertexPosition": null
+      "vertexPosition": null
 		},
 
 		"uniforms": {
