@@ -188,14 +188,14 @@ function ProjectileParticleController() {
 
         math3D.buildCollisionLineFromFromAndToPoints(particle.data.collisionLine);
 
-        if (particle.data.collisionPoint == null) {
-            particle.data.collisionPoint = vec3.create();
+        if (particle.data.mapCollisionPoint == null) {
+            particle.data.mapCollisionPoint = vec3.create();
         }
 
-        var collidesWithMap = engine.mapManager.determineIfLineIntersectsMap(particle.data.collisionPoint, particle.data.collisionLine);
+        var collidesWithMap = engine.mapManager.findNearestLineIntersectionWithMap(particle.data.mapCollisionPoint, particle.data.collisionLine);
         if (collidesWithMap) {
 
-            vec3.copy(particle.position, particle.data.collisionPoint);
+            vec3.copy(particle.position, particle.data.mapCollisionPoint);
 
             particle.active = false;
             console.log('Particle collided with map!');

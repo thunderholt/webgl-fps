@@ -180,7 +180,12 @@
         }
     }
 
-    this.determineIfLineIntersectsStaticMesh = function (out, collisionLine, staticMesh) {
+    this.findNearestLineIntersectionWithStaticMesh = function (out, collisionLine, staticMesh) {
+
+        var faceIntersection = vec3.create();
+        var intersectionFound = false;
+        var nearestFaceIntersection = vec3.create();
+        var nearestFaceIntersectionDistanceSqr = null;
 
         for (var chunkIndex = 0; chunkIndex < staticMesh.chunks.length; chunkIndex++) {
 
@@ -192,16 +197,28 @@
 
                 var collisionFace = chunk.collisionFaces[faceIndex];
 
-                var faceIntersectionType = math3D.calculateCollisionLineIntersectionWithCollisionFace(out, collisionLine, collisionFace)
+                var faceIntersectionType = math3D.calculateCollisionLineIntersectionWithCollisionFace(faceIntersection, collisionLine, collisionFace)
 
                 if (faceIntersectionType != FaceIntersectionType.None) {
 
-                    return true;
+                    intersectionFound = true;
+
+                    var faceIntersectionDistanceSqr = vec3.sqrDist(collisionLine.from, faceIntersection);
+
+                    if (nearestFaceIntersectionDistanceSqr == null || faceIntersectionDistanceSqr < nearestFaceIntersectionDistanceSqr) {
+                        nearestFaceIntersectionType = faceIntersectionType;
+                        nearestFaceIntersectionDistanceSqr = faceIntersectionDistanceSqr;
+                        vec3.copy(nearestFaceIntersection, faceIntersection);
+                    }
                 }
             }
         }
 
-        return false;
+        if (out != null) {
+            vec3.copy(out, nearestFaceIntersection);
+        }
+
+        return intersectionFound;
     }
 
     this.determineIfPointIsWithinStaticMesh = function (point, staticMesh) {

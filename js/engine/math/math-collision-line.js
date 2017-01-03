@@ -32,11 +32,33 @@
             return FaceIntersectionType.None;
         }
         
-
         if (out != null) {
             vec3.copy(out, facePlaneIntersection);
         }
 
         return isFrontSideCollision ? FaceIntersectionType.FrontSide : FaceIntersectionType.BackSide;
+    }
+
+    this.calculateCollisionLineIntersectionWithSphere = function (out, line, sphere) {
+
+        var intersectionPoint = math3D.calculateRayIntersectionWithSphere(line.ray, sphere);
+
+        if (intersectionPoint == null) {
+            return false;
+        }
+
+        var distanceToIntersectionPointSqr = vec3.squaredDistance(line.from, intersectionPoint);
+
+        var lineLengthSqr = line.length * line.length;
+
+        if (distanceToIntersectionPointSqr > lineLengthSqr) {
+            return false;
+        }
+
+        if (out != null) {
+            vec3.copy(out, intersectionPoint);
+        }
+
+        return true;
     }
 }

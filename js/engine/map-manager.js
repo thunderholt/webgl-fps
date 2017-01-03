@@ -21,7 +21,7 @@
         }
     }
 
-    this.determineIfLineIntersectsMap = function (out, collisionLine) {
+    this.findNearestLineIntersectionWithMap = function (out, collisionLine) {
 
         var worldStaticMesh = engine.staticMeshManager.getStaticMesh(engine.map.worldStaticMeshId);
 
@@ -29,8 +29,44 @@
             return false;
         }
 
-        var collidesWithWorldSaticMesh = engine.staticMeshMathHelper.determineIfLineIntersectsStaticMesh(out, collisionLine, worldStaticMesh);
+        var collidesWithWorldSaticMesh = engine.staticMeshMathHelper.findNearestLineIntersectionWithStaticMesh(out, collisionLine, worldStaticMesh);
 
         return collidesWithWorldSaticMesh;
+    }
+
+    this.findNearestLineIntersectionWithActor = function (out, collisionLine) {
+
+        var intersectionPoint = vec3.create(); // FIXME
+        var nearestIntersectionPoint = vec3.create(); // FIXME
+        var nearestIntersectionPointDistanceSqr = -1;
+        var nearestIntersectionActor = null;
+
+        for (var actorId in engine.map.actorsById) {
+
+            var actor = engine.map.actorsById[actorId];
+
+            var actorRenderState = engine.renderStateManager.actorRenderStatesById[actor.id];
+            if (actorRenderState == null) {
+                continue;
+            }
+
+            if (math3D.calculateCollisionLineIntersectionWithSphere(intersectionPoint, collisionLine, actorRenderState.boundingSphere)) {
+
+                nearestIntersectionActor = actor;
+
+                var intersectionPointDistanceSqr = vec3.sqrDist(collisionLine.from, intersectionPoint);
+
+                if (nearestIntersectionPointDistanceSqr == -1 || intersectionPointDistanceSqr < nearestIntersectionPointDistanceSqr) {
+                    vec3.copy(nearestIntersectionPoint, intersectionPoint);
+                    nearestIntersectionPointDistanceSqr = intersectionPointDistanceSqr;
+                }
+            }
+        }
+
+        if (nearestIntersectionActor != null && out != null) {
+            vec3.copy(out, nearestIntersectionPoint);
+        }
+
+        return nearestIntersectionActor;
     }
 }
