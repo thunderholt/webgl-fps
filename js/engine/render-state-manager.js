@@ -109,6 +109,10 @@
 
             var actor = engine.map.actorsById[actorId];
 
+            if (!actor.active) {
+                continue;
+            }
+
             var actorRenderState = this.coalesceActorRenderState(actorId);
 
             // Update the actor's bounding sphere.
@@ -141,6 +145,10 @@
         for (var actorId in engine.map.actorsById) {
 
             var actor = engine.map.actorsById[actorId];
+
+            if (!actor.active) {
+                continue;
+            }
 
             var actorRenderState = this.coalesceActorRenderState(actorId);
 
@@ -276,6 +284,10 @@
 
             var actor = engine.map.actorsById[actorId];
 
+            if (!actor.active) {
+                continue;
+            }
+
             var actorRenderState = this.coalesceActorRenderState(actorId);
 
             // Update the actor's effective lights.
@@ -312,6 +324,10 @@
         for (var actorId in engine.map.actorsById) {
 
             var actor = engine.map.actorsById[actorId];
+
+            if (!actor.active) {
+                continue;
+            }
 
             if (actor.skinnedMeshAnimationId != null) {
 

@@ -119,11 +119,13 @@
 
                 var actor = this.map.actorsById[actorId];
 
-                var controller = this.actorControllersById[actor.controllerId];
+                if (actor.active) {
+                    var controller = this.actorControllersById[actor.controllerId];
 
-                if (controller != null) {
+                    if (controller != null) {
 
-                    controller.heartbeat(actor);
+                        controller.heartbeat(actor);
+                    }
                 }
             }
         }

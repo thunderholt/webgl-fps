@@ -44,6 +44,9 @@
         for (var actorId in engine.map.actorsById) {
 
             var actor = engine.map.actorsById[actorId];
+            if (!actor.active) {
+                continue;
+            }
 
             var actorRenderState = engine.renderStateManager.actorRenderStatesById[actor.id];
             if (actorRenderState == null) {

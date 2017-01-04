@@ -144,6 +144,12 @@
 
         for (var actorId in engine.map.actorsById) {
 
+            var actor = engine.map.actorsById[actorId];
+
+            if (!actor.active) {
+                continue;
+            }
+
             var actorRenderState = engine.renderStateManager.actorRenderStatesById[actorId];
 
             if (sector != null) {
@@ -184,10 +190,6 @@
         out, visibleWorldStaticMeshChunkIndexes, visibleActorIds) {
 
         util.clearFixedLengthArray(out, null);
-
-        //for (var i = 0; i < visibleWorldStaticMeshChunkIndexes.length; i++) {
-
-            //var chunkIndex = visibleWorldStaticMeshChunkIndexes.items[i];
 
         for (var chunkIndex = 0; chunkIndex < visibleWorldStaticMeshChunkIndexes.length; chunkIndex++) {
 

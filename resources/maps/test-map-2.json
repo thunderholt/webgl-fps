@@ -200,6 +200,7 @@
   "actorsById": {
     "actor-1": {
       "id": "actor-1",
+      "active":  true,
       "position": [ 0.4800000000000142, 3, 5 ],
       "rotation": [ 0.7, 147.0500000000092, 121.05000000002508 ],
       "controllerId": "TestActorController",
@@ -212,6 +213,7 @@
     },
     "actor-2": {
       "id": "actor-2",
+      "active":  true,
       "position": [ 8, 1, -8.600000381469727 ],
       "rotation": [ 0, 0, 0 ],
       "staticMeshId": "",
@@ -238,6 +240,7 @@
     },
     "actor-3": {
       "id": "actor-3",
+      "active":  true,
       "position": [ -3, 3, -3 ],
       "rotation": [ 0, 0, 0 ],
       "staticMeshId": null,
@@ -249,6 +252,7 @@
     },
     "actor-4": {
       "id": "actor-4",
+      "active":  true,
       "position": [ 17, 2, 6 ],
       "rotation": [ 0, 0, 0 ],
       "staticMeshId": null,
@@ -260,6 +264,7 @@
     },
     "actor-5": {
       "id": "actor-5",
+      "active":  true,
       "position": [ -5, 2, 3 ],
       "rotation": [ 0, 0, 0 ],
       "staticMeshId": null,
@@ -271,6 +276,7 @@
     },
     "actor-6": {
       "id": "actor-6",
+      "active":  true,
       "position": [ -5, 2, 3 ],
       "rotation": [ 0, 0, 0 ],
       "staticMeshId": null,
@@ -282,6 +288,7 @@
     },
     "actor-7": {
       "id": "actor-7",
+      "active":  true,
       "position": [ -5, 2, 3 ],
       "rotation": [ 0, 0, 0 ],
       "staticMeshId": null,
@@ -293,6 +300,7 @@
     },
     "actor-8": {
       "id": "actor-8",
+      "active":  true,
       "position": [ -5, 2, 3 ],
       "rotation": [ 0, 0, 0 ],
       "staticMeshId": null,

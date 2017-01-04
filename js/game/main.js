@@ -71,7 +71,9 @@ function GameController() {
 
         // Init the particle's data.
         if (particle.data == null) {
-            particle.data = {}
+            particle.data = {
+                source: 'player'
+            }
         }
 
         // Set the particle's initial position.
@@ -86,6 +88,7 @@ function GameController() {
 
         var playerAxes = math3D.buildAxesFromRotations(player.rotation);
         vec3.copy(particle.data.movementNormal, playerAxes.zAxis);
+
     }
 }
 
@@ -172,11 +175,32 @@ function EnemyActorController() {
         vec3.copy(actor.position, actor.data.collisionTestSphere.position);
         actor.position[1] -= actor.data.collisionTestSphere.radius;
     }
+
+    this.handleProjectileParticleCollision = function (actor, particle) {
+
+        if (actor.data.health == null) {
+            actor.data.health = 3;
+        }
+
+        if (particle.data.source == 'player') {
+
+            actor.data.health--;
+
+            if (actor.data.health > 0) {
+                console.log('Ouch! Health: ' + actor.data.health);
+            } else {
+                console.log('I\'m dead!');
+                actor.active = false;
+            }
+        }
+    }
 }
 
 function ProjectileParticleController() {
 
     this.heartbeat = function (emitter, particle) {
+
+        var frameDelta = engine.frameTimer.frameDelta;
 
         if (particle.data.collisionLine == null) {
             particle.data.collisionLine = new CollisionLine(null, null, null, null);
@@ -184,16 +208,53 @@ function ProjectileParticleController() {
 
         vec3.copy(particle.data.collisionLine.from, particle.position);
         
-        vec3.scaleAndAdd(particle.data.collisionLine.to, particle.position, particle.data.movementNormal, 0.1);
+        vec3.scaleAndAdd(particle.data.collisionLine.to, particle.position, particle.data.movementNormal, 0.7 * frameDelta);
 
         math3D.buildCollisionLineFromFromAndToPoints(particle.data.collisionLine);
 
+        // See if the particle collides with an actor.
+        if (particle.data.actorCollisionPoint == null) {
+            particle.data.actorCollisionPoint = vec3.create();
+        }
+
+        var collidingActor = engine.mapManager.findNearestLineIntersectionWithActor(particle.data.actorCollisionPoint, particle.data.collisionLine);
+        var collidesWithActor = collidingActor != null;
+
+        // See if the particle collides with the map.
         if (particle.data.mapCollisionPoint == null) {
             particle.data.mapCollisionPoint = vec3.create();
         }
 
         var collidesWithMap = engine.mapManager.findNearestLineIntersectionWithMap(particle.data.mapCollisionPoint, particle.data.collisionLine);
-        if (collidesWithMap) {
+
+        // If the particle collides with both an actor and the map, see which is nearest.
+        if (collidesWithActor && collidesWithMap) {
+
+            var actorCollisionPointDistanceSqr = vec3.sqrDist(particle.position, particle.data.actorCollisionPoint);
+            var mapCollisionPointDistanceSqr = vec3.sqrDist(particle.position, particle.data.mapCollisionPoint);
+
+            collidesWithActor = actorCollisionPointDistanceSqr < mapCollisionPointDistanceSqr;
+            collidesWithMap = actorCollisionPointDistanceSqr > mapCollisionPointDistanceSqr;
+        }
+
+        // Handle the collision.
+        if (collidesWithActor) {
+
+            vec3.copy(particle.position, particle.data.actorCollisionPoint);
+
+            particle.active = false;
+
+            console.log('Particle collided with actor: ' + collidingActor.id);
+
+            // Tell the colliding actor to handle the collision.
+            var actorController = engine.actorControllersById[collidingActor.controllerId];
+
+            if (actorController != null && actorController.handleProjectileParticleCollision != null) {
+
+                actorController.handleProjectileParticleCollision(collidingActor, particle);
+            }
+
+        } else if (collidesWithMap) {
 
             vec3.copy(particle.position, particle.data.mapCollisionPoint);
 
@@ -202,6 +263,7 @@ function ProjectileParticleController() {
 
         } else {
 
+            // No collision, just move the particle to its new position.
             vec3.copy(particle.position, particle.data.collisionLine.to);
         }
     }
