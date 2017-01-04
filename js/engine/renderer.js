@@ -683,10 +683,6 @@
         // Build the world matrix.
         mat4.multiply(this.renderStaticMeshMatrices.worldMatrix, this.renderStaticMeshMatrices.translationMatrix, this.renderStaticMeshMatrices.rotationMatrix);
 
-        if (this.effect.uniforms.rotationMatrix != null) {
-            gl.uniformMatrix4fv(this.effect.uniforms.rotationMatrix, false, this.renderStaticMeshMatrices.rotationMatrix);
-        }
-
         if (this.effect.uniforms.worldMatrix != null) {
             gl.uniformMatrix4fv(this.effect.uniforms.worldMatrix, false, this.renderStaticMeshMatrices.worldMatrix);
         }
@@ -776,11 +772,6 @@
 
         // Build the world matrix.
         mat4.multiply(this.renderSkinnedMeshMatrices.worldMatrix, this.renderSkinnedMeshMatrices.translationMatrix, this.renderSkinnedMeshMatrices.rotationMatrix);
-
-
-        if (this.effect.uniforms.rotationMatrix != null) {
-            gl.uniformMatrix4fv(this.effect.uniforms.rotationMatrix, false, this.renderSkinnedMeshMatrices.rotationMatrix);
-        }
 
         if (this.effect.uniforms.worldMatrix != null) {
             gl.uniformMatrix4fv(this.effect.uniforms.worldMatrix, false, this.renderSkinnedMeshMatrices.worldMatrix);

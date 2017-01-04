@@ -11,7 +11,6 @@
     },
 
     "uniforms": {
-      "rotationMatrix": null,
       "worldMatrix": null,
       "viewProjMatrix": null,
 
@@ -54,7 +53,6 @@
     },
 
     "uniforms": {
-      "rotationMatrix": null,
       "worldMatrix": null,
       "viewProjMatrix": null,
       "boneMatrices": null,

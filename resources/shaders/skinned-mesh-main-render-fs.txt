@@ -45,6 +45,8 @@ LightColour calculateLightColour(
 
 float samplePointLightShadowMap(vec3 directionFromLight, vec4 staticObjectShadowMapMask, vec4 dynamicObjectShadowMapMask, float distanceToLightSquared, samplerCube shadowMapSampler);
 
+vec4 applyFog(vec4 baseColour);
+
 void main(void) 
 {
 	noise = fract(sin(dot(texCoord.xy, vec2(12.9898,78.233))) * 43758.5453);
@@ -136,6 +138,8 @@ void main(void)
 	}
 
 	vec4 finalColour = diffuseColour * totalLightBaseColour + totalLightSpecularColour;
+
+	finalColour = applyFog(finalColour);
 
 	gl_FragColor = finalColour;
 }
@@ -261,4 +265,16 @@ float samplePointLightShadowMap(
     }
 
     return 1.0;
+}
+
+vec4 applyFog(vec4 baseColour)
+{
+	vec3 cameraToFragment = fragmentWorldSpacePosition - cameraWorldSpacePosition;
+	float lengthSqr = dot(cameraToFragment, cameraToFragment);
+
+	float fogAmount = min(lengthSqr / 3000.0, 1.0);
+
+	vec4 fogColour = vec4(0.5, 0.5, 1.0, 1.0);
+	
+	return mix(baseColour, fogColour, fogAmount);
 }

@@ -2,6 +2,20 @@
 
     this.moveSphereThroughMap = function (sphere, movementNormal, movementAmount, applyGravity) {
 
+        this.moveSphereThroughMapInternal(
+			sphere, movementNormal, movementAmount, true);
+
+        if (applyGravity) {
+
+            var gravity = 0.4;
+
+            this.moveSphereThroughMapInternal(
+                sphere, math3D.downVec3, gravity * engine.frameTimer.frameDelta, false);
+        }
+    }
+
+    this.moveSphereThroughMapInternal = function (sphere, movementNormal, movementAmount, allowSliding) {
+
         var worldStaticMesh = engine.staticMeshManager.getStaticMesh(engine.map.worldStaticMeshId);
 
         if (worldStaticMesh == null) {
@@ -9,16 +23,7 @@
         }
 
         engine.staticMeshMathHelper.moveSphereThroughStaticMesh(
-			sphere, worldStaticMesh, movementNormal, movementAmount, true);
-
-        if (applyGravity) {
-
-            var gravity = 0.4;
-
-            engine.staticMeshMathHelper.moveSphereThroughStaticMesh(
-                sphere, worldStaticMesh,
-                [0, -1, 0], gravity * engine.frameTimer.frameDelta, false);
-        }
+			sphere, worldStaticMesh, movementNormal, movementAmount, allowSliding);
     }
 
     this.findNearestLineIntersectionWithMap = function (out, collisionLine) {

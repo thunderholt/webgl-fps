@@ -4,7 +4,6 @@ attribute vec3 vertexTangent;
 attribute vec3 vertexBitangent;
 attribute vec2 vertexTexCoord;
 
-uniform mat4 rotationMatrix;
 uniform mat4 worldMatrix;
 uniform mat4 viewProjMatrix;
 
@@ -19,9 +18,11 @@ void main(void)
 	vec4 tempWorldSpacePosition = worldMatrix * vec4(vertexPosition, 1.0);
 
 	fragmentWorldSpacePosition = tempWorldSpacePosition.xyz;
-	fragmentNormal = (rotationMatrix * vec4(vertexNormal, 1.0)).xyz;
-	fragmentTangent = (rotationMatrix * vec4(vertexTangent, 1.0)).xyz;
-	fragmentBitangent = (rotationMatrix * vec4(vertexBitangent, 1.0)).xyz;
+
+	mat3 rotationMatrix = mat3(worldMatrix);
+	fragmentNormal = rotationMatrix * vertexNormal;
+	fragmentTangent = rotationMatrix * vertexTangent;
+	fragmentBitangent = rotationMatrix * vertexBitangent;
 
 	texCoord = vertexTexCoord;
 

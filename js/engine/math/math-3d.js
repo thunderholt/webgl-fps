@@ -3,6 +3,9 @@
     this.zeroVec3 = vec3.create();
     this.zeroVec4 = vec4.create();
 
+    this.downVec3 = vec3.create();
+    vec3.set(this.downVec3, 0, -1, 0);
+
     this.buildAxesFromRotations = function (rotations) {
 
         var xAxis = [1, 0, 0];

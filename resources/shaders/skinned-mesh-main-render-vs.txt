@@ -10,7 +10,6 @@ attribute float secondWeight;
 attribute float thirdWeight;
 attribute float fourthWeight;
 
-uniform mat4 rotationMatrix;
 uniform mat4 worldMatrix;
 uniform mat4 viewProjMatrix;
 uniform mat4 boneMatrices[30];
