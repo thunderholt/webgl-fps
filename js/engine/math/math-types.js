@@ -1,7 +1,7 @@
 ﻿function Sphere(position, radius) {
 
-    this.position = position;
-    this.radius = radius;
+    this.position = position || vec3.create();
+    this.radius = radius || 0;
 }
 
 function AABB(from, to) {

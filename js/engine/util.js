@@ -72,6 +72,11 @@
         return -1;
     }
 
+    this.fixedLengthArrayPush = function (array, value) {
+
+        array.items[array.length++] = value;
+    }
+
     this.stringIsNullOrEmpty = function (s) {
 
         return s == null || s == '';

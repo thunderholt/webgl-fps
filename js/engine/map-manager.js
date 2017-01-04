@@ -16,14 +16,42 @@
 
     this.moveSphereThroughMapInternal = function (sphere, movementNormal, movementAmount, allowSliding) {
 
+        var $ = this.$moveSphereThroughMapInternal;
+
         var worldStaticMesh = engine.staticMeshManager.getStaticMesh(engine.map.worldStaticMeshId);
 
-        if (worldStaticMesh == null) {
-            return;
+        $.staticMeshes.length = 0;
+        $.staticMeshWorldMatrices.length = 0;
+        $.staticMeshInverseWorldMatrices.length = 0;
+
+        // Push the world static mesh.
+        util.fixedLengthArrayPush($.staticMeshes, worldStaticMesh);
+        util.fixedLengthArrayPush($.staticMeshWorldMatrices, math3D.identityMat4);
+        util.fixedLengthArrayPush($.staticMeshInverseWorldMatrices, math3D.identityMat4);
+
+        // Push any collidable actor static meshes.
+        for (var actorId in engine.map.actorsById) {
+
+            var actor = engine.map.actorsById[actorId];
+            if (!actor.active || !actor.collidesWithPlayer || actor.staticMeshId == null) {
+                continue;
+            }
+
+            var staticMesh = engine.staticMeshManager.getStaticMesh(engine.map.worldStaticMeshId);
+            if (staticMesh == null) {
+                continue;
+            }
+
+            var actorRenderState = engine.renderStateManager.actorRenderStatesById[actor.id];
+
+            util.fixedLengthArrayPush($.staticMeshes, staticMesh);
+            util.fixedLengthArrayPush($.staticMeshWorldMatrices, actorRenderState.worldMatrix);
+            util.fixedLengthArrayPush($.staticMeshInverseWorldMatrices, actorRenderState.inverWorldMatrix);
         }
 
-        engine.staticMeshMathHelper.moveSphereThroughStaticMesh(
-			sphere, worldStaticMesh, movementNormal, movementAmount, allowSliding);
+        engine.staticMeshMathHelper.moveSphereThroughStaticMeshes(
+			sphere, $.staticMeshes, $.staticMeshWorldMatrices, $.staticMeshInverseWorldMatrices,
+            movementNormal, movementAmount, allowSliding);
     }
 
     this.findNearestLineIntersectionWithMap = function (out, collisionLine) {
@@ -76,5 +104,12 @@
         }
 
         return nearestIntersectionActor;
+    }
+
+    // Function locals
+    this.$moveSphereThroughMapInternal = {
+        staticMeshes: new FixedLengthArray(1000, null),
+        staticMeshWorldMatrices: new FixedLengthArray(1000, null),
+        staticMeshInverseWorldMatrices: new FixedLengthArray(1000, null),
     }
 }

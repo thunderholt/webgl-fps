@@ -106,7 +106,13 @@
         staticMesh.pointCompletelyOutsideOfExtremities = max;
     }
 
-    this.moveSphereThroughStaticMesh = function (sphere, staticMesh, desiredDirection, desiredDistance, allowSliding, recursionDepth) {
+    this.moveSphereThroughStaticMeshes = function (
+        sphere, staticMeshes, staticMeshWorldMatrices, staticMeshInverseWorldMatrices,
+        desiredDirection, desiredDistance, allowSliding, recursionDepth) {
+
+        var $ = this.$moveSphereThroughStaticMeshes;
+
+        $.transformedSphere.radius = sphere.radius;
 
         if (desiredDirection[0] == 0 &&
 			desiredDirection[1] == 0 &&
@@ -119,24 +125,35 @@
         }
 
         var nearestCollisionResult = null;
+        var nearestCollisionResultStaticMeshIndex = -1;
 
-        // TODO - don't check all the chunks, use sectors!
-        for (var chunkIndex = 0; chunkIndex < staticMesh.chunks.length; chunkIndex++) {
+        for (var staticMeshIndex = 0; staticMeshIndex < staticMeshes.length; staticMeshIndex++) {
 
-            var chunk = staticMesh.chunks[chunkIndex];
+            var staticMesh = staticMeshes.items[staticMeshIndex];
+            var staticMeshInverseWorldMatrix = staticMeshInverseWorldMatrices.items[staticMeshIndex];
 
-            // TODO - AABB check
+            vec3.transformMat4($.transformedSphere.position, sphere.position, staticMeshInverseWorldMatrix);
+            vec3.transformMat4($.transformedDesiredDirection, desiredDirection, staticMeshInverseWorldMatrix);
 
-            for (var faceIndex = 0; faceIndex < chunk.collisionFaces.length; faceIndex++) {
+            // TODO - don't check all the chunks, use sectors if available!
+            for (var chunkIndex = 0; chunkIndex < staticMesh.chunks.length; chunkIndex++) {
 
-                var collisionFace = chunk.collisionFaces[faceIndex];
+                var chunk = staticMesh.chunks[chunkIndex];
 
-                var collisionResult = math3D.calculateSphereCollisionWithCollisionFace(sphere, collisionFace, desiredDirection);
+                // TODO - AABB check
 
-                if (collisionResult != null) {
+                for (var faceIndex = 0; faceIndex < chunk.collisionFaces.length; faceIndex++) {
 
-                    if (nearestCollisionResult == null || collisionResult.distance < nearestCollisionResult.distance) {
-                        nearestCollisionResult = collisionResult;
+                    var collisionFace = chunk.collisionFaces[faceIndex];
+
+                    var collisionResult = math3D.calculateSphereCollisionWithCollisionFace($.transformedSphere, collisionFace, $.transformedDesiredDirection);
+
+                    if (collisionResult != null) {
+
+                        if (nearestCollisionResult == null || collisionResult.distance < nearestCollisionResult.distance) {
+                            nearestCollisionResult = collisionResult;
+                            nearestCollisionResultStaticMeshIndex = staticMeshIndex;
+                        }
                     }
                 }
             }
@@ -164,18 +181,25 @@
         var remainingDistance = desiredDistance - maximumDesiredDirectionMovementDistance;
 
         if (recursionDepth > 4) {
-            console.log("Recursion limit hit, remainingDistance = " + remainingDistance);
+            //console.log("Recursion limit hit, remainingDistance = " + remainingDistance);
             return;
         }
 
         if (allowSliding && remainingDistance > 0.0) {
 
+            // Remember that the slide reaction will be computed in local space, so we'll need to convert it back into world space.
+            vec3.transformMat4($.transformedDesiredDirection, desiredDirection, staticMeshInverseWorldMatrices.items[nearestCollisionResultStaticMeshIndex]);
+
             var slideReaction = math3D.calculatePlaneIntersectionSlideReaction(
-                nearestCollisionResult.collisionPlane, nearestCollisionResult.intersection, desiredDirection, remainingDistance);
+                nearestCollisionResult.collisionPlane, nearestCollisionResult.intersection, $.transformedDesiredDirection, remainingDistance);
 
             if (slideReaction != null && slideReaction.distance > 0) {
 
-                this.moveSphereThroughStaticMesh(sphere, staticMesh, slideReaction.direction, slideReaction.distance, true, recursionDepth + 1);
+                vec3.transformMat4(slideReaction.direction, slideReaction.direction, staticMeshWorldMatrices.items[nearestCollisionResultStaticMeshIndex]);
+
+                this.moveSphereThroughStaticMeshes(
+                    sphere, staticMeshes, staticMeshWorldMatrices, staticMeshInverseWorldMatrices,
+                    slideReaction.direction, slideReaction.distance, true, recursionDepth + 1);
             }
         }
     }
@@ -255,5 +279,11 @@
         }
 
         return nearestFaceIntersectionType == FaceIntersectionType.FrontSide;
+    }
+
+    // Function locals.
+    this.$moveSphereThroughStaticMeshes = {
+        transformedSphere: new Sphere(),
+        transformedDesiredDirection: vec3.create()
     }
 }

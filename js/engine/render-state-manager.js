@@ -319,6 +319,7 @@
 
             // Update the actor's world matrix.
             math3D.buildWorldMatrix(actorRenderState.worldMatrix, actor.position, actor.rotation);
+            mat4.invert(actorRenderState.inverseWorldMatrix, actorRenderState.worldMatrix);
         }
     }
 
@@ -359,7 +360,8 @@
                 boundingSphere: new Sphere([0, 0, 0], 0),
                 effectiveLightIds: new FixedLengthArray(EngineLimits.MaxEffectiveLightsPerObject, null),
                 residentSectorIndexField: new BitField(),
-                worldMatrix: mat4.create()
+                worldMatrix: mat4.create(),
+                inverseWorldMatrix: mat4.create()
             };
 
             this.actorRenderStatesById[actorId] = actorRenderState;
