@@ -133,7 +133,9 @@
             var staticMeshInverseWorldMatrix = staticMeshInverseWorldMatrices.items[staticMeshIndex];
 
             vec3.transformMat4($.transformedSphere.position, sphere.position, staticMeshInverseWorldMatrix);
-            vec3.transformMat4($.transformedDesiredDirection, desiredDirection, staticMeshInverseWorldMatrix);
+
+            mat3.fromMat4($.tempRotationMatrix, staticMeshInverseWorldMatrix);
+            vec3.transformMat3($.transformedDesiredDirection, desiredDirection, $.tempRotationMatrix);
 
             // TODO - don't check all the chunks, use sectors if available!
             for (var chunkIndex = 0; chunkIndex < staticMesh.chunks.length; chunkIndex++) {
@@ -188,14 +190,16 @@
         if (allowSliding && remainingDistance > 0.0) {
 
             // Remember that the slide reaction will be computed in local space, so we'll need to convert it back into world space.
-            vec3.transformMat4($.transformedDesiredDirection, desiredDirection, staticMeshInverseWorldMatrices.items[nearestCollisionResultStaticMeshIndex]);
+            mat3.fromMat4($.tempRotationMatrix, staticMeshInverseWorldMatrices.items[nearestCollisionResultStaticMeshIndex]);
+            vec3.transformMat3($.transformedDesiredDirection, desiredDirection, $.tempRotationMatrix);
 
             var slideReaction = math3D.calculatePlaneIntersectionSlideReaction(
                 nearestCollisionResult.collisionPlane, nearestCollisionResult.intersection, $.transformedDesiredDirection, remainingDistance);
 
             if (slideReaction != null && slideReaction.distance > 0) {
 
-                vec3.transformMat4(slideReaction.direction, slideReaction.direction, staticMeshWorldMatrices.items[nearestCollisionResultStaticMeshIndex]);
+                mat3.fromMat4($.tempRotationMatrix, staticMeshWorldMatrices.items[nearestCollisionResultStaticMeshIndex]);
+                vec3.transformMat3(slideReaction.direction, slideReaction.direction, $.tempRotationMatrix);
 
                 this.moveSphereThroughStaticMeshes(
                     sphere, staticMeshes, staticMeshWorldMatrices, staticMeshInverseWorldMatrices,
@@ -284,6 +288,7 @@
     // Function locals.
     this.$moveSphereThroughStaticMeshes = {
         transformedSphere: new Sphere(),
-        transformedDesiredDirection: vec3.create()
+        transformedDesiredDirection: vec3.create(),
+        tempRotationMatrix: mat3.create()
     }
 }

@@ -41,7 +41,11 @@
                 var staticMesh = engine.staticMeshManager.getStaticMesh(actor.staticMeshId);
 
                 if (staticMesh == null) {
-                    engine.staticMeshManager.loadStaticMesh(actor.staticMeshId, { buildRotationSafeBoundingSphere: true });
+                    engine.staticMeshManager.loadStaticMesh(actor.staticMeshId, {
+                        buildChunkAABBs: true,
+                        buildChunkCollisionFaces: true,
+                        buildRotationSafeBoundingSphere: true
+                    });
                 }
             }
 

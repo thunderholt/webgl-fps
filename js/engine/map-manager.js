@@ -37,16 +37,16 @@
                 continue;
             }
 
-            var staticMesh = engine.staticMeshManager.getStaticMesh(engine.map.worldStaticMeshId);
-            if (staticMesh == null) {
+            var actorStaticMesh = engine.staticMeshManager.getStaticMesh(actor.staticMeshId);
+            if (actorStaticMesh == null) {
                 continue;
             }
 
             var actorRenderState = engine.renderStateManager.actorRenderStatesById[actor.id];
 
-            util.fixedLengthArrayPush($.staticMeshes, staticMesh);
+            util.fixedLengthArrayPush($.staticMeshes, actorStaticMesh);
             util.fixedLengthArrayPush($.staticMeshWorldMatrices, actorRenderState.worldMatrix);
-            util.fixedLengthArrayPush($.staticMeshInverseWorldMatrices, actorRenderState.inverWorldMatrix);
+            util.fixedLengthArrayPush($.staticMeshInverseWorldMatrices, actorRenderState.inverseWorldMatrix);
         }
 
         engine.staticMeshMathHelper.moveSphereThroughStaticMeshes(

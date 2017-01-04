@@ -4,8 +4,9 @@ var math3D = new Math3D();
 
 engine.gameControllersById['GameController'] = new GameController();
 
-engine.actorControllersById['TestActorController'] = new TestActorController();
+//engine.actorControllersById['TestActorController'] = new TestActorController();
 engine.actorControllersById['EnemyActorController'] = new EnemyActorController();
+engine.actorControllersById['DoorActorController'] = new DoorActorController();
 
 engine.particleControllersById['ProjectileParticleController'] = new ProjectileParticleController();
 
@@ -92,7 +93,7 @@ function GameController() {
     }
 }
 
-function TestActorController() {
+/*function TestActorController() {
 
     this.heartbeat = function (actor) {
 
@@ -116,7 +117,7 @@ function TestActorController() {
 
         actor.rotation[2] += 0.01;
     }
-}
+}*/
 
 function EnemyActorController() {
 
@@ -192,6 +193,45 @@ function EnemyActorController() {
                 console.log('I\'m dead!');
                 actor.active = false;
             }
+        }
+    }
+}
+
+function DoorActorController() {
+
+    this.heartbeat = function (actor) {
+
+        var frameDelta = engine.frameTimer.frameDelta;
+
+        if (actor.data.direction == null) {
+            actor.data.direction = 1;
+        }
+
+        if (actor.data.originalYPos == null) {
+            actor.data.originalYPos = actor.position[1];
+        }
+
+        if (actor.data.offset == null) {
+            actor.data.offset = 0;
+        }
+
+        if (actor.data.offset == 4) {
+            actor.data.direction = -1;
+        }
+
+        if (actor.data.offset == 0) {
+            actor.data.direction = 1;
+        }
+
+        actor.position[1] = actor.data.originalYPos + actor.data.offset;
+
+        actor.data.speed = 0.2;
+        actor.data.offset += actor.data.speed * frameDelta * actor.data.direction;
+
+        if (actor.data.offset > 4) {
+            actor.data.offset = 4;
+        } else if (actor.data.offset < 0) {
+            actor.data.offset = 0;
         }
     }
 }
