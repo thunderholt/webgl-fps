@@ -6,6 +6,9 @@
     this.downVec3 = vec3.create();
     vec3.set(this.downVec3, 0, -1, 0);
 
+    this.identityMat4 = mat4.create();
+    mat4.identity(this.identityMat4);
+
     this.buildAxesFromRotations = function (rotations) {
 
         var xAxis = [1, 0, 0];
@@ -115,6 +118,13 @@
         }
     }
 
+    this.buildWorldMatrix = function (out, position, rotation) {
+
+        mat4.translate(out, this.identityMat4, position);
+        mat4.rotateX(out, out, rotation[0]);
+        mat4.rotateY(out, out, rotation[1]);
+        mat4.rotateZ(out, out, rotation[2]);
+    }
     
     util.copyObjectPropertiesToOtherObject(new MathAABB(), this);
     util.copyObjectPropertiesToOtherObject(new MathSphere(), this);
@@ -123,4 +133,10 @@
     util.copyObjectPropertiesToOtherObject(new MathFrustum(), this);
     util.copyObjectPropertiesToOtherObject(new MathCollisionFace(), this);
     util.copyObjectPropertiesToOtherObject(new MathCollisionLine(), this);
+
+    // Function locals.
+    /*this.$buildWorldMatrix = {
+        translationMatrix: mat4.create(),
+        rotationMatrix: mat4.create()
+    }*/
 }

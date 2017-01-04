@@ -41,7 +41,7 @@
     this.globalIlluminationNormals = [];
     this.globalIlluminationColours = [];
 
-    this.visibleWorldStaticMeshChunkFieldForCamera = new BitField();//new FixedLengthArray(EngineLimits.MaxVisibleWorldStaticMeshChunkIndexesForCamera, 0);
+    this.visibleWorldStaticMeshChunkFieldForCamera = new BitField();
     this.visibleActorIdsForCamera = new FixedLengthArray(EngineLimits.MaxVisibleActorsIdsForCamera, null);
     this.visibleLightIdsForCamera = new FixedLengthArray(EngineLimits.MaxVisibleLightIdsForCamera, null);
 
@@ -49,31 +49,28 @@
         staticMeshChunkRenderStatesByIndex: null,
         visibleChunkField: null,
         effectiveLightIds: null,
-        position: null,
-        rotation: null
+        //position: null,
+        //rotation: null
+        worldMatrix: null
     }
 
-    this.renderStaticMeshMatrices = {
-        translationMatrix: mat4.create(),
-        rotationMatrix: mat4.create(),
-        worldMatrix: mat4.create()
-    }
+    /*this.renderStaticMeshMatrices = {
+        //translationMatrix: mat4.create(),
+        //rotationMatrix: mat4.create(),
+        //worldMatrix: mat4.create()
+    }*/
 
     this.renderSkinnedMeshOptions = {
         effectiveLightIds: null,
-        position: null,
-        rotation: null,
-        frameIndex: null
+        //position: null,
+        //rotation: null,
+        frameIndex: null,
+        worldMatrix: null
     }
 
     this.renderSkinnedMeshMatrices = {
-        translationMatrix: mat4.create(),
-        rotationMatrix: mat4.create(),
-        worldMatrix: mat4.create(),
         relativeBoneMatrices: [],
-        //relativeBoneRotationOnlyMatrices: [],
-        hierachicalBoneMatrices: [],
-        //hierachicalBoneRotationOnlyMatrices: []
+        hierachicalBoneMatrices: []
     }
 
     this.renderSkinnedMeshTempValues = {
@@ -99,7 +96,6 @@
     }
 
     this.particleVertexBuffers = {
-        //verts: null,
         offsets: null,
         texCoords: null
     };
@@ -582,8 +578,9 @@
         this.renderStaticMeshOptions.staticMeshChunkRenderStatesByIndex = engine.renderStateManager.worldStaticMeshChunkRenderStatesByIndex;
         this.renderStaticMeshOptions.visibleChunkField = visibleChunkField;
         this.renderStaticMeshOptions.effectiveLightIds = null;
-        this.renderStaticMeshOptions.position = null;
-        this.renderStaticMeshOptions.rotation = null;
+        this.renderStaticMeshOptions.worldMatrix = math3D.identityMat4;
+        //this.renderStaticMeshOptions.position = null;
+        //this.renderStaticMeshOptions.rotation = null;
         
         this.renderStaticMesh(staticMesh);
     }
@@ -611,8 +608,9 @@
             this.renderStaticMeshOptions.staticMeshChunkRenderStatesByIndex = null;
             this.renderStaticMeshOptions.visibleChunkField = null;
             this.renderStaticMeshOptions.effectiveLightIds = actorRenderState.effectiveLightIds;
-            this.renderStaticMeshOptions.position = actor.position;
-            this.renderStaticMeshOptions.rotation = actor.rotation;
+            this.renderStaticMeshOptions.worldMatrix = actorRenderState.worldMatrix;
+            //this.renderStaticMeshOptions.position = actor.position;
+            //this.renderStaticMeshOptions.rotation = actor.rotation;
 
             this.renderStaticMesh(staticMesh);
         }
@@ -645,9 +643,10 @@
             var actorRenderState = engine.renderStateManager.actorRenderStatesById[actor.id];
       
             this.renderSkinnedMeshOptions.effectiveLightIds = actorRenderState.effectiveLightIds;
-            this.renderSkinnedMeshOptions.position = actor.position;
-            this.renderSkinnedMeshOptions.rotation = actor.rotation;
+            //this.renderSkinnedMeshOptions.position = actor.position;
+            //this.renderSkinnedMeshOptions.rotation = actor.rotation;
             this.renderSkinnedMeshOptions.frameIndex = actor.frameIndex;
+            this.renderSkinnedMeshOptions.worldMatrix = actorRenderState.worldMatrix;
             
             this.renderSkinnedMesh(skinnedMesh, skinnedMeshAnimation);
         }
@@ -664,27 +663,9 @@
             throw "We can't render a static mesh without render states!";
         }
 
-        // Build the translation matrix.
-        mat4.identity(this.renderStaticMeshMatrices.translationMatrix);
-
-        if (this.renderStaticMeshOptions.position != null) {
-            mat4.translate(this.renderStaticMeshMatrices.translationMatrix, this.renderStaticMeshMatrices.translationMatrix, this.renderStaticMeshOptions.position);
-        }
-
-        // Build the rotation matrix.
-        mat4.identity(this.renderStaticMeshMatrices.rotationMatrix);
-
-        if (this.renderStaticMeshOptions.rotation != null) {
-            mat4.rotateX(this.renderStaticMeshMatrices.rotationMatrix, this.renderStaticMeshMatrices.rotationMatrix, this.renderStaticMeshOptions.rotation[0]);
-            mat4.rotateY(this.renderStaticMeshMatrices.rotationMatrix, this.renderStaticMeshMatrices.rotationMatrix, this.renderStaticMeshOptions.rotation[1]);
-            mat4.rotateZ(this.renderStaticMeshMatrices.rotationMatrix, this.renderStaticMeshMatrices.rotationMatrix, this.renderStaticMeshOptions.rotation[2]);
-        }
-
-        // Build the world matrix.
-        mat4.multiply(this.renderStaticMeshMatrices.worldMatrix, this.renderStaticMeshMatrices.translationMatrix, this.renderStaticMeshMatrices.rotationMatrix);
-
+        // Set the uniforms.
         if (this.effect.uniforms.worldMatrix != null) {
-            gl.uniformMatrix4fv(this.effect.uniforms.worldMatrix, false, this.renderStaticMeshMatrices.worldMatrix);
+            gl.uniformMatrix4fv(this.effect.uniforms.worldMatrix, false, this.renderStaticMeshOptions.worldMatrix);
         }
 
         if (this.effect.uniforms.viewProjMatrix != null) {
@@ -754,27 +735,9 @@
             throw "Skinned mesh animation is null!";
         }
 
-        // Build the translation matrix.
-        mat4.identity(this.renderSkinnedMeshMatrices.translationMatrix);
-
-        if (this.renderSkinnedMeshOptions.position != null) {
-            mat4.translate(this.renderSkinnedMeshMatrices.translationMatrix, this.renderSkinnedMeshMatrices.translationMatrix, this.renderSkinnedMeshOptions.position);
-        }
-
-        // Build the rotation matrix.
-        mat4.identity(this.renderSkinnedMeshMatrices.rotationMatrix);
-
-        if (this.renderSkinnedMeshOptions.rotation != null) {
-            mat4.rotateX(this.renderSkinnedMeshMatrices.rotationMatrix, this.renderSkinnedMeshMatrices.rotationMatrix, this.renderSkinnedMeshOptions.rotation[0]);
-            mat4.rotateY(this.renderSkinnedMeshMatrices.rotationMatrix, this.renderSkinnedMeshMatrices.rotationMatrix, this.renderSkinnedMeshOptions.rotation[1]);
-            mat4.rotateZ(this.renderSkinnedMeshMatrices.rotationMatrix, this.renderSkinnedMeshMatrices.rotationMatrix, this.renderSkinnedMeshOptions.rotation[2]);
-        }
-
-        // Build the world matrix.
-        mat4.multiply(this.renderSkinnedMeshMatrices.worldMatrix, this.renderSkinnedMeshMatrices.translationMatrix, this.renderSkinnedMeshMatrices.rotationMatrix);
-
+        // Set the uniforms.
         if (this.effect.uniforms.worldMatrix != null) {
-            gl.uniformMatrix4fv(this.effect.uniforms.worldMatrix, false, this.renderSkinnedMeshMatrices.worldMatrix);
+            gl.uniformMatrix4fv(this.effect.uniforms.worldMatrix, false, this.renderSkinnedMeshOptions.worldMatrix);
         }
 
         if (this.effect.uniforms.viewProjMatrix != null) {
