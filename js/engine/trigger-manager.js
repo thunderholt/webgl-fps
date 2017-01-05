@@ -8,6 +8,7 @@
 
             var trigger = engine.map.triggersById[triggerId];
             var triggerState = this.coalesceTriggerState(triggerId);
+            var triggerController = engine.triggerControllersById[trigger.controllerId];
 
             // Update the trigger's AABB.
             vec3.copy(triggerState.aabb.from, trigger.position);
@@ -23,12 +24,16 @@
             var playerHasJustEnteredTrigger = !playerWasPreviouslyWithinTrigger && triggerState.playerIsWithinTrigger;
             var playerHasJustLeftTrigger = playerWasPreviouslyWithinTrigger && !triggerState.playerIsWithinTrigger;
 
-            if (playerHasJustEnteredTrigger) {
-                console.log('Player has entered ' + triggerId);
-            }
+            // Handle events (if there are any).
+            if (triggerController != null) {
 
-            if (playerHasJustLeftTrigger) {
-                console.log('Player has left ' + triggerId);
+                if (playerHasJustEnteredTrigger && triggerController.handlePlayerEnter != null) {
+                    triggerController.handlePlayerEnter(trigger);
+                }
+
+                if (playerHasJustLeftTrigger && triggerController.handlePlayerLeave != null) {
+                    triggerController.handlePlayerLeave(trigger);
+                }
             }
         }
     }

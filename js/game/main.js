@@ -10,6 +10,7 @@ engine.actorControllersById['DoorActorController'] = new DoorActorController();
 
 engine.particleControllersById['ProjectileParticleController'] = new ProjectileParticleController();
 
+engine.triggerControllersById['DoorOpenerTriggerController'] = new DoorOpenerTriggerController();
 
 engine.init(function () {
 
@@ -306,5 +307,18 @@ function ProjectileParticleController() {
             // No collision, just move the particle to its new position.
             vec3.copy(particle.position, particle.data.collisionLine.to);
         }
+    }
+}
+
+function DoorOpenerTriggerController() {
+
+    this.handlePlayerEnter = function (trigger) {
+
+        console.log('Player has entered ' + trigger.id);
+    }
+
+    this.handlePlayerLeave = function (trigger) {
+
+        console.log('Player has left ' + trigger.id);
     }
 }

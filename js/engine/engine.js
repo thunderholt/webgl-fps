@@ -10,6 +10,7 @@
     this.actorControllersById = {};
     this.emitterControllersById = {};
     this.particleControllersById = {};
+    this.triggerControllersById = {};
     this.mode = 'editor';
     this.stats = {
         numberOfVisibleWorldStaticMeshChunks: 0,
