@@ -612,8 +612,6 @@
             this.renderStaticMeshOptions.visibleChunkField = null;
             this.renderStaticMeshOptions.effectiveLightIds = actorRenderState.effectiveLightIds;
             this.renderStaticMeshOptions.worldMatrix = actorRenderState.worldMatrix;
-            //this.renderStaticMeshOptions.position = actor.position;
-            //this.renderStaticMeshOptions.rotation = actor.rotation;
 
             this.renderStaticMesh(staticMesh);
         }
@@ -646,8 +644,6 @@
             var actorRenderState = engine.renderStateManager.actorRenderStatesById[actor.id];
       
             this.renderSkinnedMeshOptions.effectiveLightIds = actorRenderState.effectiveLightIds;
-            //this.renderSkinnedMeshOptions.position = actor.position;
-            //this.renderSkinnedMeshOptions.rotation = actor.rotation;
             this.renderSkinnedMeshOptions.frameIndex = actor.frameIndex;
             this.renderSkinnedMeshOptions.worldMatrix = actorRenderState.worldMatrix;
             
@@ -1104,12 +1100,13 @@
         for (var actorId in engine.map.actorsById) {
 
             var actor = engine.map.actorsById[actorId];
+            var actorRenderState = engine.renderStateManager.actorRenderStatesById[actor.id];
 
             /*if (!actor.active) {
                 continue;
             }*/
 
-            engine.lineDrawer.drawSphere(this.renderingParameters, actor.position, 0.1, RgbColours.Red, false);
+            engine.lineDrawer.drawSphere(this.renderingParameters, actorRenderState.position, 0.1, RgbColours.Red, false);
         }
     }
 
@@ -1122,6 +1119,7 @@
         for (var actorId in engine.map.actorsById) {
 
             var actor = engine.map.actorsById[actorId];;
+            var actorRenderState = engine.renderStateManager.actorRenderStatesById[actor.id];
 
             /*if (!actor.enabled) {
                 continue;
@@ -1147,7 +1145,7 @@
             }
 
             if (sphereRadius > 0) {
-                engine.lineDrawer.drawSphere(this.renderingParameters, actor.position, sphereRadius, RgbColours.Red, false);
+                engine.lineDrawer.drawSphere(this.renderingParameters, actorRenderState.position, sphereRadius, RgbColours.Red, false);
             }
         }
     }

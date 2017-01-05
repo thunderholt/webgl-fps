@@ -94,32 +94,6 @@ function GameController() {
     }
 }
 
-/*function TestActorController() {
-
-    this.heartbeat = function (actor) {
-
-        if (actor.data.direction == null) {
-            actor.data.direction = 1;
-        }
-
-        if (actor.position[0] > 3) {
-            actor.data.direction = -1;
-        }
-
-        if (actor.position[0] < 0) {
-            actor.data.direction = 1;
-        }
-
-        actor.data.speed = 0.01;
-
-        actor.position[0] += actor.data.direction * actor.data.speed;
-
-        actor.rotation[1] += 0.01;
-
-        actor.rotation[2] += 0.01;
-    }
-}*/
-
 function EnemyActorController() {
 
     this.heartbeat = function (actor) {
@@ -200,40 +174,51 @@ function EnemyActorController() {
 
 function DoorActorController() {
 
+    var DoorState = {
+        Idle: 0,
+        Opening: 1,
+        Closing: 2
+    }
+
+    this.dataSchema = {
+        
+        state: {
+            defaultValue: DoorState.Idle
+        },
+        speed: {
+            defaultValue: 1.0,
+            editor: 'number'
+        }
+    }
+
     this.heartbeat = function (actor) {
 
         var frameDelta = engine.frameTimer.frameDelta;
 
-        if (actor.data.direction == null) {
-            actor.data.direction = 1;
+        if (actor.data.state == DoorState.Opening) {
+            
+            actor.positionOffset[1] += actor.data.speed * frameDelta;
+            if (actor.positionOffset[1] >= 4) {
+                actor.positionOffset[1] = 4;
+                actor.data.state = DoorState.Idle;
+            }
+
+        } else if (actor.data.state == DoorState.Closing) {
+
+            actor.positionOffset[1] -= actor.data.speed * frameDelta;
+            if (actor.positionOffset[1] <= 0) {
+                actor.positionOffset[1] = 0;
+                actor.data.state = DoorState.Idle;
+            }
         }
+    }
 
-        if (actor.data.originalYPos == null) {
-            actor.data.originalYPos = actor.position[1];
-        }
+    this.open = function (actor) {
+        actor.data.state = DoorState.Opening;
+    }
 
-        if (actor.data.offset == null) {
-            actor.data.offset = 0;
-        }
-
-        if (actor.data.offset == 4) {
-            actor.data.direction = -1;
-        }
-
-        if (actor.data.offset == 0) {
-            actor.data.direction = 1;
-        }
-
-        actor.position[1] = actor.data.originalYPos + actor.data.offset;
-
-        actor.data.speed = 0.2;
-        actor.data.offset += actor.data.speed * frameDelta * actor.data.direction;
-
-        if (actor.data.offset > 4) {
-            actor.data.offset = 4;
-        } else if (actor.data.offset < 0) {
-            actor.data.offset = 0;
-        }
+    this.close = function (actor) {
+        actor.data.state = DoorState.Closing;
     }
 }
 
@@ -315,10 +300,24 @@ function DoorOpenerTriggerController() {
     this.handlePlayerEnter = function (trigger) {
 
         console.log('Player has entered ' + trigger.id);
+
+        var doorActor = engine.map.actorsById['actor-1']; // FIXME
+        var doorActorController = engine.actorControllersById[doorActor.controllerId];
+
+        if (doorActorController != null && doorActorController.open != null) {
+            doorActorController.open(doorActor);
+        }
     }
 
     this.handlePlayerLeave = function (trigger) {
 
         console.log('Player has left ' + trigger.id);
+
+        var doorActor = engine.map.actorsById['actor-1']; // FIXME
+        var doorActorController = engine.actorControllersById[doorActor.controllerId];
+
+        if (doorActorController != null && doorActorController.close != null) {
+            doorActorController.close(doorActor);
+        }
     }
 }

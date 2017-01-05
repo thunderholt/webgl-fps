@@ -20,7 +20,7 @@
         this.checkShadowMapAllocations();
 
         this.updateLightBoundingSpheres();
-        this.updateActorBoundingSpheres();
+        this.updateActorPositionsAndBoundingSpheres();
         this.updateActorResidentSectorIndexField();
 
         this.updateLightRenderStates();
@@ -107,7 +107,7 @@
         }
     }
 
-    this.updateActorBoundingSpheres = function () {
+    this.updateActorPositionsAndBoundingSpheres = function () {
 
         for (var actorId in engine.map.actorsById) {
 
@@ -118,6 +118,10 @@
             }
 
             var actorRenderState = this.coalesceActorRenderState(actorId);
+
+            // Update the actor's position.
+            vec3.copy(actorRenderState.position, actor.position);
+            vec3.add(actorRenderState.position, actorRenderState.position, actor.positionOffset);
 
             // Update the actor's bounding sphere.
             var boundingSphereRadius = 0;
@@ -139,7 +143,7 @@
                 }
             }
 
-            actorRenderState.boundingSphere.position = actor.position;
+            actorRenderState.boundingSphere.position = actorRenderState.position;
             actorRenderState.boundingSphere.radius = boundingSphereRadius;
         }
     }
@@ -322,7 +326,7 @@
             }
 
             // Update the actor's world matrix.
-            math3D.buildWorldMatrix(actorRenderState.worldMatrix, actor.position, actor.rotation);
+            math3D.buildWorldMatrix(actorRenderState.worldMatrix, actorRenderState.position, actor.rotation);
             mat4.invert(actorRenderState.inverseWorldMatrix, actorRenderState.worldMatrix);
         }
     }
@@ -361,6 +365,7 @@
         if (actorRenderState == null) {
 
             actorRenderState = {
+                position: vec3.create(),
                 boundingSphere: new Sphere([0, 0, 0], 0),
                 effectiveLightIds: new FixedLengthArray(EngineLimits.MaxEffectiveLightsPerObject, null),
                 residentSectorIndexField: new BitField(),

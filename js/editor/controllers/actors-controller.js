@@ -12,6 +12,7 @@
         var actor = {
             id: 'actor-' + (util.countHashTableKeys(engine.map.actorsById) + 1),
             position: [0, 0, 0],
+            positionOffset: [0, 0, 0],
             rotation: [0, 0, 0],
             staticMeshId: null,
             skinnedMeshId: null,

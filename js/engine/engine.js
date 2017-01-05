@@ -45,6 +45,7 @@
     this.mapManager = new MapManager(this);
     this.particleManager = new ParticleManager(this);
     this.triggerManager = new TriggerManager(this);
+    this.actorManager = new ActorManager(this);
     this.unitTests = new UnitTests();
 
     this.init = function (callback) {
@@ -109,6 +110,8 @@
             this.freeLookCameraController.heartbeat();
 
         } else if (this.mode == 'game') {
+
+            this.actorManager.checkActorsData();
 
             var gameController = this.gameControllersById[this.map.gameControllerId];
             gameController.heartbeat();
@@ -180,5 +183,5 @@
         });
     }
 
-    
+   
 }

@@ -9,6 +9,17 @@
     this.identityMat4 = mat4.create();
     mat4.identity(this.identityMat4);
 
+    this.clamp = function (value, min, max) {
+
+        if (value < min) {
+            return min;
+        } else if (value > max) {
+            return max;
+        } else {
+            return value;
+        }
+    }
+
     this.buildAxesFromRotations = function (rotations) {
 
         var xAxis = [1, 0, 0];
