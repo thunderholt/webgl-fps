@@ -6,8 +6,8 @@
 
 function AABB(from, to) {
 
-    this.from = from;
-    this.to = to;
+    this.from = from || vec3.create();
+    this.to = to || vec3.create();
 }
 
 function Plane(normal, d) {

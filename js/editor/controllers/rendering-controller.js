@@ -4,7 +4,8 @@
         renderLightVolumes: false,
         renderWorldMeshChunkAABBs: false,
         renderActorIdentifiers: false,
-        renderActorBoundingSpheres: false
+        renderActorBoundingSpheres: false,
+        renderTriggers: false
     }
 
     $scope.init = function () {

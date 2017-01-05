@@ -12,7 +12,8 @@
         renderLightVolumes: false,
         renderWorldStaticMeshAABBs: false,
         renderActorBoundingSpheres: false,
-        renderSectors: false
+        renderSectors: false,
+        renderTriggers: false
     };
 
     this.renderingParameters = {
@@ -354,6 +355,8 @@
         this.renderActorBoundingSpheres();
 
         this.renderSectors();
+
+        this.renderTriggers();
 
         //------ TEST CODE --------
         var worldStaticMesh = engine.staticMeshManager.getStaticMesh(engine.map.worldStaticMeshId);
@@ -1176,6 +1179,20 @@
             }
 
             engine.lineDrawer.drawCube(this.renderingParameters, sectorState.origin, engine.sectorSet.metrics.sectorSize, colour, false);
+        }
+    }
+
+    this.renderTriggers = function () {
+
+        if (!this.renderingOptions.renderTriggers) {
+            return;
+        }
+
+        for (var triggerId in engine.map.triggersById) {
+
+            var trigger = engine.map.triggersById[triggerId];
+
+            engine.lineDrawer.drawCube(this.renderingParameters, trigger.position, trigger.size, RgbColours.Red, false);
         }
     }
 

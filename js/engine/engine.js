@@ -43,6 +43,7 @@
     this.editorHelper = new EditorHelper(this);
     this.mapManager = new MapManager(this);
     this.particleManager = new ParticleManager(this);
+    this.triggerManager = new TriggerManager(this);
     this.unitTests = new UnitTests();
 
     this.init = function (callback) {
@@ -112,6 +113,8 @@
             gameController.heartbeat();
 
             this.playerController.heartbeat();
+
+            this.triggerManager.heartbeat();
 
             this.particleManager.updateParticles();
 

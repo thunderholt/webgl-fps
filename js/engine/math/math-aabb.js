@@ -115,4 +115,19 @@
 
         return true;
     }
+
+    this.checkPointIsWithinAABB = function (aabb, point) {
+
+        if (aabb.from[0] > point[0] ||
+            aabb.from[1] > point[1] ||
+            aabb.from[2] < point[2] ||
+            aabb.to[0] < point[0] ||
+            aabb.to[1] < point[1] ||
+            aabb.to[2] > point[2]) {
+
+            return false;
+        }
+
+        return true;
+    }
 }

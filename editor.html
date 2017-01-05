@@ -30,8 +30,8 @@
             <div class="col-md-6" ng-controller="RenderingController">
                 <div class="well">
                     
-                 <canvas id="canvas" width="600" height="400"></canvas>
-                      <!--<canvas id="canvas" style="display: block; width: 50px; height: 50px;"></canvas>-->
+                 <!-- <canvas id="canvas" width="600" height="400"></canvas>-->
+                     <canvas id="canvas" style="display: block; width: 50px; height: 50px;"></canvas>
                     <div>
                         Average Rendering Time: <span id="average-rendering-time" class="badge"></span><br />
                         Average FPS: <span id="average-fps" class="badge"></span><br />
@@ -66,6 +66,12 @@
                     <div class="checkbox">
                         <label>
                             <input type="checkbox" ng-model="renderingOptions.renderSectors" /> Render Sectors
+                        </label>
+                    </div>
+
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" ng-model="renderingOptions.renderTriggers" /> Render Triggers
                         </label>
                     </div>
                 </div>
@@ -104,6 +110,7 @@
     <script src="js/engine/editor-helper.js"></script>
     <script src="js/engine/map-manager.js"></script>
     <script src="js/engine/particle-manager.js"></script>
+    <script src="js/engine/trigger-manager.js"></script>
     <script src="js/engine/fixed-length-array.js"></script>
     <script src="js/engine/bit-field.js"></script>
     <script src="js/engine/util.js"></script>
@@ -127,10 +134,12 @@
     <script src="js/editor/controllers/map-controller.js"></script>
     <script src="js/editor/controllers/lights-controller.js"></script>
     <script src="js/editor/controllers/actors-controller.js"></script>
+    <script src="js/editor/controllers/triggers-controller.js"></script>
     <script src="js/editor/directives/vec3-editor.js"></script>
     <script src="js/editor/directives/material-editor.js"></script>
     <script src="js/editor/directives/light-editor.js"></script>
     <script src="js/editor/directives/actor-editor.js"></script>
+    <script src="js/editor/directives/trigger-editor.js"></script>
     <script src="js/editor/directives/choose-resource-modal.js"></script>
     <script src="js/editor/services/util.js"></script>
     <script src="js/editor/services/ws.js"></script>

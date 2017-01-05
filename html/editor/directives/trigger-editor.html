@@ -1,0 +1,23 @@
+﻿<div class="panel panel-primary" ng-if="trigger != null">
+    <div class="panel-heading">{{trigger.id}}</div>
+    <div class="panel-body">
+    
+        <div class="form-group">
+            <label>Position</label>
+            <vec3-editor vec="trigger.position"></vec3-editor>
+        </div>
+
+        <div class="form-group">
+            <label>Size</label>
+            <vec3-editor vec="trigger.size"></vec3-editor>
+        </div>
+
+        <div class="form-group">
+            <label>Controller</label>
+            <div class="input-group">
+                <input type="text" class="form-control" ng-model="trigger.controllerId" />
+            </div>
+        </div>
+    </div>
+
+</div>

@@ -37,4 +37,14 @@
 
         delete engine.map.actorsById[actorId];
     }
+
+    this.addTrigger = function (trigger) {
+
+        engine.map.triggersById[trigger.id] = trigger;
+    }
+
+    this.removeTrigger = function (triggerId) {
+
+        delete engine.map.triggersById[triggerId];
+    }
 }
