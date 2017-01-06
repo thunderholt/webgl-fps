@@ -2,6 +2,18 @@
 var util = new Util();
 var math3D = new Math3D();
 
+var ProjectileParticleSource = {
+    None: 0,
+    Player: 1,
+    Enemy: 2
+}
+
+var DoorState = {
+    Idle: 0,
+    Opening: 1,
+    Closing: 2
+}
+
 engine.gameControllersById['GameController'] = new GameController();
 
 //engine.actorControllersById['TestActorController'] = new TestActorController();
@@ -25,17 +37,19 @@ engine.init(function () {
     }
 });
 
+
 function GameController() {
+
+    this.dataSchema = {
+        playerShootCountdown: {
+            defaultValue: 0
+        }
+    }
 
     this.heartbeat = function () {
 
         var gameData = engine.map.gameData;
         var frameDelta = engine.frameTimer.frameDelta;
-
-        if (gameData.playerShootCountdown == null) {
-
-            gameData.playerShootCountdown = 0;
-        }
 
         if (gameData.playerShootCountdown > 0) {
 
@@ -50,11 +64,11 @@ function GameController() {
                 gameData.playerShootCountdown = 10;
             }
         }
-
-        
     }
 
     this.playerShoot = function () {
+
+        var player = engine.map.player;
 
         // Grab the projectiles emitter.
         var emitter = engine.map.emittersById['projectiles'];
@@ -72,25 +86,12 @@ function GameController() {
         }
 
         // Init the particle's data.
-        if (particle.data == null) {
-            particle.data = {
-                source: 'player'
-            }
-        }
-
-        // Set the particle's initial position.
-        var player = engine.map.player;
+        particle.data.source = ProjectileParticleSource.Player;
 
         vec3.copy(particle.position, player.position);
 
-        // Set the particle's movement normal.
-        if (particle.data.movementNormal == null) {
-            particle.data.movementNormal = vec3.create();
-        }
-
         var playerAxes = math3D.buildAxesFromRotations(player.rotation);
-        vec3.copy(particle.data.movementNormal, playerAxes.zAxis);
-
+        vec3.copy(particle.direction, playerAxes.zAxis);
     }
 }
 
@@ -98,41 +99,31 @@ function EnemyActorController() {
 
     this.dataSchema = {
 
-        test1: {
-            defaultValue: 1
-        },
-        test2: {
-            defaultValue: 1.0,
+        health: {
+            defaultValue: 3,
             editorType: 'number',
-            editorLabel: 'Test2'
+            editorLabel: 'Health'
+        },
+        speed: {
+            defaultValue: 0.01,
+            editorType: 'number',
+            editorLabel: 'Speed'
+        },
+        changeDirectionCountdown: {
+            defaultValue: 0
+        },
+        targetYRotation: {
+            defaultValue: 0
         }
     }
 
     this.heartbeat = function (actor) {
 
+        var $ = this.$heartbeat;
+
         var frameDelta = engine.frameTimer.frameDelta;
 
-        if (actor.data == null) {
-            actor.data = {};
-        }
-
-        if (actor.data.movementNormal == null) {
-            actor.data.movementNormal = vec3.fromValues(0, 0, 0);
-        }
-
-        vec3.set(actor.data.movementNormal, 0, 0, 1);
-        vec3.rotateY(actor.data.movementNormal, actor.data.movementNormal, math3D.zeroVec3, actor.rotation[1]);
-
-        
-
-        if (actor.data.targetYRotation == null) {
-            actor.data.targetYRotation = 0;
-        }
-
-        if (actor.data.changeDirectionCountdown == null) {
-            actor.data.changeDirectionCountdown = 0;
-        }
-
+        // Detemrine if we should change direction.
         actor.data.changeDirectionCountdown -= frameDelta;
 
         if (actor.data.changeDirectionCountdown <= 0) {
@@ -141,6 +132,7 @@ function EnemyActorController() {
             actor.data.targetYRotation = (Math.random() * Math.PI * 2) - Math.PI;
         }
 
+        // Update the Y rotation.
         if (actor.rotation[1] > actor.data.targetYRotation) {
             actor.rotation[1] -= 0.1 * frameDelta;
             actor.rotation[1] = Math.max(actor.rotation[1], actor.data.targetYRotation);
@@ -149,28 +141,28 @@ function EnemyActorController() {
             actor.rotation[1] = Math.min(actor.rotation[1], actor.data.targetYRotation);
         }
 
-        actor.data.movementAmount = 0.03;
+        // Calculate the movement normal from the Y rotation.
+        vec3.set($.movementNormal, 0, 0, 1);
+        vec3.rotateY($.movementNormal, $.movementNormal, math3D.zeroVec3, actor.rotation[1]);
 
-        if (actor.data.collisionTestSphere == null) {
-            actor.data.collisionTestSphere = new Sphere(vec3.create(), 0.45);
-        }
+        // Calculate the movement amount.
+        var movementAmount = actor.data.speed * frameDelta;
 
-        vec3.copy(actor.data.collisionTestSphere.position, actor.position);
-        actor.data.collisionTestSphere.position[1] += actor.data.collisionTestSphere.radius;
+        // Build the collision test sphere.
+        vec3.copy($.collisionTestSphere.position, actor.position);
+        $.collisionTestSphere.position[1] += $.collisionTestSphere.radius;
 
-        engine.mapManager.moveSphereThroughMap(actor.data.collisionTestSphere, actor.data.movementNormal, actor.data.movementAmount, true);
+        // Move the sphere through the map.
+        engine.mapManager.moveSphereThroughMap($.collisionTestSphere, $.movementNormal, movementAmount, true);
 
-        vec3.copy(actor.position, actor.data.collisionTestSphere.position);
-        actor.position[1] -= actor.data.collisionTestSphere.radius;
+        // Update the actor's position.
+        vec3.copy(actor.position, $.collisionTestSphere.position);
+        actor.position[1] -= $.collisionTestSphere.radius;
     }
 
     this.handleProjectileParticleCollision = function (actor, particle) {
 
-        if (actor.data.health == null) {
-            actor.data.health = 3;
-        }
-
-        if (particle.data.source == 'player') {
+        if (particle.data.source == ProjectileParticleSource.Player) {
 
             actor.data.health--;
 
@@ -182,15 +174,15 @@ function EnemyActorController() {
             }
         }
     }
+
+    // Function locals.
+    this.$heartbeat = {
+        movementNormal: vec3.fromValues(0, 0, 0),
+        collisionTestSphere: new Sphere(vec3.create(), 0.45)
+    }
 }
 
 function DoorActorController() {
-
-    var DoorState = {
-        Idle: 0,
-        Opening: 1,
-        Closing: 2
-    }
 
     this.dataSchema = {
         
@@ -237,40 +229,40 @@ function DoorActorController() {
 
 function ProjectileParticleController() {
 
-    this.heartbeat = function (emitter, particle) {
+    this.dataSchema = {
+
+        source: {
+            defaultValue: ProjectileParticleSource.None
+        }
+    }
+
+    this.heartbeat = function (emitter, particleIndex) {
+
+        var $ = this.$heartbeat;
+
+        var particle = emitter.particles[particleIndex];
 
         var frameDelta = engine.frameTimer.frameDelta;
 
-        if (particle.data.collisionLine == null) {
-            particle.data.collisionLine = new CollisionLine(null, null, null, null);
-        }
 
-        vec3.copy(particle.data.collisionLine.from, particle.position);
+        vec3.copy($.collisionLine.from, particle.position);
         
-        vec3.scaleAndAdd(particle.data.collisionLine.to, particle.position, particle.data.movementNormal, 0.7 * frameDelta);
+        vec3.scaleAndAdd($.collisionLine.to, particle.position, particle.direction, 0.7 * frameDelta);
 
-        math3D.buildCollisionLineFromFromAndToPoints(particle.data.collisionLine);
+        math3D.buildCollisionLineFromFromAndToPoints($.collisionLine);
 
         // See if the particle collides with an actor.
-        if (particle.data.actorCollisionPoint == null) {
-            particle.data.actorCollisionPoint = vec3.create();
-        }
-
-        var collidingActor = engine.mapManager.findNearestLineIntersectionWithActor(particle.data.actorCollisionPoint, particle.data.collisionLine);
+        var collidingActor = engine.mapManager.findNearestLineIntersectionWithActor($.actorCollisionPoint, $.collisionLine);
         var collidesWithActor = collidingActor != null;
 
         // See if the particle collides with the map.
-        if (particle.data.mapCollisionPoint == null) {
-            particle.data.mapCollisionPoint = vec3.create();
-        }
-
-        var collidesWithMap = engine.mapManager.findNearestLineIntersectionWithMap(particle.data.mapCollisionPoint, particle.data.collisionLine);
+        var collidesWithMap = engine.mapManager.findNearestLineIntersectionWithMap($.mapCollisionPoint, $.collisionLine);
 
         // If the particle collides with both an actor and the map, see which is nearest.
         if (collidesWithActor && collidesWithMap) {
 
-            var actorCollisionPointDistanceSqr = vec3.sqrDist(particle.position, particle.data.actorCollisionPoint);
-            var mapCollisionPointDistanceSqr = vec3.sqrDist(particle.position, particle.data.mapCollisionPoint);
+            var actorCollisionPointDistanceSqr = vec3.sqrDist(particle.position, $.actorCollisionPoint);
+            var mapCollisionPointDistanceSqr = vec3.sqrDist(particle.position, $.mapCollisionPoint);
 
             collidesWithActor = actorCollisionPointDistanceSqr < mapCollisionPointDistanceSqr;
             collidesWithMap = actorCollisionPointDistanceSqr > mapCollisionPointDistanceSqr;
@@ -279,7 +271,7 @@ function ProjectileParticleController() {
         // Handle the collision.
         if (collidesWithActor) {
 
-            vec3.copy(particle.position, particle.data.actorCollisionPoint);
+            vec3.copy(particle.position, $.actorCollisionPoint);
 
             particle.active = false;
 
@@ -295,7 +287,7 @@ function ProjectileParticleController() {
 
         } else if (collidesWithMap) {
 
-            vec3.copy(particle.position, particle.data.mapCollisionPoint);
+            vec3.copy(particle.position, $.mapCollisionPoint);
 
             particle.active = false;
             console.log('Particle collided with map!');
@@ -303,8 +295,15 @@ function ProjectileParticleController() {
         } else {
 
             // No collision, just move the particle to its new position.
-            vec3.copy(particle.position, particle.data.collisionLine.to);
+            vec3.copy(particle.position, $.collisionLine.to);
         }
+    }
+
+    // Function locals.
+    this.$heartbeat = {
+        collisionLine: new CollisionLine(null, null, null, null),
+        actorCollisionPoint: vec3.create(),
+        mapCollisionPoint: vec3.create()
     }
 }
 

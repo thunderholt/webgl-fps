@@ -18,13 +18,16 @@
 
             particle = {
                 active: false,
-			    position: vec3.create(),
+                position: [0, 0, 0],
+                direction: [0, 0, 0],
 			    textureIds: [null, null, null, null],
 			    data: null
             }
 
             emitter.particles.push(particle);
         }
+
+        engine.mapDataHelper.checkParticleData(emitter, particle);
 
         particle.active = true;
 
@@ -49,7 +52,7 @@
 
                     var particleController = engine.particleControllersById[emitter.particleControllerId];
 
-                    particleController.heartbeat(emitter, particle);
+                    particleController.heartbeat(emitter, i);
                 }
             }
         }
