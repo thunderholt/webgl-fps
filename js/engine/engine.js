@@ -45,7 +45,7 @@
     this.mapManager = new MapManager(this);
     this.particleManager = new ParticleManager(this);
     this.triggerManager = new TriggerManager(this);
-    this.actorManager = new ActorManager(this);
+    this.mapDataHelper = new MapDataHelper(this);
     this.unitTests = new UnitTests();
 
     this.init = function (callback) {
@@ -111,8 +111,6 @@
 
         } else if (this.mode == 'game') {
 
-            this.actorManager.checkActorsData();
-
             var gameController = this.gameControllersById[this.map.gameControllerId];
             gameController.heartbeat();
 
@@ -172,6 +170,7 @@
 
                     self.map = map;
                     self.sectorSet = sectorSet;
+                    self.mapDataHelper.checkMapData();
                     self.visibilityManager.rebuildSectorStates();
                     self.mapIsReady = true;
 

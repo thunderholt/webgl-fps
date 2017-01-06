@@ -50,12 +50,42 @@
 
                 $scope.actor.skinnedMeshAnimationId = null;
             }
+
+            $scope.chooseController = function () {
+
+                $rootScope.$broadcast('choose-controller', {
+                    controllerType: 'actor',
+                    callback: function (controllerId) {
+                        $scope.actor.controllerId = controllerId;
+
+                        engine.mapDataHelper.checkActorData($scope.actor);
+                        $scope.loadDataSchema();
+                    }
+                });
+            }
+
+            $scope.clearController = function () {
+
+                $scope.actor.controllerId = null;
+                $scope.loadDataSchema();
+            }
+
+            $scope.loadDataSchema = function () {
+
+                $scope.dataSchema = null;
+                var controller = engine.actorControllersById[$scope.actor.controllerId];
+                if (controller != null) {
+                    $scope.dataSchema = controller.dataSchema;
+                }
+            }
         },
         link: function ($scope, element, attrs) {
 
             $scope.$on('edit-actor', function (event, args) {
 
                 $scope.actor = engine.map.actorsById[args.actorId];
+
+                $scope.loadDataSchema();
 
                 engine.renderer.renderingParameters.renderActorIdentifierForActorId = $scope.actor.id;
             });

@@ -56,6 +56,19 @@
             <label>Controller</label>
             <div class="input-group">
                 <input type="text" class="form-control" ng-model="actor.controllerId" />
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" ng-click="chooseController()">Choose</button>
+                    <button class="btn btn-default btn-warning" type="button" ng-click="clearController()"><span class="glyphicon glyphicon-remove-circle"></span></button>
+                </span>
+            </div>
+        </div>
+
+        <div ng-repeat="(propertyName, property) in dataSchema" ng-if="property.editorType != null">
+            <div class="form-group">
+                <label>{{property.editorLabel || propertyName}}</label>
+                <div class="input-group" ng-if="property.editorType != null">
+                    <input type="number" class="form-control" ng-model="actor.data[propertyName]" />
+                </div>
             </div>
         </div>
     </div>

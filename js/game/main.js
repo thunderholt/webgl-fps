@@ -96,6 +96,18 @@ function GameController() {
 
 function EnemyActorController() {
 
+    this.dataSchema = {
+
+        test1: {
+            defaultValue: 1
+        },
+        test2: {
+            defaultValue: 1.0,
+            editorType: 'number',
+            editorLabel: 'Test2'
+        }
+    }
+
     this.heartbeat = function (actor) {
 
         var frameDelta = engine.frameTimer.frameDelta;
@@ -187,7 +199,8 @@ function DoorActorController() {
         },
         speed: {
             defaultValue: 1.0,
-            editor: 'number'
+            editorType: 'number',
+            editorLabel: 'Speed'
         }
     }
 
