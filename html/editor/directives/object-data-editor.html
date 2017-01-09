@@ -1,0 +1,16 @@
+﻿<div ng-repeat="(propertyName, property) in schema" ng-if="property.editorType != null">
+    <div class="form-group">
+        <label>{{property.editorLabel || propertyName}}</label>
+        <div class="input-group" ng-if="property.editorType == 'number'">
+            <input type="number" class="form-control" ng-model="obj.data[propertyName]" />
+        </div>
+        <div class="input-group" ng-if="property.editorType == 'actor-picker'">
+            <input type="text" class="form-control" disabled="disabled" value="{{obj.data[propertyName]}}" />
+            <span class="input-group-btn">
+                <button class="btn btn-default" type="button" ng-click="chooseActor(propertyName)">Choose</button>
+                <button class="btn btn-default btn-warning" type="button" ng-click="clearValue(propertyName)"><span class="glyphicon glyphicon-remove-circle"></span></button>
+            </span>
+        </div>
+        
+    </div>
+</div>

@@ -309,11 +309,24 @@ function ProjectileParticleController() {
 
 function DoorOpenerTriggerController() {
 
+    this.dataSchema = {
+
+        targetDoorActorId: {
+            defaultValue: '',
+            editorType: 'actor-picker',
+            editorLabel: 'Target Door Actor'
+        }
+    }
+
     this.handlePlayerEnter = function (trigger) {
 
         console.log('Player has entered ' + trigger.id);
 
-        var doorActor = engine.map.actorsById['actor-1']; // FIXME
+        var doorActor = engine.map.actorsById[trigger.data.targetDoorActorId];
+        if (doorActor == null) {
+            return;
+        }
+
         var doorActorController = engine.actorControllersById[doorActor.controllerId];
 
         if (doorActorController != null && doorActorController.open != null) {
@@ -325,7 +338,11 @@ function DoorOpenerTriggerController() {
 
         console.log('Player has left ' + trigger.id);
 
-        var doorActor = engine.map.actorsById['actor-1']; // FIXME
+        var doorActor = engine.map.actorsById[trigger.data.targetDoorActorId];
+        if (doorActor == null) {
+            return;
+        }
+
         var doorActorController = engine.actorControllersById[doorActor.controllerId];
 
         if (doorActorController != null && doorActorController.close != null) {

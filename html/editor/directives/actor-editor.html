@@ -63,14 +63,11 @@
             </div>
         </div>
 
-        <div ng-repeat="(propertyName, property) in dataSchema" ng-if="property.editorType != null">
-            <div class="form-group">
-                <label>{{property.editorLabel || propertyName}}</label>
-                <div class="input-group" ng-if="property.editorType != null">
-                    <input type="number" class="form-control" ng-model="actor.data[propertyName]" />
-                </div>
-            </div>
-        </div>
+        <object-data-editor
+            obj="actor"
+            schema="dataSchema">
+        </object-data-editor>
+
     </div>
 
 </div>

@@ -101,6 +101,10 @@
         texCoords: null
     };
 
+    this.guiVertexBuffers = {
+        sizeMultipliers: null
+    }
+
     this.init = function (callback) {
 
         gl = engine.glManager.gl;
@@ -113,7 +117,8 @@
             this.initStandardMaterialShaderData,
             this.initRenderSkinnedMeshMatrices,
             this.initRenderSkinnedMeshTempValues,
-            this.initParticleVertexBuffers];
+            this.initParticleVertexBuffers,
+            this.initGuiVertexBuffers];
 
         util.recurse(function (recursor, recursionCount) {
             if (recursionCount < initFunctions.length) {
@@ -283,6 +288,26 @@
         callback();
     }
 
+    this.initGuiVertexBuffers = function (callback) {
+
+        var sizeMultipliers = [
+			0, 0,
+            1, 0,
+            1, 1,
+
+            1, 1,
+            0, 1,
+            0, 0
+        ];
+
+        self.guiVertexBuffers.sizeMultipliers = gl.createBuffer();
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, self.guiVertexBuffers.sizeMultipliers);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(sizeMultipliers), gl.STATIC_DRAW);
+
+        callback();
+    }
+
     this.renderScene = function () {
      
         for (var i = 0; i < engine.map.globalIlluminationColours.length; i++) {
@@ -345,6 +370,8 @@
         this.renderActorSkinnedMeshes(this.visibleActorIdsForCamera);
 
         this.renderParticles();
+
+        this.renderHudGuis();
 
         this.renderLightVolumes();
   
@@ -1055,6 +1082,33 @@
                 //engine.lineDrawer.drawSphere(this.renderingParameters, particle.position, 0.1, RgbColours.Red, true);
             }
         }
+    }
+
+    this.renderHudGuis = function () {
+
+        //this.renderGui(); // FIXME
+    }
+
+    this.renderGui = function () {
+
+        var effect = engine.effectManager.useEffect('gui');
+
+        //gl.enable(gl.BLEND);
+        //gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+
+        gl.disable(gl.BLEND);
+        gl.disable(gl.DEPTH_TEST);
+        //gl.disable(gl.CULL_FACE);
+
+        // Bind the size multipliers buffer.
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.guiVertexBuffers.sizeMultipliers);
+        gl.vertexAttribPointer(effect.attributes.sizeMultipliers, 2, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(effect.attributes.sizeMultipliers);
+
+        gl.uniform2fv(effect.uniforms.position, [0, 0]);
+        gl.uniform2fv(effect.uniforms.size, [0.9, 0.9]);
+
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
     }
 
     this.renderLightVolumes = function () {

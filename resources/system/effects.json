@@ -177,6 +177,19 @@
 		}
 	},
 
+  "gui": {
+		"id": "gui",
+
+		"attributes": {
+      "sizeMultiplier": null
+		},
+
+		"uniforms": {
+			"position": null,
+			"size": null
+		}
+	},
+
   "line": {
 		"id": "line",
 

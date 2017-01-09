@@ -1,0 +1,11 @@
+﻿attribute vec2 sizeMultiplier;
+
+uniform vec2 position;
+uniform vec2 size;
+
+void main(void) 
+{
+	vec2 temp = position + (size * sizeMultiplier);
+
+    gl_Position = vec4(temp, 0.0, 1.0);
+}
