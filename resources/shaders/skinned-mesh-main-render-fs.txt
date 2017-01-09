@@ -51,7 +51,7 @@ void main(void)
 {
 	noise = fract(sin(dot(texCoord.xy, vec2(12.9898,78.233))) * 43758.5453);
 
-	vec4 diffuseColour = texture2D(diffuseSampler, texCoord);
+	vec4 diffuseColour = vec4(1.0, 1.0, 1.0, 1.0);//texture2D(diffuseSampler, texCoord);
 
 	vec4 totalLightBaseColour = vec4(0.0, 0.0, 0.0, 1.0);
     vec4 totalLightSpecularColour = vec4(0.0, 0.0, 0.0, 1.0);

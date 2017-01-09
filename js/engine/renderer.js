@@ -990,6 +990,15 @@
             gl.enableVertexAttribArray(this.effect.attributes.fourthBoneIndex);
         }
 
+        // Bind the fifth bone indexes.
+        if (this.effect.attributes.fifthBoneIndex != null) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, skinnedMesh.buffers.fifthBoneIndexes);
+            gl.vertexAttribPointer(
+                this.effect.attributes.fifthBoneIndex,
+                1, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(this.effect.attributes.fifthBoneIndex);
+        }
+
         // Bind the first weights.
         if (this.effect.attributes.firstWeight != null) {
             gl.bindBuffer(gl.ARRAY_BUFFER, skinnedMesh.buffers.firstWeights);
@@ -1024,6 +1033,15 @@
                 this.effect.attributes.fourthWeight,
                 1, gl.FLOAT, false, 0, 0);
             gl.enableVertexAttribArray(this.effect.attributes.fourthWeight);
+        }
+
+        // Bind the fifth weights.
+        if (this.effect.attributes.fifthWeight != null) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, skinnedMesh.buffers.fifthWeights);
+            gl.vertexAttribPointer(
+                this.effect.attributes.fifthWeight,
+                1, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(this.effect.attributes.fifthWeight);
         }
     }
 

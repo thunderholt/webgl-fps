@@ -5,10 +5,12 @@ attribute float firstBoneIndex;
 attribute float secondBoneIndex;
 attribute float thirdBoneIndex;
 attribute float fourthBoneIndex;
+attribute float fifthBoneIndex;
 attribute float firstWeight;
 attribute float secondWeight;
 attribute float thirdWeight;
 attribute float fourthWeight;
+attribute float fifthWeight;
 
 uniform mat4 worldMatrix;
 uniform mat4 viewProjMatrix;
@@ -31,12 +33,14 @@ void main(void)
 	vec3 positionTransformedBySecondBone = transformVectorByBone(int(secondBoneIndex), vertexPosition);
 	vec3 positionTransformedByThirdBone = transformVectorByBone(int(thirdBoneIndex), vertexPosition);
 	vec3 positionTransformedByFourthBone = transformVectorByBone(int(fourthBoneIndex), vertexPosition);
+	vec3 positionTransformedByFifthBone = transformVectorByBone(int(fifthBoneIndex), vertexPosition);
 
 	vec3 positionTransformedByBones = 
 		(positionTransformedByFirstBone * firstWeight) +
 		(positionTransformedBySecondBone * secondWeight) +
 		(positionTransformedByThirdBone * thirdWeight) +
-		(positionTransformedByFourthBone * fourthWeight);
+		(positionTransformedByFourthBone * fourthWeight) +
+		(positionTransformedByFifthBone * fifthWeight);
 	
 	vec4 tempWorldSpacePosition = worldMatrix * vec4(positionTransformedByBones, 1.0);
 
@@ -45,12 +49,14 @@ void main(void)
 	vec3 normalTransformedBySecondBone = transformVectorByBoneRotationOnly(int(secondBoneIndex), vertexNormal);
 	vec3 normalTransformedByThirdBone = transformVectorByBoneRotationOnly(int(thirdBoneIndex), vertexNormal);
 	vec3 normalTransformedByFourthBone = transformVectorByBoneRotationOnly(int(fourthBoneIndex), vertexNormal);
+	vec3 normalTransformedByFifthBone = transformVectorByBoneRotationOnly(int(fifthBoneIndex), vertexNormal);
 
 	vec3 normalTransformedByBones = 
 		(normalTransformedByFirstBone * firstWeight) +
 		(normalTransformedBySecondBone * secondWeight) +
 		(normalTransformedByThirdBone * thirdWeight) +
-		(normalTransformedByFourthBone * fourthWeight);
+		(normalTransformedByFourthBone * fourthWeight) +
+		(normalTransformedByFifthBone * fifthWeight);
 	
 	vec3 tempWorldSpaceNormal = normalize(mat3(worldMatrix) * normalTransformedByBones);
 	//vec3 tempWorldSpaceNormal = vertexNormal;
@@ -77,7 +83,7 @@ vec3 transformVectorByBone(int boneIndex, vec3 v)
 	}
 	else 
 	{
-		return vec3(0, 0, 0);
+		return v;//vec3(0, 0, 0);
 	}
 }
 

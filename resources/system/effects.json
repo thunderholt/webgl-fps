@@ -46,10 +46,12 @@
       "secondBoneIndex": null,
       "thirdBoneIndex": null,
       "fourthBoneIndex": null,
+      "fifthBoneIndex": null,
       "firstWeight": null,
       "secondWeight": null,
       "thirdWeight": null,
-      "fourthWeight": null
+      "fourthWeight": null,
+      "fifthWeight": null
     },
 
     "uniforms": {
@@ -118,10 +120,12 @@
       "secondBoneIndex": null,
       "thirdBoneIndex": null,
       "fourthBoneIndex": null,
+      "fifthBoneIndex": null,
       "firstWeight": null,
       "secondWeight": null,
       "thirdWeight": null,
-      "fourthWeight": null
+      "fourthWeight": null,
+      "fifthWeight": null
     },
 
     "uniforms": {
@@ -142,10 +146,12 @@
       "secondBoneIndex": null,
       "thirdBoneIndex": null,
       "fourthBoneIndex": null,
+      "fifthBoneIndex": null,
       "firstWeight": null,
       "secondWeight": null,
       "thirdWeight": null,
-      "fourthWeight": null
+      "fourthWeight": null,
+      "fifthWeight": null
 		},
 
 		"uniforms": {

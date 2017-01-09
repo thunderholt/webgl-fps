@@ -3,10 +3,12 @@ attribute float firstBoneIndex;
 attribute float secondBoneIndex;
 attribute float thirdBoneIndex;
 attribute float fourthBoneIndex;
+attribute float fifthBoneIndex;
 attribute float firstWeight;
 attribute float secondWeight;
 attribute float thirdWeight;
 attribute float fourthWeight;
+attribute float fifthWeight;
 
 uniform mat4 worldMatrix;
 uniform mat4 viewProjMatrix;
@@ -25,12 +27,14 @@ void main(void)
 	vec3 positionTransformedBySecondBone = transformVectorByBone(int(secondBoneIndex), vertexPosition);
 	vec3 positionTransformedByThirdBone = transformVectorByBone(int(thirdBoneIndex), vertexPosition);
 	vec3 positionTransformedByFourthBone = transformVectorByBone(int(fourthBoneIndex), vertexPosition);
+	vec3 positionTransformedByFifthBone = transformVectorByBone(int(fifthBoneIndex), vertexPosition);
 
 	vec3 positionTransformedByBones = 
 		(positionTransformedByFirstBone * firstWeight) +
 		(positionTransformedBySecondBone * secondWeight) +
 		(positionTransformedByThirdBone * thirdWeight) +
-		(positionTransformedByFourthBone * fourthWeight);
+		(positionTransformedByFourthBone * fourthWeight) +
+		(positionTransformedByFifthBone * fifthWeight);
 	
 	vec4 tempWorldSpacePosition = worldMatrix * vec4(positionTransformedByBones, 1.0);
 

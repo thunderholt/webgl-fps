@@ -86,13 +86,13 @@
             secondBoneIndexes: gl.createBuffer(),
             thirdBoneIndexes: gl.createBuffer(),
             fourthBoneIndexes: gl.createBuffer(),
-            //fifthBoneIndexes: gl.createBuffer(),
+            fifthBoneIndexes: gl.createBuffer(),
 
             firstWeights: gl.createBuffer(),
             secondWeights: gl.createBuffer(),
             thirdWeights: gl.createBuffer(),
             fourthWeights: gl.createBuffer(),
-            //fifthWeights: gl.createBuffer(),
+            fifthWeights: gl.createBuffer(),
         };
 
         gl.bindBuffer(gl.ARRAY_BUFFER, skinnedMesh.buffers.vertexBuffer);
@@ -116,6 +116,9 @@
         gl.bindBuffer(gl.ARRAY_BUFFER, skinnedMesh.buffers.fourthBoneIndexes);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(skinnedMesh.fourthBoneIndexes), gl.STATIC_DRAW);
 
+        gl.bindBuffer(gl.ARRAY_BUFFER, skinnedMesh.buffers.fifthBoneIndexes);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(skinnedMesh.fifthBoneIndexes), gl.STATIC_DRAW);
+
         gl.bindBuffer(gl.ARRAY_BUFFER, skinnedMesh.buffers.firstWeights);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(skinnedMesh.firstWeights), gl.STATIC_DRAW);
 
@@ -128,6 +131,9 @@
         gl.bindBuffer(gl.ARRAY_BUFFER, skinnedMesh.buffers.fourthWeights);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(skinnedMesh.fourthWeights), gl.STATIC_DRAW);
 
+        gl.bindBuffer(gl.ARRAY_BUFFER, skinnedMesh.buffers.fifthWeights);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(skinnedMesh.fifthWeights), gl.STATIC_DRAW);
+
         delete skinnedMesh.verts;
         delete skinnedMesh.normals;
         delete skinnedMesh.uvs;
@@ -135,10 +141,12 @@
         delete skinnedMesh.secondBoneIndexes;
         delete skinnedMesh.thirdBoneIndexes;
         delete skinnedMesh.fourthBoneIndexes;
+        delete skinnedMesh.fifthBoneIndexes;
         delete skinnedMesh.firstWeights;
         delete skinnedMesh.secondWeights;
         delete skinnedMesh.thirdWeights;
         delete skinnedMesh.fourthWeights;
+        delete skinnedMesh.fifthWeights;
     }
 
     this.buildSkinnedMeshRotationSafeBoundingSphereRadius = function (skinnedMesh) {
