@@ -292,12 +292,12 @@
 
         var sizeMultipliers = [
 			0, 0,
-            1, 0,
             1, 1,
+            1, 0,
 
             1, 1,
-            0, 1,
-            0, 0
+            0, 0,
+            0, 1
         ];
 
         self.guiVertexBuffers.sizeMultipliers = gl.createBuffer();
@@ -345,7 +345,7 @@
         gl.viewport(0, 0, engine.glManager.viewportInfo.width, engine.glManager.viewportInfo.height);
 
         gl.colorMask(true, true, true, true);
-        gl.clearColor(0.0, 0.0, 1.0, 1.0);
+        gl.clearColor(0.0, 0.0, 0.0, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         gl.enable(gl.CULL_FACE);
@@ -1104,29 +1104,60 @@
 
     this.renderHudGuis = function () {
 
-        //this.renderGui(); // FIXME
-    }
+        for (var guiId in engine.map.guisById) {
 
-    this.renderGui = function () {
+            var gui = engine.map.guisById[guiId];
+
+            this.renderGui(gui); // FIXME - only HUDs!
+        }
+    }
+    
+    this.renderGui = function (gui) {
+
+        var guiLayout = engine.guiLayoutManager.getGuiLayout(gui.layoutId);
+        if (guiLayout == null) {
+            return;
+        }
+
+        var spriteSheet = engine.spriteSheetManager.getSpriteSheet(guiLayout.spriteSheetId);
+        if (spriteSheet == null) {
+            return;
+        }
+
+        var guiRenderState = engine.renderStateManager.guiRenderStatesById[gui.id];
 
         var effect = engine.effectManager.useEffect('gui');
 
-        //gl.enable(gl.BLEND);
-        //gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-
-        gl.disable(gl.BLEND);
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
         gl.disable(gl.DEPTH_TEST);
-        //gl.disable(gl.CULL_FACE);
+
+        // Bind the texture.
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, this.coalesceTexture(spriteSheet.textureId, 'system/missing-diffuse-texture'));
 
         // Bind the size multipliers buffer.
         gl.bindBuffer(gl.ARRAY_BUFFER, this.guiVertexBuffers.sizeMultipliers);
         gl.vertexAttribPointer(effect.attributes.sizeMultipliers, 2, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(effect.attributes.sizeMultipliers);
 
-        gl.uniform2fv(effect.uniforms.position, [0, 0]);
-        gl.uniform2fv(effect.uniforms.size, [0.9, 0.9]);
+        // Execute the draw specs.
+        for (var i = 0; i < guiRenderState.drawSpecs.length; i++) {
 
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
+            var drawSpec = guiRenderState.drawSpecs.items[i];
+
+            gl.uniform2fv(effect.uniforms.position, drawSpec.position);
+            gl.uniform2fv(effect.uniforms.size, drawSpec.size);
+
+            gl.uniform2f(effect.uniforms.xAxis, Math.cos(drawSpec.rotation), Math.sin(drawSpec.rotation));
+            gl.uniform2f(effect.uniforms.yAxis, -Math.sin(drawSpec.rotation), Math.cos(drawSpec.rotation));
+
+            gl.uniform2f(effect.uniforms.scale, 1.0, engine.glManager.viewportInfo.width / engine.glManager.viewportInfo.height);
+            gl.uniform2fv(effect.uniforms.uvPosition, drawSpec.uvPosition);
+            gl.uniform2fv(effect.uniforms.uvSize, drawSpec.uvSize);
+
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+        }
     }
 
     this.renderLightVolumes = function () {

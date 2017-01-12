@@ -32,6 +32,10 @@
     this.skinnedMeshAnimationManager = new SkinnedMeshAnimationManager(this);
     this.resourceLoader = new ResourceLoader(this);
     this.materialManager = new MaterialManager(this);
+    this.guiLayoutManager = new GuiLayoutManager(this);
+    this.guiLayoutAnimationManager = new GuiLayoutAnimationManager(this);
+    this.spriteSheetManager = new SpriteSheetManager(this);
+    this.guiDrawSpecBuilder = new GuiDrawSpecBuilder(this);
     this.visibilityManager = new VisibilityManager(this);
     this.renderer = new Renderer(this);
     this.renderStateManager = new RenderStateManager(this);

@@ -20,6 +20,16 @@
         }
     }
 
+    this.calculateLerpFactor = function (from, to, value) {
+
+        return this.clamp((value - from) / (to - from), 0.0, 1.0);
+    }
+
+    this.lerp = function (from, to, lerpFactor) {
+
+        return from + ((to - from) * lerpFactor);
+    }
+
     this.buildAxesFromRotations = function (rotations) {
 
         var xAxis = [1, 0, 0];

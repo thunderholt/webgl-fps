@@ -3,6 +3,7 @@
     this.actorRenderStatesById = {};
     this.lightRenderStatesById = {};
     this.worldStaticMeshChunkRenderStatesByIndex = [];
+    this.guiRenderStatesById = {}
 
     this.updateLightRenderStatesTempValues = {
         viewProjMatrixForPointLightCubeMapFaceBuild: mat4.create()
@@ -15,7 +16,7 @@
 
     this.updateRenderStates = function () {
 
-        this.ensureActorResourcesAreLoaded();
+        this.ensureResourcesAreLoaded();
 
         this.checkShadowMapAllocations();
 
@@ -26,11 +27,13 @@
         this.updateLightRenderStates();
         this.updateWorldStaticMeshRenderStates();
         this.updateActorRenderStates();
+        this.updateGuiRenderStates();
 
         this.updateActorAnimationFrameIndexes();
+        this.updateGuiAnimationFrameIndexes();
     }
 
-    this.ensureActorResourcesAreLoaded = function () {
+    this.ensureResourcesAreLoaded = function () {
 
         for (var actorId in engine.map.actorsById) {
 
@@ -64,6 +67,38 @@
 
                 if (skinnedMeshAnimation == null) {
                     engine.skinnedMeshAnimationManager.loadSkinnedMeshAnimation(actor.skinnedMeshAnimationId, {});
+                }
+            }
+        }
+
+        for (var guiId in engine.map.guisById) {
+
+            var gui = engine.map.guisById[guiId];
+
+            var guiLayout = engine.guiLayoutManager.getGuiLayout(gui.layoutId);
+
+            if (guiLayout == null) {
+                engine.guiLayoutManager.loadGuiLayout(gui.layoutId)
+            } else {
+
+                for (var animationId in guiLayout.animationsById) {
+                    var animationExpansion = engine.guiLayoutAnimationManager.getGuiLayoutAnimationExpansion(guiLayout.id, animationId);
+                    if (animationExpansion == null) {
+                        engine.guiLayoutAnimationManager.buildGuiLayoutAnimationExpansion(guiLayout.id, animationId);
+                    }
+                }
+
+                var spriteSheet = engine.spriteSheetManager.getSpriteSheet(guiLayout.spriteSheetId);
+
+                if (spriteSheet == null) {
+                    engine.spriteSheetManager.loadSpriteSheet(guiLayout.spriteSheetId);
+                } else {
+
+                    var texture = engine.textureManager.getTexture(spriteSheet.textureId);
+
+                    if (texture == null) {
+                        engine.textureManager.loadTexture(spriteSheet.textureId);
+                    }
                 }
             }
         }
@@ -331,6 +366,18 @@
         }
     }
 
+    this.updateGuiRenderStates = function () {
+
+        for (guiId in engine.map.guisById) {
+
+            var gui = engine.map.guisById[guiId];
+
+            var guiRenderState = this.coalesceGuiRenderState(guiId);
+
+            engine.guiDrawSpecBuilder.buildGuiDrawSpecs(guiRenderState.drawSpecs, gui);
+        }
+    }
+
     this.updateActorAnimationFrameIndexes = function () {
 
         for (var actorId in engine.map.actorsById) {
@@ -353,6 +400,34 @@
 
                 while (actor.frameIndex >= skinnedMeshAnimation.frames.length) {
                     actor.frameIndex -= skinnedMeshAnimation.frames.length;
+                }
+            }
+        }
+    }
+
+    this.updateGuiAnimationFrameIndexes = function () {
+
+        for (var guiId in engine.map.guisById) {
+
+            var gui = engine.map.guisById[guiId];
+            var guiLayout = engine.guiLayoutManager.getGuiLayout(gui.layoutId);
+            if (guiLayout == null) {
+                continue;
+            }
+
+            for (var animationId in guiLayout.animationsById) {
+
+                var animationState = gui.animationStatesById[animationId];
+                if (animationState == null || !animationState.active) {
+                    continue;
+                }
+
+                var animation = guiLayout.animationsById[animationId];
+
+                animationState.frameIndex += engine.frameTimer.frameDelta;
+
+                while (animationState.frameIndex >= animation.numberOfFrames) {
+                    animationState.frameIndex -= animation.numberOfFrames;
                 }
             }
         }
@@ -431,10 +506,27 @@
         return chunkRenderState;
     }
 
+    this.coalesceGuiRenderState = function (guiId) {
+
+        var guiRenderState = this.guiRenderStatesById[guiId];
+
+        if (guiRenderState == null) {
+
+            guiRenderState = {
+                drawSpecs: new FixedLengthArray(500, null)
+            }
+
+            this.guiRenderStatesById[guiId] = guiRenderState;
+        }
+
+        return guiRenderState;
+    }
+
     this.cleanUp = function () {
 
         this.actorRenderStatesById = {};
         this.lightRenderStatesById = {};
         this.worldStaticMeshChunkRenderStatesByIndex = [];
+        this.guiRenderStatesById = {};
     }
 }

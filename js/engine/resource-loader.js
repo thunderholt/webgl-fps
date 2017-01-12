@@ -74,6 +74,8 @@
             'shader': 'shaders',
             'material': 'materials',
             'texture': 'textures',
+            'gui-layout': 'gui-layouts',
+            'sprite-sheet': 'sprite-sheets',
             'system': 'system'
         }
 

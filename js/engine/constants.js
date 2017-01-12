@@ -35,3 +35,11 @@ var FaceIntersectionType = {
     FrontSide: 1,
     BackSide: 2
 }
+
+var SpritePropertyId = {
+    PositionXOffset: 1,
+    PositionYOffset: 2,
+    SizeXOffset: 3,
+    SizeYOffset: 4,
+    RotationOffset: 5,
+}

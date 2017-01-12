@@ -2,10 +2,46 @@
 
 uniform vec2 position;
 uniform vec2 size;
+uniform vec2 scale;
+uniform vec2 xAxis;
+uniform vec2 yAxis;
+uniform vec2 uvPosition;
+uniform vec2 uvSize;
+
+varying vec2 texCoord;
 
 void main(void) 
 {
-	vec2 temp = position + (size * sizeMultiplier);
+	/*vec2 guiSpacePosition = 
+		position + (size * sizeMultiplier);
 
-    gl_Position = vec4(temp, 0.0, 1.0);
+	guiSpacePosition =
+		guiSpacePosition - (size / 2.0);
+
+	guiSpacePosition =
+		((xAxis * guiSpacePosition.x) + (yAxis * guiSpacePosition.y));
+
+	guiSpacePosition =
+		guiSpacePosition + (size / 2.0);*/
+
+	vec2 guiSpacePosition = 
+		position + (size * sizeMultiplier);
+
+	guiSpacePosition =
+		guiSpacePosition - position - (size / 2.0);
+
+	guiSpacePosition =
+		((xAxis * guiSpacePosition.x) + (yAxis * guiSpacePosition.y));
+
+	guiSpacePosition =
+		guiSpacePosition + position + (size / 2.0);
+
+
+	vec2 clipSpacePosition = 
+		vec2(-1, 1) + 
+		((guiSpacePosition * scale * vec2(1.0, -1.0) * 2.0));
+
+	texCoord = (uvPosition + (uvSize * sizeMultiplier)) * vec2(1.0, -1.0);
+
+	gl_Position = vec4(clipSpacePosition, 0.0, 1.0);
 }

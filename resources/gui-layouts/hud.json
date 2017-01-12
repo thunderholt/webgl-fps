@@ -1,0 +1,73 @@
+﻿{
+  "id":  "hud",
+  "spriteSheetId": "sprite-sheet-1",
+  "size": [512, 512],
+  "spritesById": {
+    "health-bar": {
+      "id": "health-bar-inner",
+      "spriteSpecId": "health-bar-inner",
+      "position": [ 30, 16 ],
+      "size": [ 50, 12 ],
+      "rotation": 0
+    },
+    "health-overlay": {
+      "id": "health-bar-overlay",
+      "spriteSpecId": "health-bar-overlay",
+      "position": [ 10, 10 ],
+      "size": [ 75, 25 ],
+      "rotation": 0
+    },
+    "health-bar-icon": {
+      "id": "health-bar-icon",
+      "spriteSpecId": "health-bar-icon",
+      "position": [ 17, 18 ],
+      "size": [ 10, 10 ],
+      "rotation": 0
+    },
+    "crosshair": {
+      "id": "crosshair",
+      "spriteSpecId": "crosshair",
+      "position": [ 250, 135 ],
+      "size": [ 10, 10 ],
+      "rotation": 0
+    }
+  },
+  "animationsById": {
+    "health-bar-grow": {
+      "id": "health-bar-grow",
+      "numberOfFrames": 100,
+      "tweens": [
+        {
+          "startFrameIndex": 0,
+          "numberOfFrames": 50,
+          "targetId": "health-bar-inner",
+          "propertyId": 3,
+          "fromValue": -50.0,
+          "toValue": 0.0
+        },
+        {
+          "startFrameIndex": 50,
+          "numberOfFrames": 50,
+          "targetId": "health-bar-inner",
+          "propertyId": 3,
+          "fromValue": 0.0,
+          "toValue": -50.0
+        }
+      ]
+    },
+    "health-bar-icon": {
+      "id": "health-bar-icon",
+      "numberOfFrames": 100,
+      "tweens": [
+        {
+          "startFrameIndex": 0,
+          "numberOfFrames": 100,
+          "targetId": "health-bar-icon",
+          "propertyId": 5,
+          "fromValue": 0.0,
+          "toValue": 6.28318
+        }
+      ]
+    }
+  }
+}

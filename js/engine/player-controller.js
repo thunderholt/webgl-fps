@@ -2,7 +2,7 @@
 
     var self = this;
 
-    this.rotateRate = 0.002;
+    this.rotateRate = 0.003;
     this.moveRate = 0.2;
 
     this.init = function (callback) {

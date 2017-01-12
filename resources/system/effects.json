@@ -192,7 +192,13 @@
 
 		"uniforms": {
 			"position": null,
-			"size": null
+      "size": null,
+      "scale": null,
+      "xAxis": null,
+      "yAxis":  null,
+      "uvPosition": null,
+			"uvSize": null,
+      "textureSampler": null
 		}
 	},
 
