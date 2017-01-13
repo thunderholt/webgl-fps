@@ -22,6 +22,7 @@
         for (var spriteId in guiLayout.spritesById) {
 
             var sprite = guiLayout.spritesById[spriteId];
+      
             var spriteSpec = spriteSheet.spriteSpecsById[sprite.spriteSpecId];
             if (spriteSpec == null) {
                 continue;
@@ -34,7 +35,8 @@
                     size: vec2.create(),
                     rotation: 0,
                     uvPosition: vec2.create(),
-                    uvSize: vec2.create()
+                    uvSize: vec2.create(),
+                    visible: false
                 }
 
                 out.items[out.length] = drawSpec;
@@ -49,6 +51,8 @@
 
             drawSpec.uvSize[0] = spriteSpec.size[0] / texture.width;
             drawSpec.uvSize[1] = spriteSpec.size[1] / texture.height;
+
+            drawSpec.visible = sprite.visible;
 
             for (var animationId in guiLayout.animationsById) {
 
@@ -75,8 +79,17 @@
                         continue;
                     }
 
-                    var lerpFactor = math3D.calculateLerpFactor(tween.startFrameIndex, tween.startFrameIndex + tween.numberOfFrames, frameIndex);
-                    var value = math3D.lerp(tween.fromValue, tween.toValue, lerpFactor);
+                    var value = 0;
+
+                    if (tween.absoluteValue != null) {
+
+                        value = tween.absoluteValue;
+
+                    } else {
+
+                        var lerpFactor = math3D.calculateLerpFactor(tween.startFrameIndex, tween.startFrameIndex + tween.numberOfFrames, frameIndex);
+                        value = math3D.lerp(tween.fromValue, tween.toValue, lerpFactor);
+                    }
 
                     if (tween.propertyId == SpritePropertyId.PositionXOffset) {
                         drawSpec.position[0] += value;
@@ -88,6 +101,8 @@
                         drawSpec.size[1] += value;
                     } else if (tween.propertyId == SpritePropertyId.RotationOffset) {
                         drawSpec.rotation += value;
+                    } else if (tween.propertyId == SpritePropertyId.Visible) {
+                        drawSpec.visible = value == 1;
                     }
                 }
                 

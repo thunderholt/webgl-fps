@@ -11,15 +11,20 @@
       "position": [ 0, 98 ],
       "size": [ 184, 40 ]
     },
-     "health-bar-icon": {
+    "health-bar-icon": {
       "id": "health-bar-icon",
       "position": [ 190, 96 ],
       "size": [ 42, 42 ]
     },
-     "crosshair": {
+    "crosshair": {
       "id": "crosshair",
       "position": [ 298, 11 ],
       "size": [ 68, 72 ]
+    },
+    "player-death-message": {
+      "id": "player-death-message",
+      "position": [ 3, 140 ],
+      "size": [ 324, 69 ]
     }
 	}
 }

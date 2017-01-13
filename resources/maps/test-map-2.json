@@ -34,12 +34,19 @@
       "animationStatesById": {
         "health-bar-grow": {
           "active": true,
+          "paused": true,
           "frameIndex": 0
         },
         "health-bar-icon": {
-			    "active": true,
-			    "frameIndex": 0
-		    }
+          "active": true,
+          "paused": false,
+          "frameIndex": 0
+        },
+        "player-death-message-toggle": {
+          "active": true,
+          "paused": true,
+          "frameIndex": 0
+        }
 	    }
     }
   },

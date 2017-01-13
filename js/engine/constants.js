@@ -42,4 +42,5 @@ var SpritePropertyId = {
     SizeXOffset: 3,
     SizeYOffset: 4,
     RotationOffset: 5,
+    Visible: 6
 }

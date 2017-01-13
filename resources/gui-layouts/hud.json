@@ -8,28 +8,40 @@
       "spriteSpecId": "health-bar-inner",
       "position": [ 30, 16 ],
       "size": [ 50, 12 ],
-      "rotation": 0
+      "rotation": 0,
+      "visible": true
     },
     "health-overlay": {
       "id": "health-bar-overlay",
       "spriteSpecId": "health-bar-overlay",
       "position": [ 10, 10 ],
       "size": [ 75, 25 ],
-      "rotation": 0
+      "rotation": 0,
+      "visible": true
     },
     "health-bar-icon": {
       "id": "health-bar-icon",
       "spriteSpecId": "health-bar-icon",
       "position": [ 17, 18 ],
       "size": [ 10, 10 ],
-      "rotation": 0
+      "rotation": 0,
+      "visible": true
     },
     "crosshair": {
       "id": "crosshair",
       "spriteSpecId": "crosshair",
       "position": [ 250, 135 ],
       "size": [ 10, 10 ],
-      "rotation": 0
+      "rotation": 0,
+      "visible": true
+    },
+    "player-death-message": {
+      "id": "player-death-message",
+      "spriteSpecId": "player-death-message",
+      "position": [ 100, 120 ],
+      "size": [ 324, 69 ],
+      "rotation": 0,
+      "visible": false
     }
   },
   "animationsById": {
@@ -39,15 +51,7 @@
       "tweens": [
         {
           "startFrameIndex": 0,
-          "numberOfFrames": 50,
-          "targetId": "health-bar-inner",
-          "propertyId": 3,
-          "fromValue": -50.0,
-          "toValue": 0.0
-        },
-        {
-          "startFrameIndex": 50,
-          "numberOfFrames": 50,
+          "numberOfFrames": 100,
           "targetId": "health-bar-inner",
           "propertyId": 3,
           "fromValue": 0.0,
@@ -66,6 +70,26 @@
           "propertyId": 5,
           "fromValue": 0.0,
           "toValue": 6.28318
+        }
+      ]
+    },
+    "player-death-message-toggle": {
+      "id": "player-death-message-toggle",
+      "numberOfFrames": 2,
+      "tweens": [
+        {
+          "startFrameIndex": 0,
+          "numberOfFrames": 1,
+          "targetId": "player-death-message",
+          "propertyId": 6,
+          "absoluteValue": 0
+        },
+        {
+          "startFrameIndex": 1,
+          "numberOfFrames": 1,
+          "targetId": "player-death-message",
+          "propertyId": 6,
+          "absoluteValue": 1
         }
       ]
     }

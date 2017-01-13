@@ -1146,6 +1146,10 @@
 
             var drawSpec = guiRenderState.drawSpecs.items[i];
 
+            if (!drawSpec.visible) {
+                continue;
+            }
+
             gl.uniform2fv(effect.uniforms.position, drawSpec.position);
             gl.uniform2fv(effect.uniforms.size, drawSpec.size);
 

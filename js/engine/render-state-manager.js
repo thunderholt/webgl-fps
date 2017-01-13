@@ -418,7 +418,7 @@
             for (var animationId in guiLayout.animationsById) {
 
                 var animationState = gui.animationStatesById[animationId];
-                if (animationState == null || !animationState.active) {
+                if (animationState == null || !animationState.active || animationState.paused) {
                     continue;
                 }
 

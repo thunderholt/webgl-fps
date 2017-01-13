@@ -8,6 +8,12 @@ var ProjectileParticleSource = {
     Enemy: 2
 }
 
+var ProjectileParticleCollisionType = {
+    Actor: 0,
+    Map: 1,
+    Player: 2
+}
+
 var DoorState = {
     Idle: 0,
     Opening: 1,
@@ -43,6 +49,15 @@ function GameController() {
     this.dataSchema = {
         playerShootCountdown: {
             defaultValue: 0
+        },
+        playerHealth: {
+            defaultValue: -1
+        },
+        playerMaxHealth: {
+            defaultValue: 5
+        },
+        playerIsDead: {
+            defaultValue: false
         }
     }
 
@@ -50,6 +65,13 @@ function GameController() {
 
         var gameData = engine.map.gameData;
         var frameDelta = engine.frameTimer.frameDelta;
+
+        if (gameData.playerHealth == -1) {
+            gameData.playerHealth = gameData.playerMaxHealth;
+        }
+
+        this.updatePlayerHealthBar();
+        this.updatePlayerDeathMessage();
 
         if (gameData.playerShootCountdown > 0) {
 
@@ -87,11 +109,67 @@ function GameController() {
 
         // Init the particle's data.
         particle.data.source = ProjectileParticleSource.Player;
+        particle.data.sourceActorId = null;
 
         vec3.copy(particle.position, player.position);
 
         var playerAxes = math3D.buildAxesFromRotations(player.rotation);
         vec3.copy(particle.direction, playerAxes.zAxis);
+    }
+
+    this.handlePlayerProjectileParticleCollision = function (particle) {
+
+        var gameData = engine.map.gameData;
+
+        if (gameData.playerHealth > 0) {
+            gameData.playerHealth--;
+        }
+
+        if (gameData.playerHealth == 0) {
+            console.log('Player dead!');
+            gameData.playerIsDead = true;
+        } else {
+            console.log('Player ouch!');
+        }
+    }
+
+    this.updatePlayerHealthBar = function () {
+
+        var gameData = engine.map.gameData;
+
+        var hudGui = engine.map.guisById['hud'];
+        if (hudGui != null) {
+
+            var healthFraction = gameData.playerHealth / gameData.playerMaxHealth;
+            var animationState = hudGui.animationStatesById['health-bar-grow'];
+            if (animationState != null) {
+
+                var hudGuiLayout = engine.guiLayoutManager.getGuiLayout(hudGui.layoutId);
+                if (hudGuiLayout != null) {
+                    var animation = hudGuiLayout.animationsById['health-bar-grow'];
+
+                    animationState.frameIndex = ((animation.numberOfFrames - 1) * (1 - healthFraction));
+                }
+            }
+        }
+    }
+
+    this.updatePlayerDeathMessage = function () {
+
+        var gameData = engine.map.gameData;
+
+        var hudGui = engine.map.guisById['hud'];
+        if (hudGui != null) {
+
+            var healthFraction = gameData.playerHealth / gameData.playerMaxHealth;
+            var animationState = hudGui.animationStatesById['player-death-message-toggle'];
+            if (animationState != null) {
+
+                animationState.frameIndex = gameData.playerIsDead ? 1 : 0;
+            }
+        }
+
+        
     }
 }
 
@@ -110,7 +188,10 @@ function EnemyActorController() {
             editorLabel: 'Speed'
         },
         changeDirectionCountdown: {
-            defaultValue: 0
+            defaultValue: 200
+        },
+        attackCountdown: {
+            defaultValue: -1
         },
         targetYRotation: {
             defaultValue: 0
@@ -158,6 +239,75 @@ function EnemyActorController() {
         // Update the actor's position.
         vec3.copy(actor.position, $.collisionTestSphere.position);
         actor.position[1] -= $.collisionTestSphere.radius;
+
+        // Determine if we should attack.
+        if (actor.data.attackCountdown == -1) {
+            actor.data.attackCountdown = Math.random() * 20;
+        }
+
+        actor.data.attackCountdown -= frameDelta;
+        if (actor.data.attackCountdown <= 0) {
+            actor.data.attackCountdown = 20;
+
+            this.attack(actor, $.movementNormal);
+        }
+    }
+
+    this.attack = function (actor, movementNormal) {
+
+        var $ = this.$attack;
+
+        var player = engine.map.player;
+
+        // See if we have line of sight to the player
+        vec3.copy($.lineOfSightToPlayerLine.from, actor.position);
+        $.lineOfSightToPlayerLine.from[1] += 0.45; // To avoid collision with floor.
+        vec3.copy($.lineOfSightToPlayerLine.to, player.position);
+        math3D.buildCollisionLineFromFromAndToPoints($.lineOfSightToPlayerLine);
+
+        var obstructionFound = engine.mapManager.findNearestLineIntersectionWithMap(null, $.lineOfSightToPlayerLine); // FIXME - find *any* intersection will be faster.
+
+        if (!obstructionFound) {
+            
+            // We have line of sight, lets see if the actor is facing the player.
+            var delta = vec3.dot(movementNormal, $.lineOfSightToPlayerLine.ray.normal);
+            
+            if (delta > 0.9) {
+                
+                // The actor is facing player, shoot!
+                this.spawnParticle(actor, $.lineOfSightToPlayerLine.ray.normal);
+            }
+        }
+    }
+
+    this.spawnParticle = function (actor, directionNormal) {
+
+        // Grab the projectiles emitter.
+        var emitter = engine.map.emittersById['projectiles'];
+        if (emitter == null) {
+            console.log('Projectiles emitter not found!');
+            return;
+        }
+
+        // Spawn a particle.
+        var particle = engine.particleManager.spawnParticle(emitter);
+        if (particle == null) {
+            return;
+        }
+
+        // Init the particle's data.
+        particle.data.source = ProjectileParticleSource.Enemy;
+        particle.data.sourceActorId = actor.id; // To make sure the particle doesn't collide with this actor.
+
+        vec3.copy(particle.position, actor.position);
+
+        // Make sure the particle is emitted from the actor's shooting position and not from their feet.
+        particle.position[1] += 0.45;
+
+        // Spaen the particle a little bit in front of the actor.
+        vec3.scaleAndAdd(particle.position, particle.position, directionNormal, 0.1);
+
+        vec3.copy(particle.direction, directionNormal);
     }
 
     this.handleProjectileParticleCollision = function (actor, particle) {
@@ -179,6 +329,10 @@ function EnemyActorController() {
     this.$heartbeat = {
         movementNormal: vec3.fromValues(0, 0, 0),
         collisionTestSphere: new Sphere(vec3.create(), 0.45)
+    }
+
+    this.$attack = {
+        lineOfSightToPlayerLine: new CollisionLine(null, null, null, null)
     }
 }
 
@@ -233,6 +387,9 @@ function ProjectileParticleController() {
 
         source: {
             defaultValue: ProjectileParticleSource.None
+        },
+        sourceActorId: {
+            defaultValue: null
         }
     }
 
@@ -241,9 +398,8 @@ function ProjectileParticleController() {
         var $ = this.$heartbeat;
 
         var particle = emitter.particles[particleIndex];
-
         var frameDelta = engine.frameTimer.frameDelta;
-
+        var player = engine.map.player;
 
         vec3.copy($.collisionLine.from, particle.position);
         
@@ -253,23 +409,49 @@ function ProjectileParticleController() {
 
         // See if the particle collides with an actor.
         var collidingActor = engine.mapManager.findNearestLineIntersectionWithActor($.actorCollisionPoint, $.collisionLine);
-        var collidesWithActor = collidingActor != null;
+        var collidesWithActor = collidingActor != null && collidingActor.id != particle.data.sourceActorId;
 
         // See if the particle collides with the map.
         var collidesWithMap = engine.mapManager.findNearestLineIntersectionWithMap($.mapCollisionPoint, $.collisionLine);
 
-        // If the particle collides with both an actor and the map, see which is nearest.
-        if (collidesWithActor && collidesWithMap) {
+        // See if the particle collides with the player.
+        var collidesWithPlayer = false;
+        if (particle.data.source == ProjectileParticleSource.Enemy) {
 
-            var actorCollisionPointDistanceSqr = vec3.sqrDist(particle.position, $.actorCollisionPoint);
-            var mapCollisionPointDistanceSqr = vec3.sqrDist(particle.position, $.mapCollisionPoint);
+            vec3.copy($.playerHitSphere.position, player.position);
+            collidesWithPlayer = math3D.calculateCollisionLineIntersectionWithSphere(
+                $.playerCollisionPoint, $.collisionLine, $.playerHitSphere);
+        }
 
-            collidesWithActor = actorCollisionPointDistanceSqr < mapCollisionPointDistanceSqr;
-            collidesWithMap = actorCollisionPointDistanceSqr > mapCollisionPointDistanceSqr;
+        // If the particle collides with multiple things, see which is nearest.
+        var nearestCollisionType = ProjectileParticleCollisionType.None;
+        var nearestCollisionPointDistanceSqr = -1;
+
+        if (collidesWithActor) {
+            nearestCollisionType = ProjectileParticleCollisionType.Actor;
+            nearestCollisionPointDistanceSqr = vec3.sqrDist(particle.position, $.actorCollisionPoint);
+        }
+
+        if (collidesWithMap) {
+
+            var distanceSqr = vec3.sqrDist(particle.position, $.mapCollisionPoint);
+            if (distanceSqr < nearestCollisionPointDistanceSqr || nearestCollisionPointDistanceSqr == -1) {
+                nearestCollisionType = ProjectileParticleCollisionType.Map;
+                nearestCollisionPointDistanceSqr = distanceSqr;
+            }
+        }
+
+        if (collidesWithPlayer) {
+
+            var distanceSqr = vec3.sqrDist(particle.position, $.playerCollisionPoint);
+            if (distanceSqr < nearestCollisionPointDistanceSqr || nearestCollisionPointDistanceSqr == -1) {
+                nearestCollisionType = ProjectileParticleCollisionType.Player;
+                nearestCollisionPointDistanceSqr = distanceSqr;
+            }
         }
 
         // Handle the collision.
-        if (collidesWithActor) {
+        if (nearestCollisionType == ProjectileParticleCollisionType.Actor) {
 
             vec3.copy(particle.position, $.actorCollisionPoint);
 
@@ -285,12 +467,20 @@ function ProjectileParticleController() {
                 actorController.handleProjectileParticleCollision(collidingActor, particle);
             }
 
-        } else if (collidesWithMap) {
+        } else if (nearestCollisionType == ProjectileParticleCollisionType.Map) {
 
             vec3.copy(particle.position, $.mapCollisionPoint);
 
             particle.active = false;
             console.log('Particle collided with map!');
+
+        } else if (nearestCollisionType == ProjectileParticleCollisionType.Player) {
+
+            particle.active = false;
+            console.log('Particle collided with player!');
+
+            var gameController = engine.gameControllersById[engine.map.gameControllerId];
+            gameController.handlePlayerProjectileParticleCollision(particle);
 
         } else {
 
@@ -303,7 +493,9 @@ function ProjectileParticleController() {
     this.$heartbeat = {
         collisionLine: new CollisionLine(null, null, null, null),
         actorCollisionPoint: vec3.create(),
-        mapCollisionPoint: vec3.create()
+        mapCollisionPoint: vec3.create(),
+        playerCollisionPoint: vec3.create(),
+        playerHitSphere: new Sphere(null, 0.2)
     }
 }
 
