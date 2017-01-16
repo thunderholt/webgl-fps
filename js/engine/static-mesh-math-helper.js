@@ -210,9 +210,9 @@
 
     this.findNearestLineIntersectionWithStaticMesh = function (out, collisionLine, staticMesh) {
 
-        var faceIntersection = vec3.create();
+        var faceIntersection = vec3.create(); // FIXME
         var intersectionFound = false;
-        var nearestFaceIntersection = vec3.create();
+        var nearestFaceIntersection = vec3.create(); // FIXME
         var nearestFaceIntersectionDistanceSqr = null;
 
         for (var chunkIndex = 0; chunkIndex < staticMesh.chunks.length; chunkIndex++) {

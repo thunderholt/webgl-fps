@@ -39,7 +39,18 @@
         return isFrontSideCollision ? FaceIntersectionType.FrontSide : FaceIntersectionType.BackSide;
     }
 
-    this.calculateCollisionLineIntersectionWithSphere = function (out, line, sphere) {
+    this.determineIfCollisionLineIntersectsSphere = function (line, sphere) {
+
+        var sphereSadiusSqr = sphere.radius * sphere.radius;
+        var fromPointDistanceSqr = vec3.sqrDist(line.from, sphere.position);
+        if (fromPointDistanceSqr <= sphereSadiusSqr) {
+            return true;
+        }
+
+        var toPointDistanceSqr = vec3.sqrDist(line.from, sphere.position);
+        if (toPointDistanceSqr <= sphereSadiusSqr) {
+            return true;
+        }
 
         var intersectionPoint = math3D.calculateRayIntersectionWithSphere(line.ray, sphere);
 
@@ -53,10 +64,6 @@
 
         if (distanceToIntersectionPointSqr > lineLengthSqr) {
             return false;
-        }
-
-        if (out != null) {
-            vec3.copy(out, intersectionPoint);
         }
 
         return true;

@@ -402,9 +402,7 @@ function ProjectileParticleController() {
         var player = engine.map.player;
 
         vec3.copy($.collisionLine.from, particle.position);
-        
         vec3.scaleAndAdd($.collisionLine.to, particle.position, particle.direction, 0.7 * frameDelta);
-
         math3D.buildCollisionLineFromFromAndToPoints($.collisionLine);
 
         // See if the particle collides with an actor.
@@ -419,8 +417,8 @@ function ProjectileParticleController() {
         if (particle.data.source == ProjectileParticleSource.Enemy) {
 
             vec3.copy($.playerHitSphere.position, player.position);
-            collidesWithPlayer = math3D.calculateCollisionLineIntersectionWithSphere(
-                $.playerCollisionPoint, $.collisionLine, $.playerHitSphere);
+            collidesWithPlayer = math3D.determineIfCollisionLineIntersectsSphere($.collisionLine, $.playerHitSphere);
+            $.playerCollisionPoint = player.position; // Hmm, slightly dubious.
         }
 
         // If the particle collides with multiple things, see which is nearest.

@@ -69,8 +69,10 @@
 
     this.findNearestLineIntersectionWithActor = function (out, collisionLine) {
 
-        var intersectionPoint = vec3.create(); // FIXME
-        var nearestIntersectionPoint = vec3.create(); // FIXME
+        var $ = this.$findNearestLineIntersectionWithActor;
+
+        vec3.set($.intersectionPoint, 0.0, 0.0, 0.0);
+        vec3.set($.nearestIntersectionPoint, 0.0, 0.0, 0.0);
         var nearestIntersectionPointDistanceSqr = -1;
         var nearestIntersectionActor = null;
 
@@ -86,21 +88,53 @@
                 continue;
             }
 
-            if (math3D.calculateCollisionLineIntersectionWithSphere(intersectionPoint, collisionLine, actorRenderState.boundingSphere)) {
+            if (math3D.determineIfCollisionLineIntersectsSphere(collisionLine, actorRenderState.boundingSphere)) {
+                
+                var collisionFound = false;
 
-                nearestIntersectionActor = actor;
+                if (actor.staticMeshId != null && actor.staticMeshId != '') {
 
-                var intersectionPointDistanceSqr = vec3.sqrDist(collisionLine.from, intersectionPoint);
+                    // If static mesh, check collision with that.
+                    var staticMesh = engine.staticMeshManager.getStaticMesh(actor.staticMeshId);
+                    if (staticMesh != null) {
 
-                if (nearestIntersectionPointDistanceSqr == -1 || intersectionPointDistanceSqr < nearestIntersectionPointDistanceSqr) {
-                    vec3.copy(nearestIntersectionPoint, intersectionPoint);
-                    nearestIntersectionPointDistanceSqr = intersectionPointDistanceSqr;
+                        // Transform the collision line into local space.
+                        vec3.transformMat4($.transformedCollisionLine.from, collisionLine.from, actorRenderState.inverseWorldMatrix);
+                        vec3.transformMat4($.transformedCollisionLine.to, collisionLine.to, actorRenderState.inverseWorldMatrix);
+                        math3D.buildCollisionLineFromFromAndToPoints($.transformedCollisionLine);
+
+                        collisionFound = engine.staticMeshMathHelper.findNearestLineIntersectionWithStaticMesh(
+                            $.intersectionPoint, $.transformedCollisionLine, staticMesh);
+                        
+                        if (collisionFound) {
+                            // Transform the collision point back into world space.
+                            vec3.transformMat4($.intersectionPoint, $.intersectionPoint, actorRenderState.worldMatrix);
+                        }
+                    }
+
+                } else if (actor.skinnedMeshId != null && actor.skinnedMeshId != '') {
+
+                    // TODO - if skinned mesh, check hit box.
+                    collisionFound = true;
+                    vec3.copy($.intersectionPoint, actor.position); // FIXME
+                }
+
+                if (collisionFound) {
+
+                    nearestIntersectionActor = actor;
+
+                    var intersectionPointDistanceSqr = vec3.sqrDist(collisionLine.from, $.intersectionPoint);
+
+                    if (nearestIntersectionPointDistanceSqr == -1 || intersectionPointDistanceSqr < nearestIntersectionPointDistanceSqr) {
+                        vec3.copy($.nearestIntersectionPoint, $.intersectionPoint);
+                        nearestIntersectionPointDistanceSqr = intersectionPointDistanceSqr;
+                    }
                 }
             }
         }
 
         if (nearestIntersectionActor != null && out != null) {
-            vec3.copy(out, nearestIntersectionPoint);
+            vec3.copy(out, $.nearestIntersectionPoint);
         }
 
         return nearestIntersectionActor;
@@ -111,5 +145,11 @@
         staticMeshes: new FixedLengthArray(1000, null),
         staticMeshWorldMatrices: new FixedLengthArray(1000, null),
         staticMeshInverseWorldMatrices: new FixedLengthArray(1000, null),
+    }
+
+    this.$findNearestLineIntersectionWithActor = {
+        intersectionPoint: vec3.create(),
+        nearestIntersectionPoint: vec3.create(),
+        transformedCollisionLine: new CollisionLine(null, null, null, null)
     }
 }
