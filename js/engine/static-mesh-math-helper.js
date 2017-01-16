@@ -48,7 +48,9 @@
                 util.arrayPushMany(chunkPoints, facePoints);
             }
 
-            chunk.aabb = math3D.buildAABBFromPoints(chunkPoints);
+            chunk.aabb = new AABB();
+
+            math3D.buildAABBFromPoints(chunk.aabb, chunkPoints);
         }
     }
 

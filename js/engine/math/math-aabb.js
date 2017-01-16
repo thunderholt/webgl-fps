@@ -1,15 +1,19 @@
 ﻿function MathAABB() {
 
-    this.buildAABBFromPoints = function (points) {
+    this.buildAABBFromPoints = function (out, points) {
 
-        var from = null;
-        var to = null;
+        var from = out.from;
+        var to = out.to;
+
+        var fromIsSet = false;
+        var toIsSet = false;
 
         for (var i = 0; i < points.length; i++) {
             var point = points[i];
 
-            if (from == null) {
-                from = vec3.clone(point);
+            if (!fromIsSet) {
+                vec3.copy(from, point);
+                fromIsSet = true;
             } else if (point[0] < from[0]) {
                 from[0] = point[0];
             } else if (point[1] < from[1]) {
@@ -18,8 +22,9 @@
                 from[2] = point[2];
             }
 
-            if (to == null) {
-                to = vec3.clone(point);
+            if (!toIsSet) {
+                vec3.copy(to, point);
+                toIsSet = true;
             } else if (point[0] > to[0]) {
                 to[0] = point[0];
             } else if (point[1] > to[1]) {
@@ -28,18 +33,11 @@
                 to[2] = point[2];
             }
         }
-
-        var aabb = {
-            from: from,
-            to: to
-        }
-
-        return aabb;
     }
 
-    this.buildAABBPoints = function (aabb) {
+    this.buildAABBPoints = function (out, aabb) {
 
-        var points = [
+        /*var points = [
             [aabb.from[0], aabb.from[1], aabb.from[2]],
             [aabb.to[0], aabb.from[1], aabb.from[2]],
             [aabb.from[0], aabb.to[1], aabb.from[2]],
@@ -49,20 +47,34 @@
             [aabb.from[0], aabb.to[1], aabb.to[2]],
             [aabb.to[0], aabb.to[1], aabb.to[2]]
         ];
-
+        
         return points;
+        */
+
+        out[0][0] = aabb.from[0]; out[0][1] = aabb.from[1]; out[0][2] = aabb.from[2];
+        out[1][0] = aabb.to[0]; out[1][1] = aabb.from[1]; out[1][2] = aabb.from[2];
+        out[2][0] = aabb.from[0]; out[2][1] = aabb.to[1]; out[2][2] = aabb.from[2];
+        out[3][0] = aabb.to[0]; out[3][1] = aabb.to[1]; out[3][2] = aabb.from[2];
+        out[4][0] = aabb.from[0]; out[4][1] = aabb.from[1]; out[4][2] = aabb.to[2];
+        out[5][0] = aabb.to[0]; out[5][1] = aabb.from[1]; out[5][2] = aabb.to[2];
+        out[6][0] = aabb.from[0]; out[6][1] = aabb.to[1]; out[6][2] = aabb.to[2];
+        out[7][0] = aabb.to[0]; out[7][1] = aabb.to[1]; out[7][2] = aabb.to[2];
     }
 
 
-    this.calculateAABBSize = function (aabb) {
+    this.calculateAABBSize = function (out, aabb) {
 
-        return [aabb.to[0] - aabb.from[0], aabb.to[1] - aabb.from[1], aabb.from[2] - aabb.to[2]];
+        //return [aabb.to[0] - aabb.from[0], aabb.to[1] - aabb.from[1], aabb.from[2] - aabb.to[2]];
+
+        out[0] = aabb.to[0] - aabb.from[0];
+        out[1] = aabb.to[1] - aabb.from[1];
+        out[2] = aabb.from[2] - aabb.to[2];
     }
 
-    this.cloneAABB = function (aabb) {
+    /*this.cloneAABB = function (aabb) {
 
         return new AABB(vec3.clone(aabb.from), vec3.clone(aabb.to));
-    }
+    }*/
 
     this.translateAABB = function (aabb, amount) {
 
@@ -70,35 +82,33 @@
         vec3.add(aabb.to, aabb.to, amount);
     }
 
-    this.clampPointToAABB = function (point, aabb) {
+    this.clampPointToAABB = function (out, point, aabb) {
 
-        var clampedPoint = vec3.clone(point);
+        vec3.copy(out, point);
 
         if (point[0] < aabb.from[0]) {
-            clampedPoint[0] = aabb.from[0];
+            out[0] = aabb.from[0];
         }
 
         if (point[1] < aabb.from[1]) {
-            clampedPoint[1] = aabb.from[1];
+            out[1] = aabb.from[1];
         }
 
         if (point[2] > aabb.from[2]) {
-            clampedPoint[2] = aabb.from[2];
+            out[2] = aabb.from[2];
         }
 
         if (point[0] > aabb.to[0]) {
-            clampedPoint[0] = aabb.to[0];
+            out[0] = aabb.to[0];
         }
 
         if (point[1] > aabb.to[1]) {
-            clampedPoint[1] = aabb.to[1];
+            out[1] = aabb.to[1];
         }
 
         if (point[2] < aabb.to[2]) {
-            clampedPoint[2] = aabb.to[2];
+            out[2] = aabb.to[2];
         }
-
-        return clampedPoint;
     }
 
     this.checkAAABIntersectsAABB = function (aabb1, aabb2) {
@@ -129,5 +139,13 @@
         }
 
         return true;
+    }
+
+    this.checkIfCollisionLineIntersectsAABB = function (aabb) {
+
+        // Front plane
+        //var d = -vec3.dot(math3D.axes3D.positiveZ, aabb.from);
+
+        // TODO
     }
 }

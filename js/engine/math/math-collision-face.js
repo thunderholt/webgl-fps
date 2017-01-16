@@ -53,13 +53,15 @@
 
         for (var i = 0; i < 3; i++) {
 
+            // FIXME
             var ray = new Ray(
                 collisionFace.points[i],
                 collisionFace.freeNormalisedEdges[i]);
 
-            var potentialNearestPoint = math3D.calculateNearestPointOnRayToOtherPoint(ray, point, collisionFace.edgeLengths[i]);
+            var potentialNearestPoint = vec3.create(); // FIXME
+            math3D.calculateNearestPointOnRayToOtherPoint(potentialNearestPoint, ray, point, collisionFace.edgeLengths[i]);
 
-            var potentialNearestPointToPoint = [0, 0, 0];
+            var potentialNearestPointToPoint = [0, 0, 0]; // FIXME
             vec3.sub(potentialNearestPointToPoint, point, potentialNearestPoint);
 
             var potentialNearestPointDistanceSqr = vec3.dot(potentialNearestPointToPoint, potentialNearestPointToPoint);

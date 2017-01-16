@@ -2,10 +2,12 @@
 
     this.checkSphereIntersectsAABB = function (sphere, aabb) {
 
-        var nearestPointInAABB = this.clampPointToAABB(sphere.position, aabb);
+        var $ = this.$checkSphereIntersectsAABB;
 
-        var nearestPointInAABBToSpherePosition = [0, 0, 0];
-        vec3.sub(nearestPointInAABBToSpherePosition, sphere.position, nearestPointInAABB);
+        this.clampPointToAABB($.nearestPointInAABB, sphere.position, aabb);
+
+        var nearestPointInAABBToSpherePosition = [0, 0, 0]; // FIXME
+        vec3.sub(nearestPointInAABBToSpherePosition, sphere.position, $.nearestPointInAABB);
 
         var sphereRadiusSqr = sphere.radius * sphere.radius;
         var nearestPointInAABBToSpherePositionLengthSqr = vec3.sqrLen(nearestPointInAABBToSpherePosition);
@@ -30,16 +32,19 @@
             return null;
         }
 
+        // FIXME
         var sphereMovementRay = new Ray(
             vec3.clone(sphere.position),
             vec3.clone(movementDirection));
 
-        var sphereMovementRayPlaneIntersection = this.calculateRayIntersectionWithPlane(sphereMovementRay, plane);
-        if (sphereMovementRayPlaneIntersection == null) {
+        var sphereMovementRayPlaneIntersection = vec3.create(); // FIXME
+
+        var sphereMovementRayIntersectsPlane = this.calculateRayIntersectionWithPlane(sphereMovementRayPlaneIntersection, sphereMovementRay, plane);
+        if (!sphereMovementRayIntersectsPlane) {
             return null;
         }
 
-        var invPlaneNormal = [0, 0, 0];
+        var invPlaneNormal = [0, 0, 0]; // FIXME
         vec3.scale(invPlaneNormal, plane.normal, -1);
 
         var cosA = vec3.dot(sphereMovementRay.normal, invPlaneNormal);
@@ -94,7 +99,11 @@
                 vec3.clone(sphere.position),
                 invFacePlaneNormal);
 
-            sphereFacePlaneIntersection = math3D.calculateRayIntersectionWithPlane(facePlaneIntersectionRay, face.facePlane);
+            var temp = vec3.create(); // FIXME
+
+            if (math3D.calculateRayIntersectionWithPlane(temp, facePlaneIntersectionRay, face.facePlane)) {
+                sphereFacePlaneIntersection = temp;
+            }
 
         } else {
 
@@ -134,13 +143,14 @@
 
             vec3.scale(sphereIntersectionRay.normal, sphereIntersectionRay.normal, -1);
 
-            var intersectionDistance = math3D.calculateRayIntersectionWithSphereDistance(sphereIntersectionRay, sphere);
-            if (intersectionDistance == null) {
+            var intersectionDistance = new Scalar(0); // FIXME
+
+            if (!math3D.calculateRayIntersectionWithSphereDistance(intersectionDistance, sphereIntersectionRay, sphere)) {
                 return null;
             }
 
             result.intersection = nearestPointOnFacePerimeter;
-            result.distance = intersectionDistance;
+            result.distance = intersectionDistance.value;
 
             // Handle the case where the face-plane already intersects the sphere.
             if (result.distance < 0.0) {
@@ -159,5 +169,10 @@
         }
 
         return result;
+    }
+
+    // Function locals.
+    this.$checkSphereIntersectsAABB = {
+        nearestPointInAABB: vec3.create()
     }
 }

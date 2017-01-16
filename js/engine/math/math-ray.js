@@ -1,6 +1,6 @@
 ﻿function MathRay() {
 
-    this.calculateRayIntersectionWithSphereDistance = function (ray, sphere) {
+    this.calculateRayIntersectionWithSphereDistance = function (out, ray, sphere) {
 
         /*
 		O = Ray origin
@@ -54,24 +54,25 @@
 
 		*/
 
+        var $ = this.$calculateRayIntersectionWithSphereDistance;
+
         // Compute O - S.
-        var oMinusS = vec3.create();
-        vec3.sub(oMinusS, ray.origin, sphere.position);
+        vec3.sub($.oMinusS, ray.origin, sphere.position);
 
         // Compute a.
         var a = vec3.dot(ray.normal, ray.normal);
 
         // Compute b.
-        var b = 2 * vec3.dot(oMinusS, ray.normal);
+        var b = 2 * vec3.dot($.oMinusS, ray.normal);
 
         // Compute c.
-        var c = vec3.dot(oMinusS, oMinusS) - sphere.radius * sphere.radius;
+        var c = vec3.dot($.oMinusS, $.oMinusS) - sphere.radius * sphere.radius;
 
         // Compute the determinant (the bit inside the square root).
         var determinant = b * b - 4 * a * c;
 
         if (determinant < 0) {
-            return null;
+            return false;
         }
 
         // Compute the square root of the determinant.
@@ -91,7 +92,7 @@
         if (t0 < 0) {
 
             if (t1 < 0) {
-                return null;
+                return false;
             } else {
                 t = t1;
             }
@@ -100,26 +101,29 @@
             t = t1;
         }
 
-        return t;
+        out.value = t;
+
+        return true;
     }
 
-    this.calculateRayIntersectionWithSphere = function (ray, sphere) {
+    this.calculateRayIntersectionWithSphere = function (out, ray, sphere) {
 
-        var t = math3D.calculateRayIntersectionWithSphereDistance(ray, sphere);
+        var $ = this.$calculateRayIntersectionWithSphere;
 
-        if (t == null) {
-            return null;
+        var rayIntersectsSphere = math3D.calculateRayIntersectionWithSphereDistance($.t, ray, sphere);
+
+        if (!rayIntersectsSphere) {
+            return false;
         }
 
         // Compute the intersection.
-        var intersection = vec3.create();
-        vec3.scaleAndAdd(intersection, ray.origin, ray.normal, t);
+        vec3.scaleAndAdd(out, ray.origin, ray.normal, $.t.value);
 
         // We're done!
-        return intersection;
+        return true;
     }
 
-    this.calculateRayIntersectionWithPlaneDistance = function (ray, plane) {
+    this.calculateRayIntersectionWithPlaneDistance = function (out, ray, plane) {
 
         /*
 		O = Ray origin
@@ -153,31 +157,36 @@
         var nDotS = vec3.dot(ray.normal, plane.normal);
 
         if (nDotS == 0) {
-            return null;
+            return false;
         }
 
         var t = -((vec3.dot(ray.origin, plane.normal) + plane.d) / nDotS);
 
-        return t;
+        if (out != null) {
+            out.value = t;
+        }
+
+        return true;
     }
 
-    this.calculateRayIntersectionWithPlane = function (ray, plane) {
+    this.calculateRayIntersectionWithPlane = function (out, ray, plane) {
 
-        var t = this.calculateRayIntersectionWithPlaneDistance(ray, plane);
+        var $ = this.$calculateRayIntersectionWithPlane;
 
-        if (t == null || t < 0) {
-            return null;
+        var intersects = this.calculateRayIntersectionWithPlaneDistance($.t, ray, plane);
+
+        if (!intersects || $.t.value < 0) {
+            return false;
         }
 
         // Compute the intersection.
-        var intersection = vec3.create();
-        vec3.scaleAndAdd(intersection, ray.origin, ray.normal, t);
+        vec3.scaleAndAdd(out, ray.origin, ray.normal, $.t.value);
 
         // We're done!
-        return intersection;
+        return true;
     }
 
-    this.calculateNearestPointOnRayToOtherPoint = function (ray, point, maxLengthAlongRay) {
+    this.calculateNearestPointOnRayToOtherPoint = function (out, ray, point, maxLengthAlongRay) {
 
         /*
 
@@ -193,15 +202,15 @@
 
 		*/
 
-        var hypotenuse = vec3.create();
-        vec3.sub(hypotenuse, point, ray.origin);
+        var $ = this.$calculateNearestPointOnRayToOtherPoint;
 
-        var hypotenuseLength = vec3.length(hypotenuse);
+        vec3.sub($.hypotenuse, point, ray.origin);
 
-        var normalizedHypotenuse = vec3.create();
-        vec3.scale(normalizedHypotenuse, hypotenuse, 1 / hypotenuseLength);
+        var hypotenuseLength = vec3.length($.hypotenuse);
 
-        var cosA = vec3.dot(ray.normal, normalizedHypotenuse);
+        vec3.scale($.normalizedHypotenuse, $.hypotenuse, 1 / hypotenuseLength);
+
+        var cosA = vec3.dot(ray.normal, $.normalizedHypotenuse);
 
         var t = cosA * hypotenuseLength;
 
@@ -211,9 +220,24 @@
             t = maxLengthAlongRay;
         }
 
-        var nearestPoint = vec3.create();
-        vec3.scaleAndAdd(nearestPoint, ray.origin, ray.normal, t);
+        vec3.scaleAndAdd(out, ray.origin, ray.normal, t);
+    }
 
-        return nearestPoint;
+    // Function locals.
+    this.$calculateRayIntersectionWithSphereDistance = {
+        oMinusS: vec3.create()
+    }
+
+    this.$calculateRayIntersectionWithSphere = {
+        t: new Scalar(0) 
+    }
+
+    this.$calculateRayIntersectionWithPlane = {
+        t: new Scalar(0)
+    }
+
+    this.$calculateNearestPointOnRayToOtherPoint = {
+        hypotenuse: vec3.create(),
+        normalizedHypotenuse: vec3.create()
     }
 }

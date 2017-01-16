@@ -461,7 +461,9 @@
 
             var ray = new Ray([4, 3, -10], [-1, 0, 0]);
 
-            var result = math3D.calculateRayIntersectionWithSphere(ray, sphere);
+            var result = vec3.create();
+
+            math3D.calculateRayIntersectionWithSphere(result, ray, sphere);
 
             assert(result[0] == 3);
             assert(result[1] == 3);
@@ -471,7 +473,7 @@
             ray.origin = [2, 5, -10];
             ray.normal = [0, -1, 0];
 
-            result = math3D.calculateRayIntersectionWithSphere(ray, sphere);
+            math3D.calculateRayIntersectionWithSphere(result, ray, sphere);
 
             assert(result[0] == 2);
             assert(result[1] == 4);
@@ -481,7 +483,7 @@
             ray.origin = [2, 3, -8];
             ray.normal = [0, 0, -1];
 
-            result = math3D.calculateRayIntersectionWithSphere(ray, sphere);
+            math3D.calculateRayIntersectionWithSphere(result, ray, sphere);
 
             assert(result[0] == 2);
             assert(result[1] == 3);
@@ -491,15 +493,13 @@
             ray.origin = [3, 2, -10];
             ray.normal = [1, 0, 0];
 
-            result = math3D.calculateRayIntersectionWithSphere(ray, sphere);
-
-            assert(result == null);
+            assert(!math3D.calculateRayIntersectionWithSphere(result, ray, sphere));
 
             // Check 5.
             ray.origin = [2, 3, -10];
             ray.normal = [0, 1, 0];
 
-            result = math3D.calculateRayIntersectionWithSphere(ray, sphere);
+            math3D.calculateRayIntersectionWithSphere(result, ray, sphere);
 
             assert(result[0] == 2);
             assert(result[1] == 4);
@@ -509,7 +509,7 @@
             ray.origin = [2, 4, -10];
             ray.normal = [0, 1, 0];
 
-            result = math3D.calculateRayIntersectionWithSphere(ray, sphere);
+            math3D.calculateRayIntersectionWithSphere(result, ray, sphere);
 
             assert(result[0] == 2);
             assert(result[1] == 4);
@@ -523,7 +523,9 @@
 
             var ray = new Ray([10, 5, 3], [-1, 0, 0]);
 
-            var result = math3D.calculateRayIntersectionWithPlane(ray, plane);
+            var result = vec3.create();
+
+            math3D.calculateRayIntersectionWithPlane(result, ray, plane);
 
             assert(result[0] == 3);
             assert(result[1] == 5);
@@ -534,14 +536,12 @@
             ray.origin = [2, 5, 3];
             ray.normal = [-1, 0, 0];
 
-            var result = math3D.calculateRayIntersectionWithPlane(ray, plane);
-
-            assert(result == null);
+            assert(!math3D.calculateRayIntersectionWithPlane(result, ray, plane));
 
             // Check 3.
             var ray = new Ray([0, 5, 3], [1, 0, 0]);
 
-            var result = math3D.calculateRayIntersectionWithPlane(ray, plane);
+            math3D.calculateRayIntersectionWithPlane(result, ray, plane);
 
             assert(result[0] == 3);
             assert(result[1] == 5);
@@ -554,7 +554,9 @@
             var ray = new Ray([5, 0, 0], [0, 1, 0]);
             var point = [2, 3, 0];
 
-            var result = math3D.calculateNearestPointOnRayToOtherPoint(ray, point, 10);
+            var result = vec3.create();
+
+            math3D.calculateNearestPointOnRayToOtherPoint(result, ray, point, 10);
 
             assert(result[0] == 5);
             assert(result[1] == 3);
@@ -564,7 +566,7 @@
             ray = new Ray([5, 0, 0], [0, 1, 0]);
             point = [4, 10, 0];
 
-            result = math3D.calculateNearestPointOnRayToOtherPoint(ray, point, 10);
+            math3D.calculateNearestPointOnRayToOtherPoint(result, ray, point, 10);
 
             assert(result[0] == 5);
             assert(result[1] == 10);
@@ -574,7 +576,7 @@
             ray = new Ray([5, 1, 0], [0, 1, 0]);
             point = [4, 0, 0];
 
-            result = math3D.calculateNearestPointOnRayToOtherPoint(ray, point, 10);
+            math3D.calculateNearestPointOnRayToOtherPoint(result, ray, point, 10);
 
             assert(result[0] == 5);
             assert(result[1] == 1);
@@ -584,7 +586,7 @@
             ray = new Ray([5, 0, 0], [0, 1, 0]);
             point = [4, 11, 0];
 
-            result = math3D.calculateNearestPointOnRayToOtherPoint(ray, point, 10);
+            math3D.calculateNearestPointOnRayToOtherPoint(result, ray, point, 10);
 
             assert(result[0] == 5);
             assert(result[1] == 10);
@@ -594,7 +596,7 @@
             ray = new Ray([5, 0, 0], [0, 1, 0]);
             point = [6, 5, 0];
 
-            result = math3D.calculateNearestPointOnRayToOtherPoint(ray, point, 10);
+            math3D.calculateNearestPointOnRayToOtherPoint(result, ray, point, 10);
 
             assert(result[0] == 5);
             assert(result[1] == 5);

@@ -32,24 +32,28 @@
 
     this.calculatePlaneIntersectionSlideReaction = function (plane, intersection, desiredDirection, desiredDistance) {
 
-        var targetPoint = [0, 0, 0];
+        var targetPoint = [0, 0, 0]; // FIXME
         vec3.scaleAndAdd(targetPoint, intersection, desiredDirection, desiredDistance);
 
         var targetPointToProjectionPointRay = new Ray(targetPoint, plane.normal);
 
-        var projectionPoint = math3D.calculateRayIntersectionWithPlane(targetPointToProjectionPointRay, plane);
+        var projectionPoint = vec3.create(); // FIXME
 
-        if (projectionPoint == null) {
+        var targetPointToProjectionPointRayIntersectsPlane = math3D.calculateRayIntersectionWithPlane(
+            projectionPoint, targetPointToProjectionPointRay, plane);
+
+        if (!targetPointToProjectionPointRayIntersectsPlane) {
             return null;
         }
 
-        var slideVector = [0, 0, 0];
+        var slideVector = [0, 0, 0]; // FIXME
         vec3.subtract(slideVector, projectionPoint, intersection);
 
         var slideDistance = vec3.length(slideVector);
 
         vec3.normalize(slideVector, slideVector);
 
+        // FIXME
         var result = {
             direction: slideVector,
             distance: slideDistance

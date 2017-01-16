@@ -1180,6 +1180,8 @@
 
     this.renderWorldStaticMeshChunkAABBs = function () {
 
+        var $ = this.$renderWorldStaticMeshChunkAABBs;
+
         if (!this.renderingOptions.renderWorldMeshChunkAABBs) {
             return;
         }
@@ -1194,7 +1196,9 @@
 
             var chunk = staticMesh.chunks[i];
 
-            engine.lineDrawer.drawCube(this.renderingParameters, chunk.aabb.from, math3D.calculateAABBSize(chunk.aabb), RgbColours.Red, false);
+            math3D.calculateAABBSize($.aabbSize, chunk.aabb);
+
+            engine.lineDrawer.drawCube(this.renderingParameters, chunk.aabb.from, $.aabbSize, RgbColours.Red, false);
         }
     }
 
@@ -1420,5 +1424,10 @@
     this.log = function (message) {
 
         console.log('Renderer: ' + message);
+    }
+
+    // Function locals.
+    this.$renderWorldStaticMeshChunkAABBs = {
+        aabbSize: vec3.create()
     }
 }

@@ -1,4 +1,9 @@
-﻿function Sphere(position, radius) {
+﻿function Scalar(value) {
+
+    this.value = value;
+}
+
+function Sphere(position, radius) {
 
     this.position = position || vec3.create();
     this.radius = radius || 0;
@@ -12,8 +17,8 @@ function AABB(from, to) {
 
 function Plane(normal, d) {
 
-    this.normal = normal;
-    this.d = d;
+    this.normal = normal || vec3.create();
+    this.d = d || 0;
 }
 
 function Frustum(planes) {

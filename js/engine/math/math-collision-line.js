@@ -14,9 +14,11 @@
 
         var isFrontSideCollision = math3D.calculatePointDistanceFromPlane(face.facePlane, line.from) > 0;
 
-        var facePlaneIntersection = math3D.calculateRayIntersectionWithPlane(line.ray, face.facePlane);
+        var facePlaneIntersection = vec3.create(); // FIXME
 
-        if (facePlaneIntersection == null) {
+        var lineIntersects = math3D.calculateRayIntersectionWithPlane(facePlaneIntersection, line.ray, face.facePlane);
+
+        if (!lineIntersects) {
             return FaceIntersectionType.None;
         }
 
@@ -52,9 +54,10 @@
             return true;
         }
 
-        var intersectionPoint = math3D.calculateRayIntersectionWithSphere(line.ray, sphere);
+        var intersectionPoint = vec3.create(); // FIXME
+        var rayIntersectsSphere = math3D.calculateRayIntersectionWithSphere(intersectionPoint, line.ray, sphere);
 
-        if (intersectionPoint == null) {
+        if (!rayIntersectsSphere) {
             return false;
         }
 

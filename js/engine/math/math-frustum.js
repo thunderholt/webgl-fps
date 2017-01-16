@@ -73,9 +73,11 @@
 
     this.checkFrustumIntersectsAABB = function (frustum, aabb) {
 
+        var $ = this.$checkFrustumIntersectsAABB;
+
         var intersects = true;
 
-        var aabbPoints = this.buildAABBPoints(aabb);
+        this.buildAABBPoints($.aabbPoints, aabb);
 
         for (var planeIndex = 0; planeIndex < frustum.planes.length; planeIndex++) {
 
@@ -83,9 +85,9 @@
 
             var allPointsAreInfrontOfPlane = true;
 
-            for (var pointIndex = 0; pointIndex < aabbPoints.length; pointIndex++) {
+            for (var pointIndex = 0; pointIndex < $.aabbPoints.length; pointIndex++) {
 
-                var point = aabbPoints[pointIndex];
+                var point = $.aabbPoints[pointIndex];
 
                 var pointDistanceFromPlane = this.calculatePointDistanceFromPlane(plane, point);
 
@@ -121,5 +123,12 @@
         }
 
         return intersects;
+    }
+
+    // Function locals.
+    this.$checkFrustumIntersectsAABB = {
+        aabbPoints: [
+            vec3.create(), vec3.create(), vec3.create(), vec3.create(),
+            vec3.create(), vec3.create(), vec3.create(), vec3.create()]
     }
 }
