@@ -1,21 +1,21 @@
 ﻿function MathPlane() {
 
-    this.buildPlaneFromPoints = function (points) {
+    this.buildPlaneFromPoints = function (out, points) {
 
         var vecA = vec3.create();
         var vecB = vec3.create();
         vec3.subtract(vecA, points[1], points[0]);
         vec3.subtract(vecB, points[2], points[0]);
 
-        var normal = vec3.create();
-        vec3.cross(normal, vecA, vecB);
-        vec3.normalize(normal, normal);
+        //var normal = vec3.create();
+        vec3.cross(out.normal, vecA, vecB);
+        vec3.normalize(out.normal, out.normal);
 
-        var d = -vec3.dot(normal, points[0]);
+        out.d = -vec3.dot(out.normal, points[0]);
 
-        var plane = new Plane(normal, d);
+        //var plane = new Plane(normal, d);
 
-        return plane;
+        //return plane;
     }
 
     this.buildPlaneFromNormalAndPoint = function (normal, point) {

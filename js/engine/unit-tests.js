@@ -34,7 +34,9 @@
 				[0, 0, 0],
             ];
 
-            var plane = math3D.buildPlaneFromPoints(points);
+            var plane = new Plane();
+
+            math3D.buildPlaneFromPoints(plane, points);
 
             assert(plane.normal[0] == 1);
             assert(plane.normal[1] == 0);
@@ -50,7 +52,9 @@
 				[1, 0, 0],
             ];
 
-            var plane = math3D.buildPlaneFromPoints(points);
+            var plane = new Plane();
+
+            math3D.buildPlaneFromPoints(plane, points);
 
             assert(plane.normal[0] == 1);
             assert(plane.normal[1] == 0);
@@ -66,7 +70,9 @@
 				[-1, 0, 0],
             ];
 
-            var plane = math3D.buildPlaneFromPoints(points);
+            var plane = new Plane();
+
+            math3D.buildPlaneFromPoints(plane, points);
 
             assert(plane.normal[0] == 1);
             assert(plane.normal[1] == 0);
@@ -82,7 +88,9 @@
 				[0, 0, 1]
             ];
 
-            var plane = math3D.buildPlaneFromPoints(points);
+            var plane = new Plane();
+
+            math3D.buildPlaneFromPoints(plane, points);
 
             assert(plane.normal[0] == -1);
             assert(plane.normal[1] == 0);
@@ -98,7 +106,9 @@
 				[1, -10, 0]
             ];
 
-            var plane = math3D.buildPlaneFromPoints(points);
+            var plane = new Plane();
+
+            math3D.buildPlaneFromPoints(plane, points);
 
             assert(plane.normal[0] == 0);
             assert(plane.normal[1] == 1);
@@ -114,7 +124,9 @@
 				[-1, -10, 1],
             ];
 
-            var plane = math3D.buildPlaneFromPoints(points);
+            var plane = new Plane();
+
+            math3D.buildPlaneFromPoints(plane, points);
 
             assert(plane.normal[0] == 0);
             assert(plane.normal[1] == -1);
@@ -130,7 +142,9 @@
 				[1, 0, 1]
             ];
 
-            var plane = math3D.buildPlaneFromPoints(points);
+            var plane = new Plane();
+
+            math3D.buildPlaneFromPoints(plane, points);
 
             assert(plane.normal[0] == 0);
             assert(plane.normal[1] == 0);
@@ -146,7 +160,9 @@
 				[0, 0, 1]
             ];
 
-            var plane = math3D.buildPlaneFromPoints(points);
+            var plane = new Plane();
+
+            math3D.buildPlaneFromPoints(plane, points);
 
             assert(plane.normal[0] == 0);
             assert(plane.normal[1] == 0);
@@ -162,7 +178,9 @@
 				[0, 0, 0],
             ];
 
-            var plane = math3D.buildPlaneFromPoints(points);
+            var plane = new Plane();
+
+            math3D.buildPlaneFromPoints(plane, points);
 
             var point = [0, 0, 0];
             var distance = math3D.calculatePointDistanceFromPlane(plane, point);
@@ -177,7 +195,9 @@
 				[0, 0, 0],
             ];
 
-            var plane = math3D.buildPlaneFromPoints(points);
+            var plane = new Plane();
+
+            math3D.buildPlaneFromPoints(plane, points);
 
             var point = [1.5, 0, 0];
             var distance = math3D.calculatePointDistanceFromPlane(plane, point);
@@ -192,7 +212,9 @@
 				[1, 0, 0],
             ];
 
-            var plane = math3D.buildPlaneFromPoints(points);
+            var plane = new Plane();
+
+            math3D.buildPlaneFromPoints(plane, points);
 
             var point = [1.5, 0, 0];
             var distance = math3D.calculatePointDistanceFromPlane(plane, point);
@@ -207,7 +229,9 @@
 				[0, 0, 0],
             ];
 
-            var plane = math3D.buildPlaneFromPoints(points);
+            var plane = new Plane();
+
+            math3D.buildPlaneFromPoints(plane, points);
 
             var point = [-3.7, 0, 0];
             var distance = math3D.calculatePointDistanceFromPlane(plane, point);
@@ -222,7 +246,9 @@
 				[-2, 0, 0],
             ];
 
-            var plane = math3D.buildPlaneFromPoints(points);
+            var plane = new Plane();
+
+            math3D.buildPlaneFromPoints(plane, points);
 
             var point = [-3, 0, 0];
             var distance = math3D.calculatePointDistanceFromPlane(plane, point);
@@ -240,7 +266,8 @@
             var viewProjMatrix = mat4.create();
             mat4.multiply(viewProjMatrix, projMatrix, viewMatrix);
 
-            var frustum = math3D.buildFrustumFromViewProjMatrix(viewProjMatrix);
+            var frustum = new Frustum();
+            math3D.buildFrustumFromViewProjMatrix(frustum, viewProjMatrix);
 
             // Near plane tests.
             var distance = math3D.calculatePointDistanceFromPlane(frustum.planes[FrustumPlane.Near], [0, 0, -9]);
@@ -308,7 +335,8 @@
             var viewProjMatrix = mat4.create();
             mat4.multiply(viewProjMatrix, projMatrix, viewMatrix);
 
-            var frustum = math3D.buildFrustumFromViewProjMatrix(viewProjMatrix);
+            var frustum = new Frustum();
+            math3D.buildFrustumFromViewProjMatrix(frustum, viewProjMatrix);
 
             // Left plane tests.
             var aabb = new AABB([-1, 0, -0.2], [-0.51, 1, -0.5]);
@@ -339,26 +367,22 @@
             var sphere = new Sphere([1, 2, 0], 1);
 
             // Check 1.
-            var result = math3D.calculateSphereCollisionWithPlane(sphere, plane, [1, 0, 0]);
+            var result = vec3.create();
+
+            math3D.calculateSphereCollisionWithPlane(result, sphere, plane, [1, 0, 0]);
 
             assert(areNearlyEqual(result[0], 3.29289));
             assert(areNearlyEqual(result[1], 1.29289));
             assert(result[2] == 0);
 
             // Check 2.
-            result = math3D.calculateSphereCollisionWithPlane(sphere, plane, [-1, 0, 0]);
-
-            assert(result == null);
+            assert(!math3D.calculateSphereCollisionWithPlane(result, sphere, plane, [-1, 0, 0]));
 
             // Check 3.
-            result = math3D.calculateSphereCollisionWithPlane(sphere, plane, [0, 0, 1]);
-
-            assert(result == null);
+            assert(!math3D.calculateSphereCollisionWithPlane(result, sphere, plane, [0, 0, 1]));
 
             // Check 4.
-            result = math3D.calculateSphereCollisionWithPlane(sphere, plane, [0, 0, -1]);
-
-            assert(result == null);
+            assert(!math3D.calculateSphereCollisionWithPlane(result, sphere, plane, [0, 0, -1]));
         },
 
         'Math3D.calculateSphereCollisionWithPlane.squareOn': function () {
@@ -371,26 +395,22 @@
             var sphere = new Sphere([1, 2, 0], 1);
 
             // Check 1.
-            var result = math3D.calculateSphereCollisionWithPlane(sphere, plane, [1, 0, 0]);
+            var result = vec3.create();
+
+            math3D.calculateSphereCollisionWithPlane(result, sphere, plane, [1, 0, 0]);
 
             assert(areNearlyEqual(result[0], 3));
             assert(areNearlyEqual(result[1], 2));
             assert(result[2] == 0);
 
             // Check 2.
-            result = math3D.calculateSphereCollisionWithPlane(sphere, plane, [-1, 0, 0]);
-
-            assert(result == null);
+            assert(!math3D.calculateSphereCollisionWithPlane(result, sphere, plane, [-1, 0, 0]));
 
             // Check 3.
-            result = math3D.calculateSphereCollisionWithPlane(sphere, plane, [0, 0, 1]);
-
-            assert(result == null);
+            assert(!math3D.calculateSphereCollisionWithPlane(result, sphere, plane, [0, 0, 1]));
 
             // Check 4.
-            result = math3D.calculateSphereCollisionWithPlane(sphere, plane, [0, 0, -1]);
-
-            assert(result == null);
+            assert(!math3D.calculateSphereCollisionWithPlane(result, sphere, plane, [0, 0, -1]));
         },
 
         'Math3D.calculateSphereCollisionWithCollisionFace.hitTest1': function () {
@@ -730,21 +750,23 @@
             var face = math3D.buildCollisionFaceFromPoints(points);
 
             // Check 1.
-            var result = math3D.findNearestPointOnCollisionFacePerimeterToPoint(face, [-1, 5, 0]);
+            var result = vec3.create();
+
+            math3D.findNearestPointOnCollisionFacePerimeterToPoint(result, face, [-1, 5, 0]);
 
             assert(areNearlyEqual(result[0], 0));
             assert(areNearlyEqual(result[1], 5));
             assert(areNearlyEqual(result[2], 3));
 
             // Check 2.
-            result = math3D.findNearestPointOnCollisionFacePerimeterToPoint(face, [-100, 20, 30]);
+            math3D.findNearestPointOnCollisionFacePerimeterToPoint(result, face, [-100, 20, 30]);
 
             assert(areNearlyEqual(result[0], 0));
             assert(areNearlyEqual(result[1], 10));
             assert(areNearlyEqual(result[2], 3));
 
             // Check 3.
-            result = math3D.findNearestPointOnCollisionFacePerimeterToPoint(face, [3, -20, 10]);
+            math3D.findNearestPointOnCollisionFacePerimeterToPoint(result, face, [3, -20, 10]);
 
             assert(areNearlyEqual(result[0], 3));
             assert(areNearlyEqual(result[1], 0));

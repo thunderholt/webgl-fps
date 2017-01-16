@@ -1,74 +1,52 @@
 ﻿function MathFrustum() {
 
-    this.buildFrustumFromViewProjMatrix = function (viewProjMatrix) {
+    this.buildFrustumFromViewProjMatrix = function (out, viewProjMatrix) {
 
-        var invViewProjMatrix = mat4.create();
-        mat4.invert(invViewProjMatrix, viewProjMatrix);
+        var $ = this.$buildFrustumFromViewProjMatrix;
 
-        var triangles = [];
+        mat4.invert($.invViewProjMatrix, viewProjMatrix);
 
-        triangles[FrustumPlane.Near] = [
-            [-1, 1, -1, 1],
-            [-1, -1, -1, 1],
-            [1, 1, -1, 1]
-        ];
+        if (!$.trianglesAreInitialised) {
 
-        triangles[FrustumPlane.Far] = [
-			[-1, 1, 1, 1],
-			[1, 1, 1, 1],
-			[-1, -1, 1, 1]
-        ];
+            vec4.set($.triangles[FrustumPlane.Near][0], -1, 1, -1, 1);
+            vec4.set($.triangles[FrustumPlane.Near][1], -1, -1, -1, 1);
+            vec4.set($.triangles[FrustumPlane.Near][2], 1, 1, -1, 1);
 
-        triangles[FrustumPlane.Left] = [
-            [-1, 1, 1, 1],
-            [-1, -1, 1, 1],
-            [-1, 1, -1, 1]
-        ];
+            vec4.set($.triangles[FrustumPlane.Far][0], -1, 1, 1, 1);
+            vec4.set($.triangles[FrustumPlane.Far][1], 1, 1, 1, 1);
+            vec4.set($.triangles[FrustumPlane.Far][2], -1, -1, 1, 1);
 
-        triangles[FrustumPlane.Right] = [
-            [1, 1, -1, 1],
-            [1, -1, -1, 1],
-            [1, 1, 1, 1]
-        ];
+            vec4.set($.triangles[FrustumPlane.Left][0], -1, 1, 1, 1);
+            vec4.set($.triangles[FrustumPlane.Left][1], -1, -1, 1, 1);
+            vec4.set($.triangles[FrustumPlane.Left][2], -1, 1, -1, 1);
 
-        triangles[FrustumPlane.Top] = [
-           [-1, 1, 1, 1],
-           [-1, 1, -1, 1],
-           [1, 1, 1, 1]
-        ];
+            vec4.set($.triangles[FrustumPlane.Right][0], 1, 1, -1, 1);
+            vec4.set($.triangles[FrustumPlane.Right][1], 1, -1, -1, 1);
+            vec4.set($.triangles[FrustumPlane.Right][2], 1, 1, 1, 1);
 
-        triangles[FrustumPlane.Bottom] = [
-           [-1, -1, -1, 1],
-           [-1, -1, 1, 1],
-           [1, -1, 1, 1]
-        ];
+            vec4.set($.triangles[FrustumPlane.Top][0], -1, 1, 1, 1);
+            vec4.set($.triangles[FrustumPlane.Top][1], -1, 1, -1, 1);
+            vec4.set($.triangles[FrustumPlane.Top][2], 1, 1, 1, 1);
 
-        var planes = [];
+            vec4.set($.triangles[FrustumPlane.Bottom][0], -1, -1, -1, 1);
+            vec4.set($.triangles[FrustumPlane.Bottom][1], -1, -1, 1, 1);
+            vec4.set($.triangles[FrustumPlane.Bottom][2], 1, -1, 1, 1);
 
-        for (var triangleIndex = 0; triangleIndex < triangles.length; triangleIndex++) {
+            $.trianglesAreInitialised = true;
+        }
 
-            var triangle = triangles[triangleIndex];
+        for (var triangleIndex = 0; triangleIndex < $.triangles.length; triangleIndex++) {
 
-            var transformedPoints = [];
+            var triangle = $.triangles[triangleIndex];
 
             for (var i = 0; i < triangle.length; i++) {
                 var point = triangle[i];
-
-                var tempPoint = vec4.create();
-                vec4.transformMat4(tempPoint, point, invViewProjMatrix);
-
-                var transformedPoint = [tempPoint[0] / tempPoint[3], tempPoint[1] / tempPoint[3], tempPoint[2] / tempPoint[3]];
-                transformedPoints.push(transformedPoint);
+                vec4.transformMat4($.tempPoint, point, $.invViewProjMatrix);
+                vec4.set($.transformedPoints[i], $.tempPoint[0] / $.tempPoint[3], $.tempPoint[1] / $.tempPoint[3], $.tempPoint[2] / $.tempPoint[3]);
             }
 
-            var plane = this.buildPlaneFromPoints(transformedPoints);
-
-            planes.push(plane);
+            this.buildPlaneFromPoints(out.planes[triangleIndex], $.transformedPoints);
         }
-
-        var frustum = new Frustum(planes);
-
-        return frustum;
     }
 
     this.checkFrustumIntersectsAABB = function (frustum, aabb) {
@@ -130,5 +108,20 @@
         aabbPoints: [
             vec3.create(), vec3.create(), vec3.create(), vec3.create(),
             vec3.create(), vec3.create(), vec3.create(), vec3.create()]
+    }
+
+    this.$buildFrustumFromViewProjMatrix = {
+        invViewProjMatrix: mat4.create(),
+        triangles: [
+            [vec4.create(), vec4.create(), vec4.create()],
+            [vec4.create(), vec4.create(), vec4.create()],
+            [vec4.create(), vec4.create(), vec4.create()],
+            [vec4.create(), vec4.create(), vec4.create()],
+            [vec4.create(), vec4.create(), vec4.create()],
+            [vec4.create(), vec4.create(), vec4.create()]
+        ],
+        trianglesAreInitialised: false,
+        transformedPoints: [vec4.create(), vec4.create(), vec4.create()],
+        tempPoint: vec4.create()
     }
 }

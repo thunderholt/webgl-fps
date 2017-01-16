@@ -2,18 +2,16 @@
 
     this.buildCollisionFaceFromPoints = function (points) {
 
+        var $ = this.$buildCollisionFaceFromPoints;
+
         // Calculate face normal.
-        var freeEdgeAB = vec3.create();
-        vec3.sub(freeEdgeAB, points[1], points[0]);
+        vec3.sub($.freeEdgeAB, points[1], points[0]);
+        vec3.sub($.freeEdgeAC, points[2], points[0]);
 
-        var freeEdgeAC = vec3.create();
-        vec3.sub(freeEdgeAC, points[2], points[0]);
+        vec3.cross($.faceNormal, $.freeEdgeAB, $.freeEdgeAC);
+        vec3.normalize($.faceNormal, $.faceNormal);
 
-        var faceNormal = vec3.create();
-        vec3.cross(faceNormal, freeEdgeAB, freeEdgeAC);
-        vec3.normalize(faceNormal, faceNormal);
-
-        var facePlane = math3D.buildPlaneFromNormalAndPoint(faceNormal, points[0]);
+        var facePlane = math3D.buildPlaneFromNormalAndPoint(vec3.clone($.faceNormal), points[0]); // FIXME
 
         // Calculate the edge planes and edge lengths.
         var freeNormalisedEdges = [vec3.create(), vec3.create(), vec3.create()];
@@ -31,11 +29,11 @@
         edgeLengths[2] = vec3.length(freeNormalisedEdges[2]);
         vec3.normalize(freeNormalisedEdges[2], freeNormalisedEdges[2]);
 
-        var edgePlaneNormals = [vec3.create(), vec3.create(), vec3.create()];
+        var edgePlaneNormals = [vec3.create(), vec3.create(), vec3.create()]; // FIXME
 
-        vec3.cross(edgePlaneNormals[0], freeNormalisedEdges[0], faceNormal);
-        vec3.cross(edgePlaneNormals[1], freeNormalisedEdges[1], faceNormal);
-        vec3.cross(edgePlaneNormals[2], freeNormalisedEdges[2], faceNormal);
+        vec3.cross(edgePlaneNormals[0], freeNormalisedEdges[0], $.faceNormal);
+        vec3.cross(edgePlaneNormals[1], freeNormalisedEdges[1], $.faceNormal);
+        vec3.cross(edgePlaneNormals[2], freeNormalisedEdges[2], $.faceNormal);
 
         var edgePlanes = [
             math3D.buildPlaneFromNormalAndPoint(edgePlaneNormals[0], points[0]),
@@ -46,33 +44,26 @@
         return new CollisionFace(points, facePlane, edgePlanes, freeNormalisedEdges, edgeLengths);
     }
 
-    this.findNearestPointOnCollisionFacePerimeterToPoint = function (collisionFace, point) {
+    this.findNearestPointOnCollisionFacePerimeterToPoint = function (out, collisionFace, point) {
 
-        var nearestPoint = null;
+        var $ = this.$findNearestPointOnCollisionFacePerimeterToPoint;
+
         var nearestPointDistanceSqr = -1
 
         for (var i = 0; i < 3; i++) {
 
-            // FIXME
-            var ray = new Ray(
-                collisionFace.points[i],
-                collisionFace.freeNormalisedEdges[i]);
+            vec3.copy($.ray.origin, collisionFace.points[i]);
+            vec3.copy($.ray.normal, collisionFace.freeNormalisedEdges[i]);
 
-            var potentialNearestPoint = vec3.create(); // FIXME
-            math3D.calculateNearestPointOnRayToOtherPoint(potentialNearestPoint, ray, point, collisionFace.edgeLengths[i]);
+            math3D.calculateNearestPointOnRayToOtherPoint($.potentialNearestPoint, $.ray, point, collisionFace.edgeLengths[i]);
 
-            var potentialNearestPointToPoint = [0, 0, 0]; // FIXME
-            vec3.sub(potentialNearestPointToPoint, point, potentialNearestPoint);
-
-            var potentialNearestPointDistanceSqr = vec3.dot(potentialNearestPointToPoint, potentialNearestPointToPoint);
+            var potentialNearestPointDistanceSqr = vec3.sqrDist(point, $.potentialNearestPoint);
 
             if (nearestPointDistanceSqr == -1 || potentialNearestPointDistanceSqr < nearestPointDistanceSqr) {
                 nearestPointDistanceSqr = potentialNearestPointDistanceSqr;
-                nearestPoint = potentialNearestPoint;
+                vec3.copy(out, $.potentialNearestPoint);
             }
         }
-
-        return nearestPoint;
     }
 
     this.determineIfPointOnFacePlaneIsWithinCollisionFace = function (collisionFace, point) {
@@ -89,5 +80,17 @@
         }
 
         return true;
+    }
+
+    // Function locals.
+    this.$buildCollisionFaceFromPoints = {
+        freeEdgeAB: vec3.create(),
+        freeEdgeAC: vec3.create(),
+        faceNormal: vec3.create()
+    }
+
+    this.$findNearestPointOnCollisionFacePerimeterToPoint = {
+        ray: new Ray(),
+        potentialNearestPoint: vec3.create()
     }
 }

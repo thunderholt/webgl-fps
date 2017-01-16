@@ -23,7 +23,7 @@ function Plane(normal, d) {
 
 function Frustum(planes) {
 
-    this.planes = planes;
+    this.planes = planes || [new Plane(), new Plane(), new Plane(), new Plane(), new Plane(), new Plane()];
 }
 
 function Ray(origin, normal) {

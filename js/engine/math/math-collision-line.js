@@ -12,21 +12,21 @@
 
     this.calculateCollisionLineIntersectionWithCollisionFace = function (out, line, face) {
 
+        var $ = this.$calculateCollisionLineIntersectionWithCollisionFace;
+
         var isFrontSideCollision = math3D.calculatePointDistanceFromPlane(face.facePlane, line.from) > 0;
 
-        var facePlaneIntersection = vec3.create(); // FIXME
-
-        var lineIntersects = math3D.calculateRayIntersectionWithPlane(facePlaneIntersection, line.ray, face.facePlane);
+        var lineIntersects = math3D.calculateRayIntersectionWithPlane($.facePlaneIntersection, line.ray, face.facePlane);
 
         if (!lineIntersects) {
             return FaceIntersectionType.None;
         }
 
-        if (!math3D.determineIfPointOnFacePlaneIsWithinCollisionFace(face, facePlaneIntersection)) {
+        if (!math3D.determineIfPointOnFacePlaneIsWithinCollisionFace(face, $.facePlaneIntersection)) {
             return FaceIntersectionType.None;
         }
 
-        var distanceToFacePlaneIntersectionSqr = vec3.squaredDistance(line.from, facePlaneIntersection);
+        var distanceToFacePlaneIntersectionSqr = vec3.squaredDistance(line.from, $.facePlaneIntersection);
 
         var lineLengthSqr = line.length * line.length;
 
@@ -35,13 +35,15 @@
         }
         
         if (out != null) {
-            vec3.copy(out, facePlaneIntersection);
+            vec3.copy(out, $.facePlaneIntersection);
         }
 
         return isFrontSideCollision ? FaceIntersectionType.FrontSide : FaceIntersectionType.BackSide;
     }
 
     this.determineIfCollisionLineIntersectsSphere = function (line, sphere) {
+
+        var $ = this.$determineIfCollisionLineIntersectsSphere;
 
         var sphereSadiusSqr = sphere.radius * sphere.radius;
         var fromPointDistanceSqr = vec3.sqrDist(line.from, sphere.position);
@@ -54,14 +56,13 @@
             return true;
         }
 
-        var intersectionPoint = vec3.create(); // FIXME
-        var rayIntersectsSphere = math3D.calculateRayIntersectionWithSphere(intersectionPoint, line.ray, sphere);
+        var rayIntersectsSphere = math3D.calculateRayIntersectionWithSphere($.intersectionPoint, line.ray, sphere);
 
         if (!rayIntersectsSphere) {
             return false;
         }
 
-        var distanceToIntersectionPointSqr = vec3.squaredDistance(line.from, intersectionPoint);
+        var distanceToIntersectionPointSqr = vec3.squaredDistance(line.from, $.intersectionPoint);
 
         var lineLengthSqr = line.length * line.length;
 
@@ -70,5 +71,14 @@
         }
 
         return true;
+    }
+
+    // Function locals.
+    this.$calculateCollisionLineIntersectionWithCollisionFace = {
+        facePlaneIntersection: vec3.create()
+    }
+
+    this.$determineIfCollisionLineIntersectsSphere = {
+        intersectionPoint: vec3.create()
     }
 }

@@ -318,10 +318,9 @@
             this.globalIlluminationColours[i + 2] = srcColour[2];
         }
 
-        //var cameraViewProjMatrix = engine.camera.makeViewProjMatrix(
-        //    Math.PI / 2.5, engine.glManager.viewportInfo.width / engine.glManager.viewportInfo.height, 0.1, 1000.0);
+        var cameraFrustum = new Frustum(); // FIXME
 
-        var cameraFrustum = math3D.buildFrustumFromViewProjMatrix(engine.camera.viewProjMatrix);
+        math3D.buildFrustumFromViewProjMatrix(cameraFrustum, engine.camera.viewProjMatrix);
 
         engine.visibilityManager.buildVisibleWorldStaticMeshChunkField(
             this.visibleWorldStaticMeshChunkFieldForCamera, engine.camera.position, cameraFrustum, null);

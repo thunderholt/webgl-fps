@@ -241,7 +241,8 @@
                         engine.shadowMapManager.buildViewProjMatrixForPointLightCubeMapFaceBuild(
                             this.updateLightRenderStatesTempValues.viewProjMatrixForPointLightCubeMapFaceBuild, light.position, face);
 
-                        faceRenderState.frustum = math3D.buildFrustumFromViewProjMatrix(
+                        math3D.buildFrustumFromViewProjMatrix(
+                            faceRenderState.frustum,
                             this.updateLightRenderStatesTempValues.viewProjMatrixForPointLightCubeMapFaceBuild);
 
                         engine.visibilityManager.buildVisibleWorldStaticMeshChunkField(
@@ -474,7 +475,7 @@
                 var pointLightShadowMapFaceState = {
                     rebuildForStaticObjectsThisFrame: false,
                     rebuildForDynamicObjectsThisFrame: false,
-                    frustum: null,
+                    frustum: new Frustum(),
                     visibleWorldStaticMeshChunkField: new BitField(),
                     visibleActorIds: new FixedLengthArray(EngineLimits.MaxVisibleActorsIdsPerLight, null),
                     lastStaticObjectBuildResult: ShadowMapBuildResult.NotBuilt,
