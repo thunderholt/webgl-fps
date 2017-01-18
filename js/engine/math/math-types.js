@@ -48,3 +48,15 @@ function CollisionFace(points, facePlane, edgePlanes, freeNormalisedEdges, edgeL
     this.freeNormalisedEdges = freeNormalisedEdges;
     this.edgeLengths = edgeLengths;
 }
+
+function CalculateSphereCollisionWithCollisionFaceResult() {
+
+    this.intersection = vec3.create();
+    this.distance = 0;
+    this.collisionPlane = new Plane();
+}
+
+function PlaneIntersectionSlideReaction() {
+    this.direction = vec3.create();
+    this.distance = 0;
+}

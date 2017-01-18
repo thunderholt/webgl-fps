@@ -11,7 +11,8 @@
         vec3.cross($.faceNormal, $.freeEdgeAB, $.freeEdgeAC);
         vec3.normalize($.faceNormal, $.faceNormal);
 
-        var facePlane = math3D.buildPlaneFromNormalAndPoint(vec3.clone($.faceNormal), points[0]); // FIXME
+        var facePlane = new Plane(); // FIXME
+        math3D.buildPlaneFromNormalAndPoint(facePlane, $.faceNormal, points[0]);
 
         // Calculate the edge planes and edge lengths.
         var freeNormalisedEdges = [vec3.create(), vec3.create(), vec3.create()];
@@ -35,11 +36,11 @@
         vec3.cross(edgePlaneNormals[1], freeNormalisedEdges[1], $.faceNormal);
         vec3.cross(edgePlaneNormals[2], freeNormalisedEdges[2], $.faceNormal);
 
-        var edgePlanes = [
-            math3D.buildPlaneFromNormalAndPoint(edgePlaneNormals[0], points[0]),
-            math3D.buildPlaneFromNormalAndPoint(edgePlaneNormals[1], points[1]),
-            math3D.buildPlaneFromNormalAndPoint(edgePlaneNormals[2], points[2])
-        ];
+        var edgePlanes = [new Plane(), new Plane(), new Plane()];
+
+        math3D.buildPlaneFromNormalAndPoint(edgePlanes[0], edgePlaneNormals[0], points[0]);
+        math3D.buildPlaneFromNormalAndPoint(edgePlanes[1], edgePlaneNormals[1], points[1]);
+        math3D.buildPlaneFromNormalAndPoint(edgePlanes[2], edgePlaneNormals[2], points[2]);
 
         return new CollisionFace(points, facePlane, edgePlanes, freeNormalisedEdges, edgeLengths);
     }

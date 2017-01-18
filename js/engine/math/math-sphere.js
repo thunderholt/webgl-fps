@@ -21,13 +21,6 @@
         return distanceBetweenSpheres <= sphere1.radius + sphere2.radius;
     }
 
-    this.$calculateSphereCollisionWithPlane = {
-        sphereMovementRay: new Ray(),
-        sphereMovementRayPlaneIntersection: vec3.create(),
-        invPlaneNormal: vec3.create(),
-        spherePlaneIntersection: vec3.create()
-    }
-
     this.calculateSphereCollisionWithPlane = function (out, sphere, plane, movementDirection) {
 
         var $ = this.$calculateSphereCollisionWithPlane;
@@ -67,117 +60,105 @@
         return true;
     }
 
-    this.calculateSphereCollisionWithCollisionFace = function (sphere, face, movementDirection) {
+    this.calculateSphereCollisionWithCollisionFace = function (out, sphere, face, movementDirection) {
 
-        var result = {
-            intersection: null,
-            distance: 0,
-            collisionPlane: null
-        }
+        var $ = this.$calculateSphereCollisionWithCollisionFace;
 
         // If the face plane faces away from the sphere movement direction, then there is no collision.
-        var movementDirectionDotFacePlaneNormal = vec3.dot(movementDirection, face.facePlane.normal);
-
-        if (movementDirectionDotFacePlaneNormal >= 0) {
-            return null;
+        if (vec3.dot(movementDirection, face.facePlane.normal) >= 0) {
+            return false;
         }
 
         // Find the sphere/face-plane intersection.
-        var sphereFacePlaneIntersection = null;
+        var sphereIntersectsFacePlane = false;
 
         var distanceFromSpherePositionToFacePlane = math3D.calculatePointDistanceFromPlane(face.facePlane, sphere.position);
 
-        var canOnlyIntersectPerimeter = false;
-
         if (distanceFromSpherePositionToFacePlane <= sphere.radius && distanceFromSpherePositionToFacePlane >= 0) {
 
-            var invFacePlaneNormal = [0, 0, 0];
-            vec3.scale(invFacePlaneNormal, face.facePlane.normal, -1);
+            vec3.copy($.facePlaneIntersectionRay.origin, sphere.position);
+            vec3.scale($.facePlaneIntersectionRay.normal, face.facePlane.normal, -1);
 
-            var facePlaneIntersectionRay = new Ray(
-                vec3.clone(sphere.position),
-                invFacePlaneNormal);
-
-            var temp = vec3.create(); // FIXME
-
-            if (math3D.calculateRayIntersectionWithPlane(temp, facePlaneIntersectionRay, face.facePlane)) {
-                sphereFacePlaneIntersection = temp;
-            }
-
+            sphereIntersectsFacePlane = math3D.calculateRayIntersectionWithPlane(
+                $.sphereFacePlaneIntersection, $.facePlaneIntersectionRay, face.facePlane);
+        
         } else {
 
-            var temp = vec3.create(); // FIXME
-
-            if (math3D.calculateSphereCollisionWithPlane(temp, sphere, face.facePlane, movementDirection)) {
-                sphereFacePlaneIntersection = temp;
-            }
+            sphereIntersectsFacePlane = math3D.calculateSphereCollisionWithPlane(
+                $.sphereFacePlaneIntersection, sphere, face.facePlane, movementDirection);
         }
 
-        if (sphereFacePlaneIntersection == null) {
-            return null;
+        if (!sphereIntersectsFacePlane) {
+            return false;
         }
 
         // Determine if the sphere/face-plane intersection is within the face.
-        if (!canOnlyIntersectPerimeter && math3D.determineIfPointOnFacePlaneIsWithinCollisionFace(face, sphereFacePlaneIntersection)) {
+        if (math3D.determineIfPointOnFacePlaneIsWithinCollisionFace(face, $.sphereFacePlaneIntersection)) {
 
-            result.intersection = sphereFacePlaneIntersection;
-
-            var sphereFacePlaneIntersectionToSphereOrigin = [0, 0, 0];
-            vec3.sub(sphereFacePlaneIntersectionToSphereOrigin, sphereFacePlaneIntersection, sphere.position);
-            result.distance = vec3.length(sphereFacePlaneIntersectionToSphereOrigin) - sphere.radius;
+            vec3.copy(out.intersection, $.sphereFacePlaneIntersection);
+            out.distance = vec3.distance($.sphereFacePlaneIntersection, sphere.position) - sphere.radius;
 
             // Handle the case where the face-plane already intersects the sphere.
-            if (result.distance < 0.0) {
-                result.distance = 0.0;
+            if (out.distance < 0.0) {
+                out.distance = 0.0;
             }
 
-            result.collisionPlane = face.facePlane;
+            math3D.copyPlane(out.collisionPlane, face.facePlane);
 
         } else {
 
             // Nope, find the nearest point on the face's perimeter to the sphere/face-plane intersection.
-            var nearestPointOnFacePerimeter = vec3.create(); // FIXME
-            math3D.findNearestPointOnCollisionFacePerimeterToPoint(nearestPointOnFacePerimeter, face, sphereFacePlaneIntersection);
+            math3D.findNearestPointOnCollisionFacePerimeterToPoint($.nearestPointOnFacePerimeter, face, $.sphereFacePlaneIntersection);
 
             // Cast a ray from the nearest point on face perimeter back to the sphere, using the reverse of the 
             // movement direction, to find the point on the sphere where the intersection will happen.
-            var sphereIntersectionRay = new Ray(
-                nearestPointOnFacePerimeter,
-                vec3.clone(movementDirection));
+            vec3.copy($.sphereIntersectionRay.origin, $.nearestPointOnFacePerimeter);
+            vec3.scale($.sphereIntersectionRay.normal, movementDirection, -1);
 
-            vec3.scale(sphereIntersectionRay.normal, sphereIntersectionRay.normal, -1);
-
-            var intersectionDistance = new Scalar(0); // FIXME
-
-            if (!math3D.calculateRayIntersectionWithSphereDistance(intersectionDistance, sphereIntersectionRay, sphere)) {
-                return null;
+            if (!math3D.calculateRayIntersectionWithSphereDistance($.intersectionDistance, $.sphereIntersectionRay, sphere)) {
+                return false;
             }
 
-            result.intersection = nearestPointOnFacePerimeter;
-            result.distance = intersectionDistance.value;
+            vec3.copy(out.intersection, $.nearestPointOnFacePerimeter);
+            out.distance = $.intersectionDistance.value;
 
             // Handle the case where the face-plane already intersects the sphere.
-            if (result.distance < 0.0) {
-                result.distance = 0.0;
+            if (out.distance < 0.0) {
+                out.distance = 0.0;
             }
 
             // Calculate the collision plane.
-            var sphereOriginAfterAllowedMovement = [0, 0, 0];
-            vec3.scaleAndAdd(sphereOriginAfterAllowedMovement, sphere.position, movementDirection, result.distance);
+            vec3.scaleAndAdd($.sphereOriginAfterAllowedMovement, sphere.position, movementDirection, out.distance);
 
-            var collisionPlaneNormal = [0, 0, 0];
-            vec3.subtract(collisionPlaneNormal, sphereOriginAfterAllowedMovement, result.intersection);
-            vec3.normalize(collisionPlaneNormal, collisionPlaneNormal);
+            vec3.subtract($.collisionPlaneNormal, $.sphereOriginAfterAllowedMovement, out.intersection);
+            vec3.normalize($.collisionPlaneNormal, $.collisionPlaneNormal);
 
-            result.collisionPlane = math3D.buildPlaneFromNormalAndPoint(collisionPlaneNormal, result.intersection);
+            math3D.buildPlaneFromNormalAndPoint(out.collisionPlane, $.collisionPlaneNormal, out.intersection);
         }
 
-        return result;
+        return true;
     }
 
     // Function locals.
     this.$checkSphereIntersectsAABB = {
         nearestPointInAABB: vec3.create(),
         nearestPointInAABBToSpherePosition: vec3.create()
+    }
+
+    this.$calculateSphereCollisionWithPlane = {
+        sphereMovementRay: new Ray(),
+        sphereMovementRayPlaneIntersection: vec3.create(),
+        invPlaneNormal: vec3.create(),
+        spherePlaneIntersection: vec3.create()
+    }
+
+    this.$calculateSphereCollisionWithCollisionFace = {
+        facePlaneIntersectionRay: new Ray(),
+        sphereFacePlaneIntersection: vec3.create(),
+        nearestPointOnFacePerimeter: vec3.create(),
+        intersectionDistance: new Scalar(0),
+        sphereIntersectionRay: new Ray(),
+        sphereOriginAfterAllowedMovement: vec3.create(),
+        collisionPlaneNormal: vec3.create()
     }
 }

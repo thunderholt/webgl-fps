@@ -13,7 +13,7 @@
 
         var self = this;
 
-        $(window).keydown(function (event) {
+        window.addEventListener('keydown', function (event) {
 
             self.state[event.which] = true;
 
@@ -28,7 +28,7 @@
             }
         });
 
-        $(window).keyup(function (event) {
+        window.addEventListener('keyup', function (event) {
 
             self.state[event.which] = false;
 

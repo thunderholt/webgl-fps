@@ -126,7 +126,8 @@
             recursionDepth = 0;
         }
 
-        var nearestCollisionResult = null;
+        var collisionFound = false;
+        var nearestCollisionResult = new CalculateSphereCollisionWithCollisionFaceResult();
         var nearestCollisionResultStaticMeshIndex = -1;
 
         for (var staticMeshIndex = 0; staticMeshIndex < staticMeshes.length; staticMeshIndex++) {
@@ -150,12 +151,19 @@
 
                     var collisionFace = chunk.collisionFaces[faceIndex];
 
-                    var collisionResult = math3D.calculateSphereCollisionWithCollisionFace($.transformedSphere, collisionFace, $.transformedDesiredDirection);
+                    var collides = math3D.calculateSphereCollisionWithCollisionFace(
+                        $.collisionResult, $.transformedSphere, collisionFace, $.transformedDesiredDirection);
 
-                    if (collisionResult != null) {
+                    if (collides) {
 
-                        if (nearestCollisionResult == null || collisionResult.distance < nearestCollisionResult.distance) {
-                            nearestCollisionResult = collisionResult;
+                        if (!collisionFound || $.collisionResult.distance < $.nearestCollisionResult.distance) {
+                            collisionFound = true;
+
+                            // Copy the collision result to the nearest collision result.
+                            vec3.copy($.nearestCollisionResult.intersection, $.collisionResult.intersection);
+                            $.nearestCollisionResult.distance = $.collisionResult.distance;
+                            math3D.copyPlane($.nearestCollisionResult.collisionPlane, $.collisionResult.collisionPlane);
+
                             nearestCollisionResultStaticMeshIndex = staticMeshIndex;
                         }
                     }
@@ -165,22 +173,20 @@
 
         var maximumDesiredDirectionMovementDistance = desiredDistance;
 
-        if (nearestCollisionResult != null) {
+        if (collisionFound) {
 
-            nearestCollisionResult.distance -= 0.01;
+            $.nearestCollisionResult.distance -= 0.01;
 
-            if (nearestCollisionResult.distance < 0) {
-                nearestCollisionResult.distance = 0;
+            if ($.nearestCollisionResult.distance < 0) {
+                $.nearestCollisionResult.distance = 0;
             }
 
-            if (maximumDesiredDirectionMovementDistance > nearestCollisionResult.distance) {
-                maximumDesiredDirectionMovementDistance = nearestCollisionResult.distance;
+            if (maximumDesiredDirectionMovementDistance > $.nearestCollisionResult.distance) {
+                maximumDesiredDirectionMovementDistance = $.nearestCollisionResult.distance;
             }
         }
 
-        var positionDelta = vec3.create();
-        vec3.scale(positionDelta, desiredDirection, maximumDesiredDirectionMovementDistance);
-        vec3.add(sphere.position, sphere.position, positionDelta);
+        vec3.scaleAndAdd(sphere.position, sphere.position, desiredDirection, maximumDesiredDirectionMovementDistance);
 
         var remainingDistance = desiredDistance - maximumDesiredDirectionMovementDistance;
 
@@ -195,17 +201,17 @@
             mat3.fromMat4($.tempRotationMatrix, staticMeshInverseWorldMatrices.items[nearestCollisionResultStaticMeshIndex]);
             vec3.transformMat3($.transformedDesiredDirection, desiredDirection, $.tempRotationMatrix);
 
-            var slideReaction = math3D.calculatePlaneIntersectionSlideReaction(
-                nearestCollisionResult.collisionPlane, nearestCollisionResult.intersection, $.transformedDesiredDirection, remainingDistance);
+            var canSlideReact = math3D.calculatePlaneIntersectionSlideReaction(
+                $.slideReaction, $.nearestCollisionResult.collisionPlane, $.nearestCollisionResult.intersection, $.transformedDesiredDirection, remainingDistance);
 
-            if (slideReaction != null && slideReaction.distance > 0) {
+            if (canSlideReact && $.slideReaction.distance > 0) {
 
                 mat3.fromMat4($.tempRotationMatrix, staticMeshWorldMatrices.items[nearestCollisionResultStaticMeshIndex]);
-                vec3.transformMat3(slideReaction.direction, slideReaction.direction, $.tempRotationMatrix);
+                vec3.transformMat3($.slideReaction.direction, $.slideReaction.direction, $.tempRotationMatrix);
 
                 this.moveSphereThroughStaticMeshes(
                     sphere, staticMeshes, staticMeshWorldMatrices, staticMeshInverseWorldMatrices,
-                    slideReaction.direction, slideReaction.distance, true, recursionDepth + 1);
+                    $.slideReaction.direction, $.slideReaction.distance, true, recursionDepth + 1);
             }
         }
     }
@@ -291,6 +297,9 @@
     this.$moveSphereThroughStaticMeshes = {
         transformedSphere: new Sphere(),
         transformedDesiredDirection: vec3.create(),
-        tempRotationMatrix: mat3.create()
+        tempRotationMatrix: mat3.create(),
+        collisionResult: new CalculateSphereCollisionWithCollisionFaceResult(),
+        nearestCollisionResult: new CalculateSphereCollisionWithCollisionFaceResult(),
+        slideReaction: new PlaneIntersectionSlideReaction()
     }
 }

@@ -18,9 +18,10 @@
         //return plane;
     }
 
-    this.buildPlaneFromNormalAndPoint = function (normal, point) {
+    this.buildPlaneFromNormalAndPoint = function (out, normal, point) {
 
-        return new Plane(normal, -vec3.dot(normal, point));
+        vec3.copy(out.normal, normal);
+        out.d = -vec3.dot(normal, point);
     }
 
     this.calculatePointDistanceFromPlane = function (plane, point) {
@@ -30,35 +31,46 @@
         return distance;
     }
 
-    this.calculatePlaneIntersectionSlideReaction = function (plane, intersection, desiredDirection, desiredDistance) {
+    this.calculatePlaneIntersectionSlideReaction = function (out, plane, intersection, desiredDirection, desiredDistance) {
 
-        var targetPoint = [0, 0, 0]; // FIXME
-        vec3.scaleAndAdd(targetPoint, intersection, desiredDirection, desiredDistance);
+        var $ = this.$calculatePlaneIntersectionSlideReaction;
 
-        var targetPointToProjectionPointRay = new Ray(targetPoint, plane.normal);
+        vec3.scaleAndAdd($.targetPoint, intersection, desiredDirection, desiredDistance);
 
-        var projectionPoint = vec3.create(); // FIXME
+        vec3.copy($.targetPointToProjectionPointRay.origin, $.targetPoint);
+        vec3.copy($.targetPointToProjectionPointRay.normal, plane.normal);
 
         var targetPointToProjectionPointRayIntersectsPlane = math3D.calculateRayIntersectionWithPlane(
-            projectionPoint, targetPointToProjectionPointRay, plane);
+            $.projectionPoint, $.targetPointToProjectionPointRay, plane);
 
         if (!targetPointToProjectionPointRayIntersectsPlane) {
-            return null;
+            return false;
         }
 
-        var slideVector = [0, 0, 0]; // FIXME
-        vec3.subtract(slideVector, projectionPoint, intersection);
+        vec3.subtract($.slideVector, $.projectionPoint, intersection);
 
-        var slideDistance = vec3.length(slideVector);
+        var slideDistance = vec3.length($.slideVector);
 
-        vec3.normalize(slideVector, slideVector);
+        vec3.normalize($.slideVector, $.slideVector);
 
-        // FIXME
-        var result = {
-            direction: slideVector,
-            distance: slideDistance
-        }
+        // Copy out the results.
+        vec3.copy(out.direction, $.slideVector);
+        out.distance = slideDistance;
 
-        return result;
+        return true;
+    }
+
+    this.copyPlane = function (out, plane) {
+
+        vec3.copy(out.normal, plane.normal);
+        out.d = plane.d;
+    }
+
+    // Function locals.
+    this.$calculatePlaneIntersectionSlideReaction = {
+        targetPoint: vec3.create(),
+        targetPointToProjectionPointRay: new Ray(),
+        projectionPoint: vec3.create(),
+        slideVector: vec3.create()
     }
 }

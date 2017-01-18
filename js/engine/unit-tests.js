@@ -362,7 +362,8 @@
             var planeNormal = [-1, 1, 0];
             vec3.normalize(planeNormal, planeNormal);
 
-            var plane = math3D.buildPlaneFromNormalAndPoint(planeNormal, [2, 0, 0]);
+            var plane = new Plane();
+            math3D.buildPlaneFromNormalAndPoint(plane, planeNormal, [2, 0, 0]);
 
             var sphere = new Sphere([1, 2, 0], 1);
 
@@ -390,7 +391,8 @@
             var planeNormal = [-1, 0, 0];
             vec3.normalize(planeNormal, planeNormal);
 
-            var plane = math3D.buildPlaneFromNormalAndPoint(planeNormal, [3, 0, 0]);
+            var plane = new Plane();
+            math3D.buildPlaneFromNormalAndPoint(plane, planeNormal, [3, 0, 0]);
 
             var sphere = new Sphere([1, 2, 0], 1);
 
@@ -425,7 +427,9 @@
 
             var sphere = new Sphere([3, 2, 10], 1);
 
-            var result = math3D.calculateSphereCollisionWithCollisionFace(sphere, face, [0, 0, -1]);
+            var result = new CalculateSphereCollisionWithCollisionFaceResult();
+
+            math3D.calculateSphereCollisionWithCollisionFace(result, sphere, face, [0, 0, -1]);
 
             assert(result.intersection[0] == 3);
             assert(result.intersection[1] == 2);
@@ -446,7 +450,9 @@
 
             var sphere = new Sphere([1.5, 2, 10], 1);
 
-            var result = math3D.calculateSphereCollisionWithCollisionFace(sphere, face, [0, 0, -1]);
+            var result = new CalculateSphereCollisionWithCollisionFaceResult();
+
+            math3D.calculateSphereCollisionWithCollisionFace(result, sphere, face, [0, 0, -1]);
 
             assert(result.intersection[0] == 2);
             assert(result.intersection[1] == 2);
@@ -466,7 +472,9 @@
 
             var sphere = new Sphere([1.5, 2, 0.9], 1);
 
-            var result = math3D.calculateSphereCollisionWithCollisionFace(sphere, face, [0, 0, -1]);
+            var result = new CalculateSphereCollisionWithCollisionFaceResult();
+
+            math3D.calculateSphereCollisionWithCollisionFace(result, sphere, face, [0, 0, -1]);
 
             assert(result.intersection[0] == 2);
             assert(result.intersection[1] == 2);
@@ -539,7 +547,8 @@
         'Math3D.calculateRayIntersectionWithPlane': function () {
 
             // Check 1.
-            var plane = math3D.buildPlaneFromNormalAndPoint([1, 0, 0], [3, 0, 0]);
+            var plane = new Plane();
+            math3D.buildPlaneFromNormalAndPoint(plane, [1, 0, 0], [3, 0, 0]);
 
             var ray = new Ray([10, 5, 3], [-1, 0, 0]);
 
