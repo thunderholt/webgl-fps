@@ -310,6 +310,8 @@
 
     this.renderScene = function () {
      
+        var $ = this.$renderScene;
+
         for (var i = 0; i < engine.map.globalIlluminationColours.length; i++) {
             var srcColour = engine.map.globalIlluminationColours[i];
             
@@ -318,15 +320,13 @@
             this.globalIlluminationColours[i + 2] = srcColour[2];
         }
 
-        var cameraFrustum = new Frustum(); // FIXME
-
-        math3D.buildFrustumFromViewProjMatrix(cameraFrustum, engine.camera.viewProjMatrix);
+        math3D.buildFrustumFromViewProjMatrix($.cameraFrustum, engine.camera.viewProjMatrix);
 
         engine.visibilityManager.buildVisibleWorldStaticMeshChunkField(
-            this.visibleWorldStaticMeshChunkFieldForCamera, engine.camera.position, cameraFrustum, null);
+            this.visibleWorldStaticMeshChunkFieldForCamera, engine.camera.position, $.cameraFrustum, null);
 
         engine.visibilityManager.gatherVisibleActorIds(
-            this.visibleActorIdsForCamera, engine.camera.position, cameraFrustum, null);
+            this.visibleActorIdsForCamera, engine.camera.position, $.cameraFrustum, null);
 
          engine.visibilityManager.gatherVisibleLightIdsFromVisibleObjectsIds(
             this.visibleLightIdsForCamera, this.visibleWorldStaticMeshChunkFieldForCamera, this.visibleActorIdsForCamera);
@@ -465,19 +465,13 @@
 
     this.buildPointLightShadowMapFacePass = function (shadowMap, light, lightRenderState, face, faceRenderState, isBackPass, isWorldStaticMeshPhase) {
 
-        //var viewProjMatrix = mat4.create();
-
         engine.shadowMapManager.buildViewProjMatrixForPointLightCubeMapFaceBuild(
             this.renderingParameters.viewProjMatrix, light.position, face);
-
-        //this.renderingParameters.viewProjMatrix = viewProjMatrix;
-        //this.renderingParameters.lightWorldPostion = light.position;
 
         var bufferSize = engine.shadowMapManager.bufferSize;
 
         gl.viewport(0, 0, bufferSize, bufferSize);
         gl.clearColor(10000.0, 10000.0, 10000.0, 10000.0);
-        //gl.clearColor(0.0, 0.0, 0.0, 0.0);
 
         if (isWorldStaticMeshPhase) {
             gl.colorMask(lightRenderState.shadowMapChannel == 0, false, lightRenderState.shadowMapChannel == 1, false);
@@ -599,17 +593,10 @@
             throw "World static mesh not loaded";
         }
 
-        /*var options = { 
-            staticMeshChunkRenderStatesByIndex: engine.renderStateManager.worldStaticMeshChunkRenderStatesByIndex,
-            visibleChunkIndexes: visibleChunkIndexes
-        };*/
-
         this.renderStaticMeshOptions.staticMeshChunkRenderStatesByIndex = engine.renderStateManager.worldStaticMeshChunkRenderStatesByIndex;
         this.renderStaticMeshOptions.visibleChunkField = visibleChunkField;
         this.renderStaticMeshOptions.effectiveLightIds = null;
         this.renderStaticMeshOptions.worldMatrix = math3D.identityMat4;
-        //this.renderStaticMeshOptions.position = null;
-        //this.renderStaticMeshOptions.rotation = null;
         
         this.renderStaticMesh(staticMesh);
     }
@@ -1057,7 +1044,7 @@
         gl.uniformMatrix4fv(effect.uniforms.viewProjMatrix, false, this.renderingParameters.viewProjMatrix);
         gl.uniform3fv(effect.uniforms.cameraXAxis, engine.camera.axes.xAxis);
         gl.uniform3fv(effect.uniforms.cameraYAxis, engine.camera.axes.yAxis);
-        gl.uniform2fv(effect.uniforms.size, [1, 1]); // FIXME
+        gl.uniform2f(effect.uniforms.size, 1, 1); // FIXME
       
         // Bind the offsets buffer.
         gl.bindBuffer(gl.ARRAY_BUFFER, this.particleVertexBuffers.offsets);
@@ -1095,8 +1082,6 @@
                 gl.uniform3fv(effect.uniforms.position, particle.position);
 
                 gl.drawArrays(gl.TRIANGLES, 0, 6);
-
-                //engine.lineDrawer.drawSphere(this.renderingParameters, particle.position, 0.1, RgbColours.Red, true);
             }
         }
     }
@@ -1426,6 +1411,10 @@
     }
 
     // Function locals.
+    this.$renderScene = {
+        cameraFrustum: new Frustum()
+    }
+
     this.$renderWorldStaticMeshChunkAABBs = {
         aabbSize: vec3.create()
     }

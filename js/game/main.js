@@ -90,6 +90,8 @@ function GameController() {
 
     this.playerShoot = function () {
 
+        var $ = this.$playerShoot;
+
         var player = engine.map.player;
 
         // Grab the projectiles emitter.
@@ -113,9 +115,8 @@ function GameController() {
 
         vec3.copy(particle.position, player.position);
 
-        var playerAxes = new Axes();
-        math3D.buildAxesFromRotations(playerAxes, player.rotation);
-        vec3.copy(particle.direction, playerAxes.zAxis);
+        math3D.buildAxesFromRotations($.playerAxes, player.rotation);
+        vec3.copy(particle.direction, $.playerAxes.zAxis);
     }
 
     this.handlePlayerProjectileParticleCollision = function (particle) {
@@ -169,8 +170,11 @@ function GameController() {
                 animationState.frameIndex = gameData.playerIsDead ? 1 : 0;
             }
         }
+    }
 
-        
+    // Function locals.
+    this.$playerShoot = {
+        playerAxes: new Axes()
     }
 }
 
