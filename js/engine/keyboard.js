@@ -7,7 +7,7 @@
     this.W = 83;
     this.S = 87;
 
-    this.movementAxisMultipliers = [0, 0, 0];
+    this.movementAxisMultipliers = vec3.create();
 
     this.init = function (callback) {
 

@@ -30,13 +30,24 @@
         return from + ((to - from) * lerpFactor);
     }
 
-    this.buildAxesFromRotations = function (rotations) {
+    this.buildAxesFromRotations = function (out, rotations) {
 
-        var xAxis = [1, 0, 0];
-        var yAxis = [0, 1, 0];
-        var zAxis = [0, 0, -1];
+        var $ = this.$buildAxesFromRotations;
 
-        var xRotationMatrix = mat4.create();
+        vec3.set(out.xAxis, 1, 0, 0);
+        vec3.set(out.yAxis, 0, 1, 0);
+        vec3.set(out.zAxis, 0, 0, -1);
+
+        mat4.identity($.rotationMatrix);
+        mat4.rotateZ($.rotationMatrix, $.rotationMatrix, rotations[2]);
+        mat4.rotateY($.rotationMatrix, $.rotationMatrix, rotations[1]);
+        mat4.rotateX($.rotationMatrix, $.rotationMatrix, rotations[0]);
+
+        vec3.transformMat4(out.xAxis, out.xAxis, $.rotationMatrix);
+        vec3.transformMat4(out.yAxis, out.yAxis, $.rotationMatrix);
+        vec3.transformMat4(out.zAxis, out.zAxis, $.rotationMatrix);
+
+        /*var xRotationMatrix = mat4.create();
         mat4.rotateX(xRotationMatrix, xRotationMatrix, rotations[0]);
 
         var yRotationMatrix = mat4.create();
@@ -49,26 +60,18 @@
         mat4.multiply(lookRotationMatrix, zRotationMatrix, yRotationMatrix);
         mat4.multiply(lookRotationMatrix, lookRotationMatrix, xRotationMatrix);
 
-        vec3.transformMat4(xAxis, xAxis, lookRotationMatrix);
-        vec3.transformMat4(yAxis, yAxis, lookRotationMatrix);
-        vec3.transformMat4(zAxis, zAxis, lookRotationMatrix);
-
-        return {
-            xAxis: xAxis,
-            yAxis: yAxis,
-            zAxis: zAxis
-        }
+        vec3.transformMat4(out.xAxis, out.xAxis, lookRotationMatrix);
+        vec3.transformMat4(out.yAxis, out.yAxis, lookRotationMatrix);
+        vec3.transformMat4(out.zAxis, out.zAxis, lookRotationMatrix);*/
     }
 
-    this.buildMovementNormalFromAxes = function (movementAxes, movementAxisMultipliers) {
+    this.buildMovementNormalFromAxes = function (out, movementAxes, movementAxisMultipliers) {
 
-        var movementNormal = [0, 0, 0];
-        vec3.scaleAndAdd(movementNormal, movementNormal, movementAxes.xAxis, movementAxisMultipliers[0]);
-        vec3.scaleAndAdd(movementNormal, movementNormal, movementAxes.yAxis, movementAxisMultipliers[1]);
-        vec3.scaleAndAdd(movementNormal, movementNormal, movementAxes.zAxis, movementAxisMultipliers[2]);
-        vec3.normalize(movementNormal, movementNormal);
-
-        return movementNormal;
+        vec3.set(out, 0, 0, 0);
+        vec3.scaleAndAdd(out, out, movementAxes.xAxis, movementAxisMultipliers[0]);
+        vec3.scaleAndAdd(out, out, movementAxes.yAxis, movementAxisMultipliers[1]);
+        vec3.scaleAndAdd(out, out, movementAxes.zAxis, movementAxisMultipliers[2]);
+        vec3.normalize(out, out);
     }
 
     this.buildBoundingSphereRadiusAtOriginFromPoints = function (points) {
@@ -156,8 +159,7 @@
     util.copyObjectPropertiesToOtherObject(new MathCollisionLine(), this);
 
     // Function locals.
-    /*this.$buildWorldMatrix = {
-        translationMatrix: mat4.create(),
+    this.$buildAxesFromRotations = {
         rotationMatrix: mat4.create()
-    }*/
+    }
 }

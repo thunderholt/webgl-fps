@@ -1,13 +1,14 @@
 ﻿function Camera(engine) {
 
     // Members.
-    this.position = [0, 0, 0];
+    this.position = vec3.create();
 
-    this.axes = {
+    /*this.axes = {
         xAxis: [1, 0, 0],
         yAxis: [0, 1, 0],
         zAxis: [0, 0, 1]
-    };
+    };*/
+    this.axes = new Axes();
 
     this.lookAt = vec3.create();
     this.viewMatrix = mat4.create();

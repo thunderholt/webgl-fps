@@ -32,6 +32,12 @@ function Ray(origin, normal) {
     this.normal = normal || vec3.create();
 }
 
+function Axes() {
+    this.xAxis = vec3.create();
+    this.yAxis = vec3.create();
+    this.zAxis = vec3.create();
+}
+
 function CollisionLine(from, to, ray, length) {
 
     this.from = from || vec3.create();

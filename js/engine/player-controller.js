@@ -21,23 +21,23 @@
 
     this.heartbeat = function () {
 
+        var $ = this.$heartbeat;
+
         var player = engine.map.player;
 
-        var movementAxes = math3D.buildAxesFromRotations([0, player.rotation[1], 0]);
+        vec3.set($.playerYAxisOnlyRotation, 0, player.rotation[1], 0);
+        math3D.buildAxesFromRotations($.movementAxes, $.playerYAxisOnlyRotation);
 
-        var movementNormal = math3D.buildMovementNormalFromAxes(
-            movementAxes, engine.keyboard.movementAxisMultipliers);
+         math3D.buildMovementNormalFromAxes(
+            $.movementNormal, $.movementAxes, engine.keyboard.movementAxisMultipliers);
 
         var movementAmount = this.moveRate * engine.frameTimer.frameDelta;
 
-        this.movePlayerThoughMap(movementNormal, movementAmount);
-        //vec3.scaleAndAdd(player.position, player.position, movementNormal, movementAmount);
+        this.movePlayerThoughMap($.movementNormal, movementAmount);
 
         engine.camera.position = player.position;
 
-        var lookAxes = math3D.buildAxesFromRotations(player.rotation);
-
-        engine.camera.axes = lookAxes;
+        math3D.buildAxesFromRotations(engine.camera.axes, player.rotation);
     }
 
     this.handleMouseMove = function (event) {
@@ -50,51 +50,31 @@
 
     this.movePlayerThoughMap = function (movementNormal, movementAmount) {
 
-        /*var worldStaticMesh = engine.staticMeshManager.getStaticMesh(engine.map.worldStaticMeshId);
-
-        if (worldStaticMesh == null) {
-            return;
-        }
+        var $ = this.$movePlayerThoughMap;
 
         var player = engine.map.player;
         var heightOffGround = 1.0;
 
-        var collisionTestSphere = new Sphere(vec3.clone(player.position), 0.45);
-        vec3.sub(collisionTestSphere.position, collisionTestSphere.position, [0, heightOffGround, 0]);
+        vec3.copy($.collisionTestSphere.position, player.position);
+        $.collisionTestSphere.radius = 0.45;
 
-        engine.staticMeshMathHelper.moveSphereThroughStaticMesh(
-			collisionTestSphere, worldStaticMesh, movementNormal, movementAmount, true);
+        vec3.sub($.collisionTestSphere.position, $.collisionTestSphere.position, [0, heightOffGround, 0]);
 
-        var gravity = 0.2;
+        engine.mapManager.moveSphereThroughMap($.collisionTestSphere, movementNormal, movementAmount, true);
 
-        engine.staticMeshMathHelper.moveSphereThroughStaticMesh(
-            collisionTestSphere, worldStaticMesh,
-            [0, -1, 0], gravity * engine.frameTimer.frameDelta, false);*/
-
-        /*if (this.cameraController.jumpPower == 0) {
-
-            var gravity = 0.2;
-
-            this.moveSphereThroughMap(
-				this.collisionTestSphere.position, this.collisionTestSphere.size,
-				[0, -1, 0], gravity * this.frameTimer.frameDelta, false);
-
-        } else {
-
-            this.moveSphereThroughMap(
-				this.collisionTestSphere.position, this.collisionTestSphere.size,
-				[0, 1, 0], this.cameraController.jumpPower * this.frameTimer.frameDelta, false);
-        }*/
-
-        var player = engine.map.player;
-        var heightOffGround = 1.0;
-
-        var collisionTestSphere = new Sphere(vec3.clone(player.position), 0.45);
-        vec3.sub(collisionTestSphere.position, collisionTestSphere.position, [0, heightOffGround, 0]);
-
-        engine.mapManager.moveSphereThroughMap(collisionTestSphere, movementNormal, movementAmount, true);
-
-        vec3.copy(engine.camera.position, collisionTestSphere.position);
+        vec3.copy(engine.camera.position, $.collisionTestSphere.position);
         vec3.add(engine.camera.position, engine.camera.position, [0, heightOffGround, 0]);
+    }
+
+    // Function locals.
+    this.$heartbeat = {
+        movementAxes: new Axes(),
+        //lookAxes: new Axes(),
+        playerYAxisOnlyRotation: vec3.create(),
+        movementNormal: vec3.create()
+    }
+
+    this.$movePlayerThoughMap = {
+        collisionTestSphere: new Sphere()
     }
 }

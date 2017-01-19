@@ -83,7 +83,7 @@
     this.drawCube = function (renderingParameters, position, size, colour, enableDepthTest) {
 
         if (colour == null) {
-            colour = [1.0, 0.0, 0.0];
+            colour = RgbColours.White;
         }
 
         if (enableDepthTest == null) {
@@ -119,14 +119,14 @@
     this.drawSphere = function (renderingParameters, position, radius, colour, enableDepthTest) {
 
         if (colour == null) {
-            colour = [1.0, 0.0, 0.0];
+            colour = RgbColours.White;
         }
 
         var effect = engine.effectManager.useEffect('line');
 
         gl.uniformMatrix4fv(effect.uniforms.viewProjMatrix, false, renderingParameters.viewProjMatrix);
         gl.uniform3fv(effect.uniforms.position, position);
-        gl.uniform3fv(effect.uniforms.size, [radius, radius, radius]);
+        gl.uniform3f(effect.uniforms.size, radius, radius, radius);
         gl.uniform3fv(effect.uniforms.colour, colour);
 
         gl.disable(gl.BLEND);

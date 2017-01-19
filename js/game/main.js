@@ -113,7 +113,8 @@ function GameController() {
 
         vec3.copy(particle.position, player.position);
 
-        var playerAxes = math3D.buildAxesFromRotations(player.rotation);
+        var playerAxes = new Axes();
+        math3D.buildAxesFromRotations(playerAxes, player.rotation);
         vec3.copy(particle.direction, playerAxes.zAxis);
     }
 

@@ -136,7 +136,7 @@
 
             if (light.type == 'point') {
 
-                lightRenderState.boundingSphere.position = light.position;
+                vec3.copy(lightRenderState.boundingSphere.position, light.position);
                 lightRenderState.boundingSphere.radius = light.radius;
             }
         }
@@ -178,7 +178,7 @@
                 }
             }
 
-            actorRenderState.boundingSphere.position = actorRenderState.position;
+            vec3.copy(actorRenderState.boundingSphere.position, actorRenderState.position);
             actorRenderState.boundingSphere.radius = boundingSphereRadius;
         }
     }
@@ -466,7 +466,7 @@
                 shadowMapIndex: null,
                 shadowMapChannel: null,
                 pointLightShadowMapFaceStates: [],
-                boundingSphere: new Sphere([0, 0, 0], 0),
+                boundingSphere: new Sphere(),
                 visibleWorldStaticMeshChunkField: new BitField()
             };
 
