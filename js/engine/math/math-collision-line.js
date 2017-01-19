@@ -73,6 +73,28 @@
         return true;
     }
 
+    this.checkIfCollisionLineIntersectsAABB = function (line, aabb) {
+
+        var $ = this.$checkIfCollisionLineIntersectsAABB;
+
+        // Test if the ray intersection with any of the AABB's planes is within the AABB.
+        this.buildPlaneFromNormalAndPoint($.planes[0], this.axes3D.positiveZ, aabb.from); // Front
+        this.buildPlaneFromNormalAndPoint($.planes[1], this.axes3D.negativeZ, aabb.to); // Back
+        this.buildPlaneFromNormalAndPoint($.planes[2], this.axes3D.negativeX, aabb.from); // Left
+        this.buildPlaneFromNormalAndPoint($.planes[3], this.axes3D.positiveX, aabb.to); // Right
+        this.buildPlaneFromNormalAndPoint($.planes[4], this.axes3D.positiveY, aabb.from); // Top
+        this.buildPlaneFromNormalAndPoint($.planes[5], this.axes3D.negativeY, aabb.to); // Bottom
+
+        for (var i = 0; i < $.planes.length; i++) {
+            var lineIntersects = this.calculateRayIntersectionWithPlane($.planeIntersection, line.ray, $.plane);
+            if (lineIntersects && this.checkPointIsWithinAABB(aabb, $.planeIntersection)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     // Function locals.
     this.$calculateCollisionLineIntersectionWithCollisionFace = {
         facePlaneIntersection: vec3.create()
@@ -81,4 +103,9 @@
     this.$determineIfCollisionLineIntersectsSphere = {
         intersectionPoint: vec3.create()
     }
+
+    this.$checkIfCollisionLineIntersectsAABB = {
+        planes: [new Plane(), new Plane(), new Plane(), new Plane(), new Plane(), new Plane()],
+        planeIntersection: vec3.create()
+   }
 }

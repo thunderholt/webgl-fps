@@ -12,6 +12,7 @@
         renderLightVolumes: false,
         renderWorldStaticMeshAABBs: false,
         renderActorBoundingSpheres: false,
+        renderActorHitBoxes: true,
         renderSectors: false,
         renderTriggers: false
     };
@@ -379,6 +380,8 @@
         this.renderActorIdentifiers();
 
         this.renderActorBoundingSpheres();
+
+        this.renderActorHitBoxes();
 
         this.renderSectors();
 
@@ -1245,6 +1248,28 @@
         }
     }
 
+    this.renderActorHitBoxes = function () {
+
+        var $ = this.$renderActorHitBoxes;
+
+        if (!this.renderingOptions.renderActorHitBoxes) {
+            return;
+        }
+
+        for (var actorId in engine.map.actorsById) {
+
+            var actor = engine.map.actorsById[actorId];;
+            var actorRenderState = engine.renderStateManager.actorRenderStatesById[actor.id];
+
+            if (actor.hitBox != null) {
+
+                math3D.calculateAABBSize($.aabbSize, actorRenderState.transformedHitBox);
+
+                engine.lineDrawer.drawCube(this.renderingParameters, actorRenderState.transformedHitBox.from, $.aabbSize, RgbColours.Red, false);
+            }
+        }
+    }
+
     this.renderSectors = function () {
 
         if (!this.renderingOptions.renderSectors) {
@@ -1416,6 +1441,10 @@
     }
 
     this.$renderWorldStaticMeshChunkAABBs = {
+        aabbSize: vec3.create()
+    }
+
+    this.$renderActorHitBoxes = {
         aabbSize: vec3.create()
     }
 }

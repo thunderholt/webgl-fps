@@ -140,12 +140,4 @@
 
         return true;
     }
-
-    this.checkIfCollisionLineIntersectsAABB = function (aabb) {
-
-        // Front plane
-        //var d = -vec3.dot(math3D.axes3D.positiveZ, aabb.from);
-
-        // TODO
-    }
 }

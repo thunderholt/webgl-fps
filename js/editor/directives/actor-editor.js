@@ -51,6 +51,16 @@
                 $scope.actor.skinnedMeshAnimationId = null;
             }
 
+            $scope.createHitBox = function () {
+
+                $scope.actor.hitBox = new AABB([-0.5, 1, 0.5], [0.5, 0, -0.5]);
+            }
+
+            $scope.removeHitBox = function () {
+
+                $scope.actor.hitBox = null;
+            }
+
             $scope.chooseController = function () {
 
                 $rootScope.$broadcast('choose-controller', {

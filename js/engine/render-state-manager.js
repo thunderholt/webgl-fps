@@ -21,7 +21,7 @@
         this.checkShadowMapAllocations();
 
         this.updateLightBoundingSpheres();
-        this.updateActorPositionsAndBoundingSpheres();
+        this.updateActorPositionsAndBoundingVolumes();
         this.updateActorResidentSectorIndexField();
 
         this.updateLightRenderStates();
@@ -142,7 +142,7 @@
         }
     }
 
-    this.updateActorPositionsAndBoundingSpheres = function () {
+    this.updateActorPositionsAndBoundingVolumes = function () {
 
         for (var actorId in engine.map.actorsById) {
 
@@ -180,6 +180,14 @@
 
             vec3.copy(actorRenderState.boundingSphere.position, actorRenderState.position);
             actorRenderState.boundingSphere.radius = boundingSphereRadius;
+
+            // Update the actor's hit box.
+            if (actor.hitBox != null) {
+                vec3.copy(actorRenderState.transformedHitBox.from, actor.hitBox.from);
+                vec3.copy(actorRenderState.transformedHitBox.to, actor.hitBox.to);
+                vec3.add(actorRenderState.transformedHitBox.from, actorRenderState.transformedHitBox.from, actorRenderState.position);
+                vec3.add(actorRenderState.transformedHitBox.to, actorRenderState.transformedHitBox.to, actorRenderState.position);
+            }
         }
     }
 
@@ -446,7 +454,8 @@
                 effectiveLightIds: new FixedLengthArray(EngineLimits.MaxEffectiveLightsPerObject, null),
                 residentSectorIndexField: new BitField(),
                 worldMatrix: mat4.create(),
-                inverseWorldMatrix: mat4.create()
+                inverseWorldMatrix: mat4.create(),
+                transformedHitBox: new AABB()
             };
 
             this.actorRenderStatesById[actorId] = actorRenderState;
