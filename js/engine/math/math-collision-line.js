@@ -77,6 +77,14 @@
 
         var $ = this.$checkIfCollisionLineIntersectsAABB;
 
+        if (this.checkPointIsWithinAABB(aabb, line.from)) {
+            return true;
+        }
+
+        if (this.checkPointIsWithinAABB(aabb, line.to)) {
+            return true;
+        }
+
         // Test if the ray intersection with any of the AABB's planes is within the AABB.
         this.buildPlaneFromNormalAndPoint($.planes[0], this.axes3D.positiveZ, aabb.from); // Front
         this.buildPlaneFromNormalAndPoint($.planes[1], this.axes3D.negativeZ, aabb.to); // Back
@@ -86,7 +94,7 @@
         this.buildPlaneFromNormalAndPoint($.planes[5], this.axes3D.negativeY, aabb.to); // Bottom
 
         for (var i = 0; i < $.planes.length; i++) {
-            var lineIntersects = this.calculateRayIntersectionWithPlane($.planeIntersection, line.ray, $.plane);
+            var lineIntersects = this.calculateRayIntersectionWithPlane($.planeIntersection, line.ray, $.planes[i]);
             if (lineIntersects && this.checkPointIsWithinAABB(aabb, $.planeIntersection)) {
                 return true;
             }

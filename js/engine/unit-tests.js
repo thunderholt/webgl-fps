@@ -808,6 +808,84 @@
             assert(result == false);
         },
 
+        'Math3D.checkIfCollisionLineIntersectsAABB': function () {
+
+            var aabb = new AABB([-1, -2, 3], [4, 2, -5]);
+
+            // Check 1 - front hit.
+            var line = new CollisionLine();
+            vec3.set(line.from, 0, 0, 4);
+            vec3.set(line.to, 0, 0, 2);
+            math3D.buildCollisionLineFromFromAndToPoints(line);
+
+            var result = math3D.checkIfCollisionLineIntersectsAABB(line, aabb);
+            assert(result == true);
+
+            // Check 2 - back hit.
+            vec3.set(line.from, -1, 2, -6);
+            vec3.set(line.to, -1, 2, -5);
+            math3D.buildCollisionLineFromFromAndToPoints(line);
+
+            var result = math3D.checkIfCollisionLineIntersectsAABB(line, aabb);
+            assert(result == true);
+
+            // Check 3 - left hit.
+            vec3.set(line.from, -2, -2, 3);
+            vec3.set(line.to, 0, -2, 3);
+            math3D.buildCollisionLineFromFromAndToPoints(line);
+
+            var result = math3D.checkIfCollisionLineIntersectsAABB(line, aabb);
+            assert(result == true);
+
+            // Check 4 - right hit.
+            vec3.set(line.from, 5, 1, 3);
+            vec3.set(line.to, 4, 1, 3);
+            math3D.buildCollisionLineFromFromAndToPoints(line);
+
+            var result = math3D.checkIfCollisionLineIntersectsAABB(line, aabb);
+            assert(result == true);
+
+            // Check 5 - top hit.
+            vec3.set(line.from, 0, 3, 0);
+            vec3.set(line.to, 0, 2, 0);
+            math3D.buildCollisionLineFromFromAndToPoints(line);
+
+            var result = math3D.checkIfCollisionLineIntersectsAABB(line, aabb);
+            assert(result == true);
+
+            // Check 6 - bottom hit.
+            vec3.set(line.from, 1, -3, -2);
+            vec3.set(line.to, 1, -2, -2);
+            math3D.buildCollisionLineFromFromAndToPoints(line);
+
+            var result = math3D.checkIfCollisionLineIntersectsAABB(line, aabb);
+            assert(result == true);
+
+            // Check 7 - from point within.
+            vec3.set(line.from, 0, 0, 0);
+            vec3.set(line.to, 100, 100, 100);
+            math3D.buildCollisionLineFromFromAndToPoints(line);
+
+            var result = math3D.checkIfCollisionLineIntersectsAABB(line, aabb);
+            assert(result == true);
+
+            // Check 8 - to point within.
+            vec3.set(line.from, 100, 100, 100);
+            vec3.set(line.to, 0, 0, 0);
+            math3D.buildCollisionLineFromFromAndToPoints(line);
+
+            var result = math3D.checkIfCollisionLineIntersectsAABB(line, aabb);
+            assert(result == true);
+
+            // Check 9 - miss.
+            vec3.set(line.from, -1.1, 0, 4);
+            vec3.set(line.to, -1.1, 0, 2);
+            math3D.buildCollisionLineFromFromAndToPoints(line);
+
+            var result = math3D.checkIfCollisionLineIntersectsAABB(line, aabb);
+            assert(result == false);
+        },
+
         'BitField': function () {
 
             var bf = new BitField();

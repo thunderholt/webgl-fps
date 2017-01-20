@@ -114,9 +114,20 @@
 
                 } else if (actor.skinnedMeshId != null && actor.skinnedMeshId != '') {
 
-                    // TODO - if skinned mesh, check hit box.
-                    collisionFound = true;
-                    vec3.copy($.intersectionPoint, actor.position); // FIXME
+                    // If the actor has a hit box, check against that. Otherwise, the collision with the bounding sphere will have to do.
+                    if (actor.hitBox != null) {
+
+                        if (math3D.checkIfCollisionLineIntersectsAABB(collisionLine, actorRenderState.transformedHitBox)) {
+                            collisionFound = true;
+                            vec3.copy($.intersectionPoint, actor.position); // Hmm, not very accurate, but might not be a problem.
+                        }
+
+                    } else {
+
+                        // Just assume a collision from the bounding sphere.
+                        collisionFound = true;
+                        vec3.copy($.intersectionPoint, actor.position); // Hmm, not very accurate, but might not be a problem.
+                    }
                 }
 
                 if (collisionFound) {

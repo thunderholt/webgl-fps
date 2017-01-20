@@ -3,11 +3,27 @@
     this.zeroVec3 = vec3.create();
     this.zeroVec4 = vec4.create();
 
-    this.downVec3 = vec3.create();
+    this.downVec3 = vec3.create(); // TODO - get rid - use axes.
     vec3.set(this.downVec3, 0, -1, 0);
 
     this.identityMat4 = mat4.create();
     mat4.identity(this.identityMat4);
+
+    this.axes3D = {
+        positiveX: vec3.create(),
+        negativeX: vec3.create(),
+        positiveY: vec3.create(),
+        negativeY: vec3.create(),
+        positiveZ: vec3.create(),
+        negativeZ: vec3.create()
+    }
+
+    vec3.set(this.axes3D.positiveX, 1, 0, 0);
+    vec3.set(this.axes3D.negativeX, -1, 0, 0);
+    vec3.set(this.axes3D.positiveY, 0, 1, 0);
+    vec3.set(this.axes3D.negativeY, 0, -1, 0);
+    vec3.set(this.axes3D.positiveZ, 0, 0, 1);
+    vec3.set(this.axes3D.negativeZ, 0, 0, -1);
 
     this.clamp = function (value, min, max) {
 
