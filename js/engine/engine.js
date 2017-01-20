@@ -107,6 +107,10 @@
             return;
         }
 
+        if (!this.renderStateManager.ensureResourcesAreLoaded()) {
+            return; // TODO - loading screen.
+        }
+
         this.frameTimer.startFrame();
 
         if (this.mode == 'editor') {
