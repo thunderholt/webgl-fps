@@ -14,123 +14,62 @@
         callback();
     }
 
-    this.updateRenderStates = function () {
+    this.coalesceRenderStates = function () {
 
-        this.checkShadowMapAllocations();
+        for (var actorId in engine.map.actorsById) {
+            this.coalesceActorRenderState(actorId);
+        }
 
-        this.updateLightBoundingSpheres();
-        this.updateActorPositionsAndBoundingVolumes();
-        this.updateActorResidentSectorIndexField();
+        for (var lightId in engine.map.lightsById) {
+            this.coalesceLightRenderState(lightId);
+        }
+ 
+        var worldStaticMesh = engine.staticMeshManager.getStaticMesh(engine.map.worldStaticMeshId);
 
-        this.updateLightRenderStates();
-        this.updateWorldStaticMeshRenderStates();
-        this.updateActorRenderStates();
-        this.updateGuiRenderStates();
+        for (var chunkIndex = 0; chunkIndex < worldStaticMesh.chunks.length; chunkIndex++) {
+            this.coalesceWorldStaticMeshChunkRenderState(chunkIndex);
+        }
 
-        this.updateActorAnimationFrameIndexes();
-        this.updateGuiAnimationFrameIndexes();
+        for (var guiId in engine.map.guisById) {
+            this.coalesceGuiRenderState(guiId);
+        }
     }
 
-    this.ensureResourcesAreLoaded = function () {
-
-        var allResourcesAreLoaded = true;
-
-        for (var staticMeshId in engine.staticMeshManager.staticMeshesById) {
-
-            var staticMesh = engine.staticMeshManager.staticMeshesById[staticMeshId];
-
-            for (var chunkIndex = 0; chunkIndex < staticMesh.chunks.length; chunkIndex++) {
-                var chunk = staticMesh.chunks[chunkIndex];
-                if (engine.materialManager.materialsById[chunk.materialId] == null) {
-                    engine.materialManager.loadMaterial(chunk.materialId);
-                    allResourcesAreLoaded = false;
-                }
-            }
-        }
-
-        for (var materialId in engine.materialManager.materialsById) {
-            var material = engine.materialManager.materialsById[materialId];
-
-            if (!util.stringIsNullOrEmpty(material.diffuseTextureId) && engine.textureManager.texturesById[material.diffuseTextureId] == null) {
-                engine.textureManager.loadTexture(material.diffuseTextureId);
-                allResourcesAreLoaded = false;
-            }
-
-            if (!util.stringIsNullOrEmpty(material.normalTextureId) && engine.textureManager.texturesById[material.normalTextureId] == null) {
-                engine.textureManager.loadTexture(material.normalTextureId);
-                allResourcesAreLoaded = false;
-            }
-
-            if (!util.stringIsNullOrEmpty(material.selfIlluminationTextureId) && engine.textureManager.texturesById[material.selfIlluminationTextureId] == null) {
-                engine.textureManager.loadTexture(material.selfIlluminationTextureId);
-                allResourcesAreLoaded = false;
-            }
-        }
+    this.calculateActorFinalPositions = function () {
 
         for (var actorId in engine.map.actorsById) {
 
             var actor = engine.map.actorsById[actorId];
 
-            if (!util.stringIsNullOrEmpty(actor.staticMeshId) && engine.staticMeshManager.staticMeshesById[actor.staticMeshId] == null) {
-
-                engine.staticMeshManager.loadStaticMesh(actor.staticMeshId, {
-                    buildChunkAABBs: true,
-                    buildChunkCollisionFaces: true,
-                    buildRotationSafeBoundingSphere: true
-                });
-
-                allResourcesAreLoaded = false;
+            if (!actor.active) {
+                continue;
             }
 
-            if (!util.stringIsNullOrEmpty(actor.skinnedMeshId) && engine.skinnedMeshManager.getSkinnedMesh(actor.skinnedMeshId) == null) {
-                engine.skinnedMeshManager.loadSkinnedMesh(actor.skinnedMeshId, { buildRotationSafeBoundingSphere: true });
-                allResourcesAreLoaded = false;
-            }
+            var actorRenderState = engine.renderStateManager.actorRenderStatesById[actorId];
 
-            if (!util.stringIsNullOrEmpty(actor.skinnedMeshAnimationId) && engine.skinnedMeshAnimationManager.skinnedMeshAnimationsById[actor.skinnedMeshAnimationId] == null) {
-                engine.skinnedMeshAnimationManager.loadSkinnedMeshAnimation(actor.skinnedMeshAnimationId, {});
-                allResourcesAreLoaded = false;
-            }
+            // Update the actor's final position.
+            vec3.copy(actorRenderState.position, actor.position);
+            vec3.add(actorRenderState.position, actorRenderState.position, actor.positionOffset);
         }
+    }
 
-        for (var guiId in engine.map.guisById) {
+    this.rebuildBoundingVolumes = function () {
+        this.updateLightBoundingSpheres();
+        this.updateActorBoundingVolumes();
+    }
 
-            var gui = engine.map.guisById[guiId];
+    this.updateRenderStates = function () {
 
-            if (engine.guiLayoutManager.guiLayoutsById[gui.layoutId] == null) {
-                engine.guiLayoutManager.loadGuiLayout(gui.layoutId);
-                allResourcesAreLoaded = false;
-            } 
-        }
+        this.updateLightRenderStates();
+        this.updateWorldStaticMeshRenderStates();
+        this.updateActorRenderStates();
+        this.updateGuiRenderStates();
+    }
 
-        for (var guiLayoutId in engine.guiLayoutManager.guiLayoutsById) {
+    this.updateAnimations = function () {
 
-            var guiLayout = engine.guiLayoutManager.guiLayoutsById[guiLayoutId];
-
-            for (var animationId in guiLayout.animationsById) {
-                if (engine.guiLayoutAnimationManager.getGuiLayoutAnimationExpansion(guiLayout.id, animationId) == null) {
-                    engine.guiLayoutAnimationManager.buildGuiLayoutAnimationExpansion(guiLayout.id, animationId);
-                    allResourcesAreLoaded = false;
-                }
-            }
-
-            if (engine.spriteSheetManager.getSpriteSheet(guiLayout.spriteSheetId) == null) {
-                engine.spriteSheetManager.loadSpriteSheet(guiLayout.spriteSheetId);
-                allResourcesAreLoaded = false;
-            }
-        }
-
-        for (var spriteSheetId in engine.spriteSheetManager.spriteSheetsById) {
-
-            var spriteSheet = engine.spriteSheetManager.spriteSheetsById[spriteSheetId];
-
-            if (engine.textureManager.getTexture(spriteSheet.textureId) == null) {
-                engine.textureManager.loadTexture(spriteSheet.textureId);
-                allResourcesAreLoaded = false;
-            }
-        }
-
-        return allResourcesAreLoaded;
+        this.updateActorAnimationFrameIndexes();
+        this.updateGuiAnimationFrameIndexes();
     }
 
     this.checkShadowMapAllocations = function () {
@@ -143,7 +82,7 @@
                 continue;
             }
 
-            var lightRenderState = this.coalesceLightRenderState(light.id);
+            var lightRenderState = this.lightRenderStatesById[light.id];
 
             if (lightRenderState.shadowMapIndex == null) {
 
@@ -161,7 +100,7 @@
 
             var light = engine.map.lightsById[lightId];
 
-            var lightRenderState = this.coalesceLightRenderState(light.id);
+            var lightRenderState = this.lightRenderStatesById[light.id];
 
             if (light.type == 'point') {
 
@@ -171,7 +110,7 @@
         }
     }
 
-    this.updateActorPositionsAndBoundingVolumes = function () {
+    this.updateActorBoundingVolumes = function () {
 
         for (var actorId in engine.map.actorsById) {
 
@@ -181,11 +120,11 @@
                 continue;
             }
 
-            var actorRenderState = this.coalesceActorRenderState(actorId);
+            var actorRenderState = this.actorRenderStatesById[actorId];
 
-            // Update the actor's position.
+            /*// Update the actor's position.
             vec3.copy(actorRenderState.position, actor.position);
-            vec3.add(actorRenderState.position, actorRenderState.position, actor.positionOffset);
+            vec3.add(actorRenderState.position, actorRenderState.position, actor.positionOffset);*/
 
             // Update the actor's bounding sphere.
             var boundingSphereRadius = 0;
@@ -217,10 +156,17 @@
                 vec3.add(actorRenderState.transformedHitBox.from, actorRenderState.transformedHitBox.from, actorRenderState.position);
                 vec3.add(actorRenderState.transformedHitBox.to, actorRenderState.transformedHitBox.to, actorRenderState.position);
             }
+
+            // Update the actor's collision sphere.
+            if (actor.collisionSphere != null) {
+                vec3.copy(actorRenderState.transformedCollisionSphere.position, actor.collisionSphere.position);
+                vec3.add(actorRenderState.transformedCollisionSphere.position, actorRenderState.transformedCollisionSphere.position, actorRenderState.position);
+                actorRenderState.transformedCollisionSphere.radius = actor.collisionSphere.radius;
+            }
         }
     }
 
-    this.updateActorResidentSectorIndexField = function () {
+    this.updateActorResidentSectors = function () {
 
         for (var actorId in engine.map.actorsById) {
 
@@ -230,7 +176,7 @@
                 continue;
             }
 
-            var actorRenderState = this.coalesceActorRenderState(actorId);
+            var actorRenderState = this.actorRenderStatesById[actorId];
 
             actorRenderState.residentSectorIndexField.reset(engine.sectorSet.sectors.length);
 
@@ -256,7 +202,7 @@
                 continue;
             }
 
-            var lightRenderState = this.coalesceLightRenderState(light.id);
+            var lightRenderState = this.lightRenderStatesById[light.id];
 
             if (light.type == 'point') {
 
@@ -326,7 +272,7 @@
         for (var chunkIndex = 0; chunkIndex < staticMesh.chunks.length; chunkIndex++) {
 
             var chunk = staticMesh.chunks[chunkIndex];
-            var chunkRenderState = this.coalesceWorldStaticMeshChunkRenderState(chunkIndex);
+            var chunkRenderState = this.worldStaticMeshChunkRenderStatesByIndex[chunkIndex];
 
             chunkRenderState.effectiveLightIds.length = 0;
 
@@ -335,19 +281,13 @@
 
                 var light = engine.map.lightsById[lightId];
 
-                var lightRenderState = this.coalesceLightRenderState(light.id);
-
                 if (light.enabled) {
 
-                    var lightRenderState = this.coalesceLightRenderState(light.id);
+                    var lightRenderState = this.lightRenderStatesById[light.id];
                  
                     if (!lightRenderState.visibleWorldStaticMeshChunkField.getBit(chunkIndex)) {
                         continue;
                     }
-
-                    /*if (!math3D.checkSphereIntersectsAABB(lightRenderState.boundingSphere, chunk.aabb)) {
-                        continue;
-                    }*/
 
                     chunkRenderState.effectiveLightIds.items[chunkRenderState.effectiveLightIds.length++] = light.id;
 
@@ -369,7 +309,7 @@
                 continue;
             }
 
-            var actorRenderState = this.coalesceActorRenderState(actorId);
+            var actorRenderState = this.actorRenderStatesById[actorId];
 
             // Update the actor's effective lights.
             // TODO - don't loop through all of the lights. Use the sectors to find the relevant ones.
@@ -383,7 +323,7 @@
                     continue;
                 }
 
-                var lightRenderState = this.coalesceLightRenderState(light.id);
+                var lightRenderState = this.lightRenderStatesById[light.id];
 
                 //var lightSphere = new Sphere(light.position, light.radius);
 
@@ -410,7 +350,7 @@
 
             var gui = engine.map.guisById[guiId];
 
-            var guiRenderState = this.coalesceGuiRenderState(guiId);
+            var guiRenderState = this.guiRenderStatesById[guiId];
 
             engine.guiDrawSpecBuilder.buildGuiDrawSpecs(guiRenderState.drawSpecs, gui);
         }
@@ -484,7 +424,15 @@
                 residentSectorIndexField: new BitField(),
                 worldMatrix: mat4.create(),
                 inverseWorldMatrix: mat4.create(),
-                transformedHitBox: new AABB()
+                transformedHitBox: new AABB(),
+                transformedCollisionSphere: new Sphere(),
+                physics: {
+                    mode: ActorPhysicsMode.None,
+                    targetPositionOffset: vec3.create(),
+                    speed: 0,
+                    movementNormal: vec3.create(),
+                    applyGravity: true
+                }
             };
 
             this.actorRenderStatesById[actorId] = actorRenderState;

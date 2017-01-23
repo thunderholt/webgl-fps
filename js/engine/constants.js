@@ -45,3 +45,26 @@ var SpritePropertyId = {
     RotationOffset: 5,
     Visible: 6
 }
+
+var ActorPhysicsMode = {
+    None: 0,
+    OffsetThroughEther: 1,
+    PushThroughMap: 2
+}
+
+var ParticlePhysicsMode = {
+    None: 0,
+    MoveThroughMap: 1
+}
+
+var ParticleCreator = {
+    None: 0,
+    Player: 1,
+    Actor: 2
+}
+
+var ParticleCollisionType = {
+    Actor: 0,
+    Map: 1,
+    Player: 2
+}

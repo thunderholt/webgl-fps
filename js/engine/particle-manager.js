@@ -21,11 +21,15 @@
                 position: [0, 0, 0],
                 direction: [0, 0, 0],
 			    textureIds: [null, null, null, null],
-			    data: null
+			    data: null,
+			    physics: {}
             }
 
             emitter.particles.push(particle);
         }
+
+        particle.physics.mode = ParticlePhysicsMode.None;
+        particle.physics.lastCollisionType = ParticleCollisionType.None;
 
         engine.mapDataHelper.checkParticleData(emitter, particle);
 
@@ -34,7 +38,7 @@
         return particle;
     }
 
-    this.updateParticles = function () {
+    this.heartbeat = function () {
 
         for (var emitterId in engine.map.emittersById) {
 

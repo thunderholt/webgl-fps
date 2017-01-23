@@ -12,7 +12,8 @@
         renderLightVolumes: false,
         renderWorldStaticMeshAABBs: false,
         renderActorBoundingSpheres: false,
-        renderActorHitBoxes: true,
+        renderActorHitBoxes: false,
+        renderActorCollisionSpheres: true,
         renderSectors: false,
         renderTriggers: false
     };
@@ -382,6 +383,8 @@
         this.renderActorBoundingSpheres();
 
         this.renderActorHitBoxes();
+
+        this.renderActorCollisionSpheres();
 
         this.renderSectors();
 
@@ -1266,6 +1269,26 @@
                 math3D.calculateAABBSize($.aabbSize, actorRenderState.transformedHitBox);
 
                 engine.lineDrawer.drawCube(this.renderingParameters, actorRenderState.transformedHitBox.from, $.aabbSize, RgbColours.Red, false);
+            }
+        }
+    }
+
+    this.renderActorCollisionSpheres = function () {
+
+        var $ = this.$renderActorHitBoxes;
+
+        if (!this.renderingOptions.renderActorCollisionSpheres) {
+            return;
+        }
+
+        for (var actorId in engine.map.actorsById) {
+
+            var actor = engine.map.actorsById[actorId];;
+            var actorRenderState = engine.renderStateManager.actorRenderStatesById[actor.id];
+
+            if (actor.collisionSphere != null) {
+
+                engine.lineDrawer.drawSphere(this.renderingParameters, actorRenderState.transformedCollisionSphere.position, actorRenderState.transformedCollisionSphere.radius, RgbColours.Red, false);
             }
         }
     }

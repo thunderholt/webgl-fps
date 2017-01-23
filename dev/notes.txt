@@ -1,0 +1,60 @@
+heartbeat
+{
+
+	Check resources are loaded (done)
+
+	Coalesce render states exist (done)
+		* Actors
+		* Lights
+		* World static mesh chunks
+		* GUIs
+
+	Run Physics
+
+		* Offset actors through ether
+			- Qualifying actors must have:
+				- physicsMode: ActorPhysicsMode.OffsetThroughEther
+				- targetOffset: vec3
+				- speed
+
+		* Push actors through map
+			- Qualifying actors must have:
+				- physicsMode: ActorPhysicsMode.PushThroughMap
+				- applyGravity: true/false
+				- movementNormal
+				- speed
+				- collisionSphere 
+
+		* Move particles objects through map
+			- Qualifying particles must have:
+				- physicsMode: ParticlePhysicsMode.MoveThroughMap
+				- direction
+				- speed
+
+
+	Calculate actor final positions (done)
+
+
+	Rebuild bounding volumes (done)
+		* Lights
+		* Actors
+
+	Update actor resident sectors (done)
+
+	Update render states
+		* Lights
+		* World static chunks
+		* Actors
+		* GUIs
+
+	Update animations (done)
+		* Actors
+		* GUIs
+
+	Check shadow map allocations (done)
+
+	Render (done)
+
+	Game logic
+}
+

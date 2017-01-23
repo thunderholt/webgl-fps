@@ -282,7 +282,7 @@ vec4 applyFog(vec4 baseColour)
 	vec3 cameraToFragment = fragmentWorldSpacePosition - cameraWorldSpacePosition;
 	float lengthSqr = dot(cameraToFragment, cameraToFragment);
 
-	float fogAmount = min(lengthSqr / 3000.0, 1.0);
+	float fogAmount = min(lengthSqr / 2000.0, 1.0);
 
 	vec4 fogColour = vec4(0.5, 0.5, 1.0, 1.0);
 	

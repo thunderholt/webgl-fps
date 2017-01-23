@@ -31,6 +31,7 @@
     this.skinnedMeshManager = new SkinnedMeshManager(this);
     this.skinnedMeshAnimationManager = new SkinnedMeshAnimationManager(this);
     this.resourceLoader = new ResourceLoader(this);
+    this.resourceChecker = new ResourceChecker(this);
     this.materialManager = new MaterialManager(this);
     this.guiLayoutManager = new GuiLayoutManager(this);
     this.guiLayoutAnimationManager = new GuiLayoutAnimationManager(this);
@@ -49,6 +50,7 @@
     this.mapManager = new MapManager(this);
     this.particleManager = new ParticleManager(this);
     this.triggerManager = new TriggerManager(this);
+    this.physicsManager = new PhysicsManager(this);
     this.mapDataHelper = new MapDataHelper(this);
     this.unitTests = new UnitTests();
 
@@ -107,11 +109,30 @@
             return;
         }
 
-        if (!this.renderStateManager.ensureResourcesAreLoaded()) {
+        this.frameTimer.startFrame();
+
+        if (!this.resourceChecker.ensureResourcesAreLoaded()) {
             return; // TODO - loading screen.
         }
 
-        this.frameTimer.startFrame();
+        this.renderStateManager.coalesceRenderStates();
+
+        this.renderStateManager.calculateActorFinalPositions();
+
+        this.renderStateManager.rebuildBoundingVolumes();
+
+        this.renderStateManager.updateActorResidentSectors();
+
+        this.camera.updateMatrixes(
+            Math.PI / 2, engine.glManager.viewportInfo.width / engine.glManager.viewportInfo.height, 0.1, 1000.0);
+
+        this.renderStateManager.updateRenderStates();
+
+        this.renderStateManager.updateAnimations();
+
+        this.renderStateManager.checkShadowMapAllocations();
+
+        this.renderer.renderScene();
 
         if (this.mode == 'editor') {
 
@@ -126,8 +147,6 @@
 
             this.triggerManager.heartbeat();
 
-            this.particleManager.updateParticles();
-
             for (var actorId in this.map.actorsById) {
 
                 var actor = this.map.actorsById[actorId];
@@ -141,14 +160,22 @@
                     }
                 }
             }
+
+            this.particleManager.heartbeat();
+
+            this.physicsManager.runPhysics();
+
+            /*var gameController = this.gameControllersById[this.map.gameControllerId];
+            gameController.heartbeat();
+
+            
+
+            this.triggerManager.heartbeat();
+
+            this.particleManager.updateParticles();
+
+            */
         }
-
-        this.camera.updateMatrixes(
-            Math.PI / 2, engine.glManager.viewportInfo.width / engine.glManager.viewportInfo.height, 0.1, 1000.0);
-
-        this.renderStateManager.updateRenderStates();
-
-        this.renderer.renderScene();
 
         this.frameTimer.updateStats();
     }
