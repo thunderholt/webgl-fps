@@ -21,6 +21,7 @@
     }
 
     // Game logic.
+    this.canvasInitialiser = new CanvasInitialiser(this);
     this.glManager = new GlManager(this);
     this.textureManager = new TextureManager(this);
     this.effectManager = new EffectManager(this);
@@ -59,7 +60,7 @@
         this.unitTests.run();
 
         var initObjects = [
-            this.glManager, this.textureManager, this.effectManager, this.shadowMapManager,
+            this.canvasInitialiser, this.glManager, this.textureManager, this.effectManager, this.shadowMapManager,
             this.lineDrawer, this.staticMeshManager, this.staticMeshMathHelper,
             this.skinnedMeshManager, this.skinnedMeshAnimationManager,
             this.renderer, this.renderStateManager,
@@ -76,13 +77,6 @@
     }
 
     this.enterMainLoop = function () {
-
-        /*var frameFunction = null;
-
-        frameFunction = function () {
-            self.heartbeat();
-            requestAnimationFrame(frameFunction);
-        }*/
 
         requestAnimationFrame(this.frameFunction);
     }

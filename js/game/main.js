@@ -17,18 +17,28 @@ engine.particleControllersById['ProjectileParticleController'] = new ProjectileP
 
 engine.triggerControllersById['DoorOpenerTriggerController'] = new DoorOpenerTriggerController();
 
-engine.init(function () {
 
-    engine.enterMainLoop();
 
-    if (typeof(isEditor) == 'undefined') {
+function launch() {
 
-        engine.loadMap('test-map-2', function () {
+    engine.init(function () {
+        
+        engine.enterMainLoop();
 
-            engine.startMap();
-        });
-    }
-});
+        if (typeof (isEditor) == 'undefined') {
+
+            engine.loadMap('test-map-2', function () {
+
+                engine.startMap();
+            });
+        }
+    });
+}
+
+if (typeof (isEditor) != 'undefined') {
+
+    launch();
+}
 
 
 function GameController() {
