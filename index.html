@@ -43,11 +43,12 @@
             position: fixed;
             top: 10px;
             left: 10px;
-            width: 100px;
-            height: 30px;
+            display: inline-block;
             padding: 10px;
             background-color: yellow;
             display: none;
+            color: black;
+            font-size: 10px;
         }
 
         canvas {
@@ -73,12 +74,12 @@
     <div id="settings-container">
 
         <div class="form-group">
-            <label>Fullscreen</label>
+            <label for="cb-fullscreen">Fullscreen</label>
             <input id="cb-fullscreen" type="checkbox" />
         </div>
 
         <div class="form-group">
-            <label>Resolution Scale</label>
+            <label for="lb-resolution-scale">Resolution Scale</label>
             <select id="lb-resolution-scale">
                 <option value="1.0">100%</option>
                 <option value="0.5">50%</option>

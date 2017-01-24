@@ -53,11 +53,27 @@
 
         if (fullscreenMode) {
 
-            document.addEventListener('fullscreenchange', function () {
-                callback();
-            });
-
             var mainContainer = document.getElementById('main-container');
+
+            if (mainContainer.webkitRequestFullscreen) {
+
+                document.addEventListener('webkitfullscreenchange', function () {
+                    callback();
+                });
+
+            } else if (mainContainer.mozRequestFullscreen) {
+
+                document.addEventListener('mozfullscreenchange', function () {
+                    callback();
+                });
+
+            } else if (mainContainer.requestFullscreen) {
+
+                document.addEventListener('fullscreenchange', function () {
+                    callback();
+                });
+            }
+
             mainContainer.requestFullscreen =
                 mainContainer.requestFullscreen ||
                 mainContainer.mozRequestFullscreen ||
