@@ -49,7 +49,8 @@ var SpritePropertyId = {
 var ActorPhysicsMode = {
     None: 0,
     OffsetThroughEther: 1,
-    PushThroughMap: 2
+    PushThroughMapTowardsDirection: 2,
+    PushThroughMapTowardsDestination: 3
 }
 
 var ParticlePhysicsMode = {

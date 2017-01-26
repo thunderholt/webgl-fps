@@ -151,6 +151,63 @@
         return nearestIntersectionActor;
     }
 
+    this.checkLineOfSight = function (from, to) {
+
+        var $ = this.$checkLineOfSight;
+
+        vec3.copy($.line.from, from);
+        vec3.copy($.line.to, to);
+        math3D.buildCollisionLineFromFromAndToPoints($.line);
+
+        var obstructionFound = engine.mapManager.findNearestLineIntersectionWithMap(null, $.line); // FIXME - find *any* intersection will be faster.
+
+        return !obstructionFound;
+    }
+
+    this.tryToFindRelativePointWithLineOfSight = function (
+        out, from, to, maximumAttempts, maximumDistance) {
+
+        var $ = this.$tryToFindRelativePointWithLineOfSight;
+        var pointFound = false;
+
+        for (var attempt = 0; attempt < maximumAttempts; attempt++) {
+
+            vec3.copy($.purturbedFrom, from);
+            $.purturbedFrom[0] += maximumDistance - (Math.random() * (maximumDistance * 2));
+            $.purturbedFrom[2] += maximumDistance - (Math.random() * (maximumDistance * 2));
+
+            if (this.checkLineOfSight($.purturbedFrom, to)) {
+                vec3.copy(out, $.purturbedFrom);
+                pointFound = true;
+                break;
+            }
+        }
+
+        return pointFound;
+    }
+
+    this.tryToFindRelativePointWithNoObstruction = function (
+        out, from, maximumAttempts, maximumDistance) {
+
+        var $ = this.$tryToFindRelativePointWithNoObstruction;
+        var pointFound = false;
+
+        for (var attempt = 0; attempt < maximumAttempts; attempt++) {
+
+            vec3.copy($.purturbedFrom, from);
+            $.purturbedFrom[0] += maximumDistance - (Math.random() * (maximumDistance * 2));
+            $.purturbedFrom[2] += maximumDistance - (Math.random() * (maximumDistance * 2));
+
+            if (this.checkLineOfSight(from, $.purturbedFrom)) {
+                vec3.copy(out, $.purturbedFrom);
+                pointFound = true;
+                break;
+            }
+        }
+
+        return pointFound;
+    }
+
     // Function locals
     this.$moveSphereThroughMapInternal = {
         staticMeshes: new FixedLengthArray(1000, null),
@@ -162,5 +219,17 @@
         intersectionPoint: vec3.create(),
         nearestIntersectionPoint: vec3.create(),
         transformedCollisionLine: new CollisionLine(null, null, null, null)
+    }
+
+    this.$checkLineOfSight = {
+        line: new CollisionLine()
+    }
+
+    this.$tryToFindRelativePointWithLineOfSight = {
+        purturbedFrom: vec3.create()
+    }
+
+    this.$tryToFindRelativePointWithNoObstruction = {
+        purturbedFrom: vec3.create()
     }
 }

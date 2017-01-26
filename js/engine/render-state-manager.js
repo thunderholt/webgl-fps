@@ -430,8 +430,14 @@
                     mode: ActorPhysicsMode.None,
                     targetPositionOffset: vec3.create(),
                     speed: 0,
-                    movementNormal: vec3.create(),
-                    applyGravity: true
+                    direction: vec3.create(),
+                    desiredDestination: vec3.create(),
+                    targetYRotation: 0,
+                    applyGravity: true,
+                    hasArrivedAtDestination: false
+                },
+                tickers: {
+
                 }
             };
 

@@ -8,6 +8,17 @@ var DoorState = {
     Closing: 2
 }
 
+var EnemyAiState = {
+    Idle: 0,
+    Attacking: 1
+}
+
+var EnemyLineOfSightToPlayerStatus = {
+    Unknown: 0,
+    HasLineOfSight: 1,
+    LostLineOfSight: 2
+}
+
 engine.gameControllersById['GameController'] = new GameController();
 
 engine.actorControllersById['EnemyActorController'] = new EnemyActorController();
@@ -191,91 +202,241 @@ function EnemyActorController() {
             editorType: 'number',
             editorLabel: 'Speed'
         },
-        changeDirectionCountdown: {
+        /*changeDirectionCountdown: {
             defaultValue: 200
+        },*/
+        findNewWanderTargetCountdown: {
+            defaultValue: -1
         },
         attackCountdown: {
             defaultValue: -1
         },
+        aiState: {
+            defaultValue: EnemyAiState.Idle
+        }/*,
         targetYRotation: {
             defaultValue: 0
-        }
+        }*/
     }
 
     this.heartbeat = function (actor) {
 
-        var frameDelta = engine.frameTimer.frameDelta;
+        var $ = this.$heartbeat;
+
         var actorRenderState = engine.renderStateManager.actorRenderStatesById[actor.id];
+        var player = engine.map.player;
 
-        // Detemrine if we should change direction.
-        actor.data.changeDirectionCountdown -= frameDelta;
-
-        if (actor.data.changeDirectionCountdown <= 0) {
-            actor.data.changeDirectionCountdown = 40;
-
-            actor.data.targetYRotation = (Math.random() * Math.PI * 2) - Math.PI;
+        // Coalesce tickers.
+        if (actorRenderState.tickers.checkIfPlayerHasBeenSpotted == null) {
+            actorRenderState.tickers.checkIfPlayerHasBeenSpotted = new Ticker(1);
         }
 
-        // Update the Y rotation.
-        if (actor.rotation[1] > actor.data.targetYRotation) {
-            actor.rotation[1] -= 0.1 * frameDelta;
-            actor.rotation[1] = Math.max(actor.rotation[1], actor.data.targetYRotation);
-        } else if (actor.rotation[1] < actor.data.targetYRotation) {
-            actor.rotation[1] += 0.1 * frameDelta;
-            actor.rotation[1] = Math.min(actor.rotation[1], actor.data.targetYRotation);
+        if (actorRenderState.tickers.findNewWanderToPoint == null) {
+            actorRenderState.tickers.findNewWanderToPoint = new Ticker(0.35);
         }
 
-        // Calculate the movement normal from the Y rotation.
-        vec3.set(actorRenderState.physics.movementNormal, 0, 0, 1);
-        vec3.rotateY(
-            actorRenderState.physics.movementNormal,
-            actorRenderState.physics.movementNormal,
-            math3D.zeroVec3,
-            actor.rotation[1]);
+        if (actorRenderState.tickers.checkHasLineOfSightToPlayer == null) {
+            actorRenderState.tickers.checkHasLineOfSightToPlayer = new Ticker(3);
+        }
 
-        // Setup the general physics stuff.
-        actorRenderState.physics.mode = ActorPhysicsMode.PushThroughMap;
+        if (actorRenderState.tickers.tryToFindLineOfSightToPlayer == null) {
+            actorRenderState.tickers.tryToFindLineOfSightToPlayer = new Ticker(2);
+        }
+        
+        if (actorRenderState.tickers.shootAtPlayer == null) {
+            actorRenderState.tickers.shootAtPlayer = new Ticker(1);
+        }
+
+        // Standard physics setup.
         actorRenderState.physics.speed = actor.data.speed;
         actorRenderState.physics.applyGravity = true;
 
-        // Determine if we should attack.
-        if (actor.data.attackCountdown == -1) {
-            actor.data.attackCountdown = Math.random() * 20;
+        if (actor.data.aiState == EnemyAiState.Idle) {
+
+            var playerSpotted = false;
+
+            if (actorRenderState.tickers.checkIfPlayerHasBeenSpotted.tick()) {
+
+                playerSpotted = this.checkIfPlayerIsSpotable(actor, actorRenderState);
+                if (playerSpotted) {
+
+                    console.log(actor.id + ': player spotted');
+                    this.beginAttacking(actor);
+                }
+            }
+
+            if (!playerSpotted) {
+
+                if (actorRenderState.tickers.findNewWanderToPoint.tick()) {
+                    console.log(actor.id + ': meh, finding a new wander-to point');
+
+                    if (engine.mapManager.tryToFindRelativePointWithNoObstruction(
+                        actorRenderState.physics.desiredDestination,
+                        actorRenderState.transformedCollisionSphere.position,
+                        4, // Maximum attempts
+                        10 // Maximum distance
+                    )) {
+
+                        console.log(actor.id + ': having a wander');
+                        actorRenderState.physics.mode = ActorPhysicsMode.PushThroughMapTowardsDestination;
+                        actorRenderState.physics.turnToFaceDesiredDestnation = true;
+
+                    } else {
+
+                        console.log(actor.id + ': no where to wander to');
+                        actorRenderState.physics.mode = ActorPhysicsMode.None;
+                    }
+                }
+            }
+
+        } else if (actor.data.aiState == EnemyAiState.Attacking) {
+
+            if (actor.data.lineOfSightToPlayerStatus == EnemyLineOfSightToPlayerStatus.Unknown ||
+                actorRenderState.tickers.checkHasLineOfSightToPlayer.tick()) {
+
+                if (this.checkHasLineOfSightToPlayer(actor, actorRenderState)) {
+                    actor.data.lineOfSightToPlayerStatus = EnemyLineOfSightToPlayerStatus.HasLineOfSight;
+                } else {
+                    actor.data.lineOfSightToPlayerStatus = EnemyLineOfSightToPlayerStatus.LostLineOfSight;
+                    console.log(actor.id + ': I lost line of sight to the player!');
+                }
+            }
+
+            if (actor.data.lineOfSightToPlayerStatus == EnemyLineOfSightToPlayerStatus.HasLineOfSight) {
+
+                actorRenderState.physics.mode = ActorPhysicsMode.None;
+                this.turnToFacePlayer(actor, actorRenderState);
+
+                if (actorRenderState.tickers.shootAtPlayer.tick() &&
+                    this.checkPlayerIsWithinActorFacingCone($.actorToPlayerNormal, actor, actorRenderState, 0.9)) {
+
+                    this.shootAtPlayer(actor, actorRenderState, $.actorToPlayerNormal);
+                }
+
+            } else if (actor.data.lineOfSightToPlayerStatus == EnemyLineOfSightToPlayerStatus.LostLineOfSight) {
+
+                if (actorRenderState.tickers.tryToFindLineOfSightToPlayer.tick()) {
+
+                    if (engine.mapManager.tryToFindRelativePointWithLineOfSight(
+                        actorRenderState.physics.desiredDestination, 
+                        actorRenderState.transformedCollisionSphere.position,
+                        player.position,
+                        8, // Maximum attempts
+                        10 // Maximum distance
+                        )) {
+
+                        actorRenderState.physics.mode = ActorPhysicsMode.PushThroughMapTowardsDestination;
+                        actorRenderState.physics.turnToFaceDesiredDestnation = false; // Because we'll be facing the player, shooting at them.
+
+                    } else {
+
+                        // TODO - move somewhere random
+                        console.log(actor.id + ': I don\'t know where the player went!');
+                    }
+                }
+            }
         }
 
-        actor.data.attackCountdown -= frameDelta;
-        if (actor.data.attackCountdown <= 0) {
-            actor.data.attackCountdown = 20;
+        
+    }
 
-            this.attack(actor, actorRenderState.physics.movementNormal);
+    this.beginAttacking = function (actor) {
+
+        if (actor.data.aiState != EnemyAiState.Attacking) {
+            actor.data.aiState = EnemyAiState.Attacking;
+            actor.data.lineOfSightToPlayerStatus = EnemyLineOfSightToPlayerStatus.Unknown;
+            console.log(actor.id + ': I\'m now attcking!');
         }
     }
 
-    this.attack = function (actor, movementNormal) {
+    this.turnToFacePlayer = function (actor, actorRenderState) {
 
-        var $ = this.$attack;
+        var frameDelta = engine.frameTimer.frameDelta;
+        var player = engine.map.player;
+
+        // Calculate the target angle.
+        var targetAngle = math3D.calculateYAxisFacingAngle(
+            actorRenderState.transformedCollisionSphere.position, player.position)
+
+        actor.rotation[1] = math3D.rotateTowardsTargetAngle(
+            actor.rotation[1], targetAngle, 0.1 * frameDelta);
+
+        /*// Update the actor's Y rotation.
+        if (actor.rotation[1] > targetAngle) {
+            actor.rotation[1] -= 0.1 * frameDelta;
+            actor.rotation[1] = Math.max(actor.rotation[1], targetAngle);
+        } else if (actor.rotation[1] < targetAngle) {
+            actor.rotation[1] += 0.1 * frameDelta;
+            actor.rotation[1] = Math.min(actor.rotation[1], targetAngle);
+        }*/
+    }
+
+    this.checkIfPlayerIsSpotable = function (actor, actorRenderState) {
+
+        var $ = this.$checkIfPlayerIsSpotable;
 
         var player = engine.map.player;
 
-        // See if we have line of sight to the player
-        vec3.copy($.lineOfSightToPlayerLine.from, actor.position);
-        $.lineOfSightToPlayerLine.from[1] += 0.45; // To avoid collision with floor.
-        vec3.copy($.lineOfSightToPlayerLine.to, player.position);
-        math3D.buildCollisionLineFromFromAndToPoints($.lineOfSightToPlayerLine);
-
-        var obstructionFound = engine.mapManager.findNearestLineIntersectionWithMap(null, $.lineOfSightToPlayerLine); // FIXME - find *any* intersection will be faster.
-
-        if (!obstructionFound) {
-
-            // We have line of sight, lets see if the actor is facing the player.
-            var delta = vec3.dot(movementNormal, $.lineOfSightToPlayerLine.ray.normal);
-
-            if (delta > 0.9) {
-
-                // The actor is facing player, shoot!
-                this.spawnParticle(actor, $.lineOfSightToPlayerLine.ray.normal);
-            }
+        if (!this.checkHasLineOfSightToPlayer(actor, actorRenderState)) {
+            return false;
         }
+
+        if (!this.checkPlayerIsWithinActorFacingCone(null, actor, actorRenderState, 0.5)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    this.checkHasLineOfSightToPlayer = function (actor, actorRenderState) {
+
+        var player = engine.map.player;
+
+        var hasLineOfSight = engine.mapManager.checkLineOfSight(
+            actorRenderState.transformedCollisionSphere.position, player.position);
+
+        return hasLineOfSight;
+    }
+
+    this.checkPlayerIsWithinActorFacingCone = function (outActorToPlayerNormal, actor, actorRenderState, maxDelta) {
+
+        var $ = this.$checkPlayerIsWithinActorFacingCone;
+
+        var player = engine.map.player;
+
+        this.calculateFacingNormal($.actorFacingNormal, actor);
+
+        vec3.sub($.actorToPlayerNormal, player.position, actorRenderState.transformedCollisionSphere.position);
+        vec3.normalize($.actorToPlayerNormal, $.actorToPlayerNormal);
+
+        var delta = vec3.dot($.actorFacingNormal, $.actorToPlayerNormal);
+
+        if (delta < maxDelta) {
+
+            return false;
+        }
+
+        if (outActorToPlayerNormal != null) {
+            vec3.copy(outActorToPlayerNormal, $.actorToPlayerNormal);
+        }
+
+        return true;
+    }
+
+    this.shootAtPlayer = function (actor, actorRenderState, direction) {
+        //console.log(actor.id + ': shoot!');
+
+        this.spawnParticle(actor, direction);
+    }
+
+    this.calculateFacingNormal = function (out, actor) {
+
+        vec3.set(out, 0, 0, 1);
+        vec3.rotateY(
+            out,
+            out,
+            math3D.zeroVec3,
+            actor.rotation[1]);
     }
 
     this.spawnParticle = function (actor, directionNormal) {
@@ -317,15 +478,29 @@ function EnemyActorController() {
             actor.data.health--;
 
             if (actor.data.health > 0) {
-                console.log('Ouch! Health: ' + actor.data.health);
+
+                console.log(actor.id + ': Ouch! Health: ' + actor.data.health);
+
+                this.beginAttacking(actor);
+
             } else {
-                console.log('I\'m dead!');
+                console.log(actor.id + 'I\'m dead!');
                 actor.active = false;
             }
         }
     }
 
     // Function locals.
+    this.$heartbeat = {
+        //newWanderTargetDirection: vec3.create(),
+        actorToPlayerNormal: vec3.create()
+    }
+
+    this.$checkPlayerIsWithinActorFacingCone = {
+        actorFacingNormal: vec3.create(),
+        actorToPlayerNormal: vec3.create()
+    }
+
     this.$attack = {
         lineOfSightToPlayerLine: new CollisionLine(null, null, null, null)
     }

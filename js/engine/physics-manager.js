@@ -49,9 +49,13 @@
 
             this.runOffsetThroughEtherPhysicsForActor(actor, actorRenderState);
 
-        } else if (actorRenderState.physics.mode == ActorPhysicsMode.PushThroughMap) {
+        } else if (actorRenderState.physics.mode == ActorPhysicsMode.PushThroughMapTowardsDirection) {
 
-            this.runPushThroughMapPhysicsForActor(actor, actorRenderState);
+            this.runPushThroughMapTowardsDirectionPhysicsForActor(actor, actorRenderState);
+
+        } else if (actorRenderState.physics.mode == ActorPhysicsMode.PushThroughMapTowardsDestination) {
+
+            this.runPushThroughMapTowardsDestinationPhysicsForActor(actor, actorRenderState);
         }
     }
 
@@ -72,7 +76,7 @@
         }
     }
 
-    this.runPushThroughMapPhysicsForActor = function (actor, actorRenderState) {
+    this.runPushThroughMapTowardsDirectionPhysicsForActor = function (actor, actorRenderState) {
 
         if (actor.collisionSphere == null) {
             return;
@@ -84,13 +88,77 @@
 
         // Move the sphere through the map.
         engine.mapManager.moveSphereThroughMap(
-           actorRenderState.transformedCollisionSphere,
-            actorRenderState.physics.movementNormal,
+            actorRenderState.transformedCollisionSphere,
+            actorRenderState.physics.direction,
             movementAmount, 
             actorRenderState.physics.applyGravity);
 
         // Update the actor's position.
         vec3.sub(actor.position, actorRenderState.transformedCollisionSphere.position, actor.collisionSphere.position);
+    }
+
+    this.runPushThroughMapTowardsDestinationPhysicsForActor = function (actor, actorRenderState) {
+
+        var $ = this.$runPushThroughMapTowardsDestinationPhysicsForActor;
+
+        if (actor.collisionSphere == null) {
+            return;
+        }
+
+        var frameDelta = engine.frameTimer.frameDelta;
+
+        var distanceToDesiredDestination = vec3.distance(
+            actorRenderState.transformedCollisionSphere.position, actorRenderState.physics.desiredDestination);
+
+        var movementAmount = Math.min(
+            distanceToDesiredDestination,
+            actorRenderState.physics.speed * frameDelta);
+
+        vec3.sub(
+            $.movementNormal,
+            actorRenderState.physics.desiredDestination,
+            actorRenderState.transformedCollisionSphere.position);
+        vec3.normalize($.movementNormal, $.movementNormal);
+
+        // Move the sphere through the map.
+        engine.mapManager.moveSphereThroughMap(
+            actorRenderState.transformedCollisionSphere,
+            $.movementNormal,
+            movementAmount,
+            actorRenderState.physics.applyGravity);
+
+        // Update the actor's position.
+        vec3.sub(actor.position, actorRenderState.transformedCollisionSphere.position, actor.collisionSphere.position);
+
+        // Determine if the actor is now near enough to the desired destination.
+        actorRenderState.physics.hasArrivedAtDestination =
+            movementAmount == distanceToDesiredDestination;
+
+        // Update the actor's Y rotation so it faces the desired destination.
+        if (actorRenderState.physics.turnToFaceDesiredDestnation && 
+            !actorRenderState.physics.hasArrivedAtDestination) {
+
+            var targetAngle = math3D.calculateYAxisFacingAngle(
+                actorRenderState.transformedCollisionSphere.position,
+                actorRenderState.physics.desiredDestination);
+
+            actor.rotation[1] = math3D.rotateTowardsTargetAngle(
+                actor.rotation[1], targetAngle, 0.1 * frameDelta);
+        }
+
+        /*var targetYRotation = actorRenderState.physics.targetYRotation;
+
+        if (actor.rotation[1] > targetYRotation) {
+
+            actor.rotation[1] -= 0.1 * frameDelta;
+            actor.rotation[1] = Math.max(actor.rotation[1], targetYRotation);
+
+        } else if (actor.rotation[1] < targetYRotation) {
+
+            actor.rotation[1] += 0.1 * frameDelta;
+            actor.rotation[1] = Math.min(actor.rotation[1], targetYRotation);
+        }*/
+
     }
 
     this.runMoveThroughMapPhysicsForParticle = function (particle) {
@@ -175,6 +243,10 @@
     }
 
     // Function locals.
+    this.$runPushThroughMapTowardsDestinationPhysicsForActor = {
+        movementNormal: vec3.create()
+    }
+
     this.$runMoveThroughMapPhysicsForParticle = {
         collisionLine: new CollisionLine(null, null, null, null),
         actorCollisionPoint: vec3.create(),

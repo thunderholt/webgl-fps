@@ -13,7 +13,8 @@
         renderWorldStaticMeshAABBs: false,
         renderActorBoundingSpheres: false,
         renderActorHitBoxes: false,
-        renderActorCollisionSpheres: true,
+        renderActorCollisionSpheres: false,
+        renderActorPhysicsDebugging: false,
         renderSectors: false,
         renderTriggers: false
     };
@@ -385,6 +386,8 @@
         this.renderActorHitBoxes();
 
         this.renderActorCollisionSpheres();
+
+        this.renderActorPhysicsDebugging();
 
         this.renderSectors();
 
@@ -1275,8 +1278,6 @@
 
     this.renderActorCollisionSpheres = function () {
 
-        var $ = this.$renderActorHitBoxes;
-
         if (!this.renderingOptions.renderActorCollisionSpheres) {
             return;
         }
@@ -1289,6 +1290,24 @@
             if (actor.collisionSphere != null) {
 
                 engine.lineDrawer.drawSphere(this.renderingParameters, actorRenderState.transformedCollisionSphere.position, actorRenderState.transformedCollisionSphere.radius, RgbColours.Red, false);
+            }
+        }
+    }
+
+    this.renderActorPhysicsDebugging = function () {
+
+        if (!this.renderingOptions.renderActorPhysicsDebugging) {
+            return;
+        }
+
+        for (var actorId in engine.map.actorsById) {
+
+            var actor = engine.map.actorsById[actorId];;
+            var actorRenderState = engine.renderStateManager.actorRenderStatesById[actor.id];
+
+            if (actorRenderState.physics.mode == ActorPhysicsMode.PushThroughMapTowardsDestination) {
+
+                engine.lineDrawer.drawSphere(this.renderingParameters, actorRenderState.physics.desiredDestination, 0.1, RgbColours.Red, false);
             }
         }
     }

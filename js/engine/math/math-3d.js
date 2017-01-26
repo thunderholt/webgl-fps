@@ -166,6 +166,30 @@
         mat4.rotateZ(out, out, rotation[2]);
     }
     
+    this.calculateYAxisFacingAngle = function (from, to) {
+
+        var targetAngle = Math.atan2(
+           to[0] - from[0],
+           to[2] - from[2]);
+
+        return targetAngle;
+    }
+
+    this.rotateTowardsTargetAngle = function (currentAngle, targetAngle, maxDelta) {
+     
+        // TODO - fix twirly problem.
+
+        if (currentAngle > targetAngle) {
+            currentAngle -= maxDelta;
+            currentAngle = Math.max(currentAngle, targetAngle);
+        } else if (currentAngle < targetAngle) {
+            currentAngle += maxDelta;
+            currentAngle = Math.min(currentAngle, targetAngle);
+        }
+
+        return currentAngle;
+    }
+
     util.copyObjectPropertiesToOtherObject(new MathAABB(), this);
     util.copyObjectPropertiesToOtherObject(new MathSphere(), this);
     util.copyObjectPropertiesToOtherObject(new MathRay(), this);

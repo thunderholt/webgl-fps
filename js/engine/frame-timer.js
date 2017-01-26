@@ -2,6 +2,7 @@
 
     // Members.
     this.frameDelta = 0;
+    this.lastFrameDurationMillis = 0;
     this.lastFrameStartTime = null;
     this.lastTenFramesTotalDuration = 0;
     this.fpsCounterTickUp = 0;
@@ -13,22 +14,21 @@
 
     this.startFrame = function () {
 
-        var lastFrameDurationMillis = 0;
-
         if (this.lastFrameStartTime == null) {
 
+            this.lastFrameDurationMillis = 0;
             this.frameDelta = 0;
 
         } else {
 
-            lastFrameDurationMillis = performance.now() - this.lastFrameStartTime;
+            this.lastFrameDurationMillis = performance.now() - this.lastFrameStartTime;
 
             var desiredFrameDurationMillis = 1 / 60 * 1000;
 
-            this.frameDelta = lastFrameDurationMillis / desiredFrameDurationMillis;
+            this.frameDelta = this.lastFrameDurationMillis / desiredFrameDurationMillis;
         }
 
-        this.lastTenFramesTotalDuration += lastFrameDurationMillis;
+        this.lastTenFramesTotalDuration += this.lastFrameDurationMillis;
         this.fpsCounterTickUp++;
 
         this.lastFrameStartTime = performance.now();
